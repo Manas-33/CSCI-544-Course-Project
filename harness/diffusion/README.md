@@ -31,7 +31,7 @@ Sources: the model cards and `config.json` / `tokenizer_config.json` on Hugging 
 Use **one fresh runtime per model**: the three environments conflict. Each model needs about 16 GB of GPU memory in bf16, and Dream needs at least 20 GB, so use an L4 (24 GB) or an A100, not a T4.
 
 ```bash
-git clone -b diffusion-scorers https://github.com/Manas-33/CSCI-544-Course-Project.git /content/project
+git clone -b feature/diffusion-scorers https://github.com/Manas-33/CSCI-544-Course-Project.git /content/project
 cd /content/project
 pip install -q -r harness/diffusion/requirements/llada.txt   # or illada.txt / dream.txt
 # Dream only: restart the runtime now (its pin replaces Colab's torch), then cd back
