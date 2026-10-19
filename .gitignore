@@ -1,6 +1,7 @@
 # Allow-list: ignore everything at the top level, then track only the files below.
 # The proposal, instructor feedback and review/working files stay local on purpose.
 /*
+!/bank/
 !/.gitignore
 !/PLAN.md
 !/PROJECT.md

@@ -1,0 +1,7 @@
+# Question selection, labeling and pairing need only the standard library.
+# Generation (bank/generate.py) runs on a GPU, e.g. Colab:
+vllm>=0.6.4          # default backend; supports Phi-4-mini-instruct
+transformers>=4.49   # only for --backend hf
+torch
+math-verify          # second labeling checker; without it, label.py falls back to the last-number checker
+pytest               # CPU unit tests
