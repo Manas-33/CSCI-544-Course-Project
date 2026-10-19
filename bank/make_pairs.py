@@ -1,8 +1,8 @@
 """Step 4: build matched pairs and write the bank and label files (PLAN.md §2, §9).
 
 For each (question, generator) cell with at least one usable correct and one usable
-wrong answer, keep one of each, drawn with a fixed seed. Near-duplicate answers within
-a cell are collapsed first. Labels go to a separate file from the bank, as PLAN.md §9
+wrong answer, keep one of each, drawn with a fixed seed. Near-duplicate answers are
+collapsed first, within the correct answers and within the wrong answers separately. Labels go to a separate file from the bank, as PLAN.md §9
 requires, so scoring code never sees them.
 
     python -m bank.make_pairs --questions bank/dev/questions.jsonl \\
@@ -43,9 +43,11 @@ def build_pairs(generations: list[dict], labels: dict[str, dict], seed: int) -> 
     pairs = []
     n_all_correct = n_all_wrong = 0
     for key in sorted(cells):
-        group = dedupe(sorted(cells[key], key=lambda c: c["candidate_id"]))
-        correct = [c for c in group if labels[c["candidate_id"]]["label"] == 1]
-        wrong = [c for c in group if labels[c["candidate_id"]]["label"] == 0]
+        group = sorted(cells[key], key=lambda c: c["candidate_id"])
+        # Collapse near-duplicates within each label only: a wrong answer that copies a
+        # correct one except for a final slip is exactly the subtle error worth keeping.
+        correct = dedupe([c for c in group if labels[c["candidate_id"]]["label"] == 1])
+        wrong = dedupe([c for c in group if labels[c["candidate_id"]]["label"] == 0])
         if correct and wrong:
             pairs.append((rng.choice(correct), rng.choice(wrong)))
         elif correct:
@@ -96,6 +98,7 @@ def main() -> None:
                     "generator_revision": cand["generator_revision"],
                     "settings": cand["settings"],
                     "seed": cand["seed"],
+                    "checker_version": labels[cand["candidate_id"]].get("checker_version"),
                     "split": args.split,
                 }
             )
@@ -106,7 +109,7 @@ def main() -> None:
                     "label": lab["label"],
                     "reference": lab["reference"],
                     "extracted": lab["extracted"],
-                    "checker2_name": lab["checker2_name"],
+                    "checker_version": lab.get("checker_version"),
                 }
             )
 

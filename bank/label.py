@@ -14,12 +14,23 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 
-from bank.common import extract_boxed, extract_last_number, normalize_number, read_jsonl, write_jsonl
+from bank.common import (
+    extract_boxed,
+    extract_last_number,
+    has_identity_string,
+    normalize_number,
+    parse_boxed_number,
+    read_jsonl,
+    write_jsonl,
+)
+
+# Bump when labeling logic changes; recorded with every label and bank row (PLAN.md §9).
+LABELER_VERSION = "bank.label/2"
 
 
 def checker_boxed(text: str, reference: str) -> tuple[bool | None, str | None]:
     """(correct?, extracted answer). None means no usable \\boxed{} answer."""
-    extracted = normalize_number(extract_boxed(text))
+    extracted = parse_boxed_number(extract_boxed(text))
     if extracted is None:
         return None, None
     return extracted == reference, extracted
@@ -55,6 +66,8 @@ def label_row(gen: dict, reference: str, use_math_verify: bool = True) -> dict:
     c2, c2_name = checker_second(gen["text"], reference, use_math_verify)
     if gen.get("finish_reason") == "length":
         status = "truncated"
+    elif has_identity_string(gen["text"]):
+        status = "identity_string"
     elif c1 is None:
         status = "no_answer"
     elif c2 is None or c1 != c2:
@@ -71,6 +84,7 @@ def label_row(gen: dict, reference: str, use_math_verify: bool = True) -> dict:
         "checker2_name": c2_name,
         "status": status,
         "label": int(c1) if status == "ok" else None,
+        "checker_version": f"{LABELER_VERSION}+{c2_name}",
     }
 
 

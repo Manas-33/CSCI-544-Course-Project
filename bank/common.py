@@ -104,6 +104,37 @@ def extract_boxed(text: str) -> Optional[str]:
     return None  # unbalanced braces: treat as no answer
 
 
+def parse_boxed_number(content: Optional[str]) -> Optional[str]:
+    """Read a number from \\boxed{} content that may carry units or an equation.
+
+    "41" -> 41; "41 \\text{ dollars}" -> 41; "200 - 159 = 41" -> 41 (the part after the
+    last "="). If several numbers remain and none is clearly the answer ("3 \\times 4"),
+    return None rather than guess.
+    """
+    if content is None:
+        return None
+    direct = normalize_number(content)
+    if direct is not None:
+        return direct
+    tail = content.rsplit("=", 1)[-1]
+    direct = normalize_number(tail)
+    if direct is not None:
+        return direct
+    numbers = _NUMBER_RE.findall(tail)
+    return normalize_number(numbers[0]) if len(numbers) == 1 else None
+
+
+# Model self-references that PLAN.md §2 filters out of the bank ("As an AI...").
+_IDENTITY_RE = re.compile(
+    r"\bas an ai\b|\bi am an ai\b|\bi'm an ai\b|\bas a language model\b|\bai language model\b",
+    re.IGNORECASE,
+)
+
+
+def has_identity_string(text: str) -> bool:
+    return bool(_IDENTITY_RE.search(text))
+
+
 def extract_last_number(text: str) -> Optional[str]:
     """The last number written anywhere in the text (a looser, independent extraction)."""
     matches = _NUMBER_RE.findall(text)

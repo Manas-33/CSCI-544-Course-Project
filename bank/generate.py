@@ -41,7 +41,13 @@ def resolve_dtype(choice: str) -> str:
 def generate_vllm(questions, args) -> list[dict]:
     from vllm import LLM, SamplingParams
 
-    llm = LLM(model=args.model, revision=args.revision, seed=args.seed, dtype=args.dtype)
+    llm = LLM(
+        model=args.model,
+        revision=args.revision,
+        seed=args.seed,
+        dtype=args.dtype,
+        max_model_len=args.max_model_len,
+    )
     params = [
         SamplingParams(
             n=args.n_samples,
@@ -68,6 +74,7 @@ def generate_hf(questions, args) -> list[dict]:
     model = AutoModelForCausalLM.from_pretrained(
         args.model, revision=args.revision, torch_dtype=getattr(torch, args.dtype), device_map="auto"
     )
+    eos_ids = _as_set(tok.eos_token_id) | _as_set(model.generation_config.eos_token_id)
     rows = []
     for i, q in enumerate(questions):
         torch.manual_seed(args.seed + i)
@@ -84,12 +91,29 @@ def generate_hf(questions, args) -> list[dict]:
             pad_token_id=tok.eos_token_id,
         )
         for k, seq in enumerate(out):
-            new = seq[ids.shape[1]:]
-            n_tok = int((new != tok.pad_token_id).sum()) if tok.pad_token_id is not None else len(new)
-            finish = "length" if n_tok >= args.max_new_tokens else "stop"
-            text = tok.decode(new, skip_special_tokens=True)
+            new = seq[ids.shape[1]:].tolist()
+            n_tok, finish = hf_finish(new, eos_ids, args.max_new_tokens)
+            text = tok.decode(new[:n_tok], skip_special_tokens=True)
             rows.append(_row(q, k, text, finish, n_tok, args, args.seed + i))
     return rows
+
+
+def _as_set(ids) -> set[int]:
+    if ids is None:
+        return set()
+    return set(ids) if isinstance(ids, (list, tuple, set)) else {ids}
+
+
+def hf_finish(new_ids: list[int], eos_ids: set[int], max_new_tokens: int) -> tuple[int, str]:
+    """(answer length, finish reason) for one sampled sequence.
+
+    Sequences in a batch are padded to the longest one, so the answer ends at its first
+    end-of-text token. With no end token, it was cut off if it reached max_new_tokens.
+    """
+    for pos, token in enumerate(new_ids):
+        if token in eos_ids:
+            return pos, "stop"
+    return len(new_ids), "length" if len(new_ids) >= max_new_tokens else "stop"
 
 
 def _row(q, k, text, finish_reason, n_tokens, args, seed) -> dict:
@@ -115,7 +139,7 @@ def _row(q, k, text, finish_reason, n_tokens, args, seed) -> dict:
     }
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--questions", default="bank/dev/questions.jsonl")
     ap.add_argument("--out", default="bank/dev/generations.jsonl")
@@ -134,7 +158,18 @@ def main() -> None:
         default="auto",
         help="auto: bfloat16 if the GPU supports it, else float16 (T4, V100, P100)",
     )
-    args = ap.parse_args()
+    ap.add_argument(
+        "--max-model-len",
+        type=int,
+        default=4096,
+        help="vLLM context cap. Phi-4-mini declares 131,072 tokens, whose KV cache (~16 GB) "
+        "does not fit an L4 or T4; prompt plus answer here is under 1,500 tokens.",
+    )
+    return ap
+
+
+def main() -> None:
+    args = build_parser().parse_args()
     args.dtype = resolve_dtype(args.dtype)
     print(f"Using dtype {args.dtype}")
 

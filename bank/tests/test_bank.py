@@ -163,3 +163,54 @@ def test_select_is_seeded_sorted_and_labeled():
     assert idx == sorted(idx) and len(set(idx)) == 10
     assert all(q["reference"] == str(q["source_index"]) for q in first)
     assert first[0]["problem_id"] == f"gsm8k-train-{idx[0]:05d}"
+
+
+# ---------------------------------------------------------------- validation fixes (Oct 19)
+
+def test_boxed_answer_with_units_is_read():
+    row = label_row(_gen("Shoes cost 41 dollars. \\boxed{41 \\text{ dollars}}"), "41", use_math_verify=False)
+    assert row["status"] == "ok" and row["label"] == 1
+
+
+def test_boxed_answer_written_as_equation_is_read():
+    row = label_row(_gen("So \\boxed{200 - 159 = 41}"), "41", use_math_verify=False)
+    assert row["status"] == "ok" and row["label"] == 1
+
+
+def test_boxed_with_several_numbers_and_no_equals_is_not_guessed():
+    row = label_row(_gen("\\boxed{3 \\times 4}"), "12", use_math_verify=False)
+    assert row["status"] == "no_answer"
+
+
+def test_identity_strings_are_filtered():
+    row = label_row(_gen("As an AI language model, I think \\boxed{4}"), "4", use_math_verify=False)
+    assert row["status"] == "identity_string" and row["label"] is None
+
+
+def test_near_duplicate_correct_and_wrong_answers_still_pair():
+    # Same reasoning, different final number: the subtle error we most want to keep.
+    # Realistic answers share 40+ distinct words, so their overlap is above the 0.9 cutoff.
+    shared = " ".join(f"step{i}" for i in range(40))
+    right = f"{shared} so the shoes cost 41"
+    wrong = f"{shared} so the shoes cost 42"
+    assert token_jaccard(right, wrong) > 0.9
+    g, labels = _cell("q1", [(right, 1), (wrong, 0)])
+    pairs, summary = build_pairs(g, labels, seed=1)
+    assert summary["pairs"] == 1
+
+
+def test_hf_finish_stops_at_first_end_token():
+    from bank.generate import hf_finish
+
+    eos = {9, 7}
+    assert hf_finish([5, 6, 9, 9, 9], eos, max_new_tokens=5) == (2, "stop")      # padded with end tokens
+    assert hf_finish([5, 6, 7, 0, 0], eos, max_new_tokens=5) == (2, "stop")      # any end token counts
+    assert hf_finish([5, 6, 8, 4, 3], eos, max_new_tokens=5) == (5, "length")    # hit the limit
+    assert hf_finish([5, 6], eos, max_new_tokens=5) == (2, "stop")
+
+
+def test_vllm_context_is_capped_by_default():
+    from bank.generate import build_parser
+
+    args = build_parser().parse_args([])
+    assert args.max_model_len == 4096
