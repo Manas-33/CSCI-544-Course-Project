@@ -27,10 +27,21 @@ def build_messages(question: str) -> list[dict]:
     return [{"role": "user", "content": PROMPT.format(question=question)}]
 
 
+def resolve_dtype(choice: str) -> str:
+    """bfloat16 where the GPU supports it (A100, L4, L40S, A40), else float16 (T4, V100, P100)."""
+    if choice != "auto":
+        return choice
+    import torch
+
+    if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+        return "bfloat16"
+    return "float16"
+
+
 def generate_vllm(questions, args) -> list[dict]:
     from vllm import LLM, SamplingParams
 
-    llm = LLM(model=args.model, revision=args.revision, seed=args.seed, dtype="bfloat16")
+    llm = LLM(model=args.model, revision=args.revision, seed=args.seed, dtype=args.dtype)
     params = [
         SamplingParams(
             n=args.n_samples,
@@ -55,7 +66,7 @@ def generate_hf(questions, args) -> list[dict]:
 
     tok = AutoTokenizer.from_pretrained(args.model, revision=args.revision)
     model = AutoModelForCausalLM.from_pretrained(
-        args.model, revision=args.revision, torch_dtype=torch.bfloat16, device_map="auto"
+        args.model, revision=args.revision, torch_dtype=getattr(torch, args.dtype), device_map="auto"
     )
     rows = []
     for i, q in enumerate(questions):
@@ -93,6 +104,7 @@ def _row(q, k, text, finish_reason, n_tokens, args, seed) -> dict:
             "max_new_tokens": args.max_new_tokens,
             "n_samples": args.n_samples,
             "backend": args.backend,
+            "dtype": args.dtype,
         },
         "seed": seed,
         "sample_index": k,
@@ -116,7 +128,15 @@ def main() -> None:
     ap.add_argument("--max-new-tokens", type=int, default=1024)
     ap.add_argument("--seed", type=int, default=544)
     ap.add_argument("--backend", choices=["vllm", "hf"], default="vllm")
+    ap.add_argument(
+        "--dtype",
+        choices=["auto", "bfloat16", "float16"],
+        default="auto",
+        help="auto: bfloat16 if the GPU supports it, else float16 (T4, V100, P100)",
+    )
     args = ap.parse_args()
+    args.dtype = resolve_dtype(args.dtype)
+    print(f"Using dtype {args.dtype}")
 
     questions = read_jsonl(args.questions)
     start = time.time()

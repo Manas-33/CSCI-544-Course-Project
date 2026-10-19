@@ -2,6 +2,7 @@
 
 import pytest
 
+from bank.generate import resolve_dtype
 from bank.common import (
     extract_boxed,
     extract_last_number,
@@ -135,6 +136,21 @@ def test_dedupe_collapses_near_identical_answers():
     b = {"text": "So the total is 12   apples"}
     c = {"text": "a completely different line of reasoning"}
     assert dedupe([a, b, c]) == [a, c]
+
+
+# ---------------------------------------------------------------- generation settings
+
+def test_resolve_dtype_explicit_choice_passes_through():
+    assert resolve_dtype("float16") == "float16"
+    assert resolve_dtype("bfloat16") == "bfloat16"
+
+
+def test_resolve_dtype_auto_falls_back_without_bf16_gpu():
+    # On a machine without a CUDA GPU (like CI or a laptop), auto must not pick bfloat16.
+    import torch
+
+    if not torch.cuda.is_available():
+        assert resolve_dtype("auto") == "float16"
 
 
 # ---------------------------------------------------------------- selection

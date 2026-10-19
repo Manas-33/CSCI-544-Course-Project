@@ -22,18 +22,48 @@ Run every command from the repository root. The defaults point at `bank/dev/`.
 - **Labels:** checker 1 reads the last `\boxed{}`; checker 2 is Math-Verify (`pip install math-verify`), or the last number in the answer if Math-Verify is missing. An answer is usable only if it isn't truncated, checker 1 found an answer, and both checkers agree.
 - **Pairs:** per (question, generator), near-duplicate answers (token Jaccard > 0.9) are collapsed, then one correct and one wrong answer are drawn with seed 544. **Labels are written to a separate file** (`dev_labels.jsonl`), so scoring code never sees them.
 
+## Which GPU
+
+Generation uses Phi-4-mini (3.8B parameters, about 8 GB of weights), so **any GPU with 16 GB or more works**. An A100 is not required.
+
+| GPU | Generation | Scoring with 7–9B verifiers |
+|---|---|---|
+| Colab **T4** (16 GB) | Works (float16, slower) | Too small without quantization, which the plan rules out |
+| Colab **L4** (24 GB) | **Works well; best value** | **Works** (bfloat16) |
+| Colab **A100** (40/80 GB) | Fastest | Works |
+| CARC **L40S / A40** (48 GB), **A100** (40/80 GB) | Works | Works |
+| CARC **V100** (32 GB), **P100** (16 GB) | Works (float16) | Avoid: no bfloat16, so scores would use a different precision from the other models |
+
+`--dtype auto` (the default) picks bfloat16 where the GPU supports it and float16 otherwise, and records the choice.
+
 ## On Colab
 
 ```bash
 git clone -b feature/dev-bank https://github.com/Manas-33/CSCI-544-Course-Project.git
 cd CSCI-544-Course-Project
 pip install -r bank/requirements.txt
-python -m bank.generate            # about 800 answers; minutes on an A100 with vLLM
+python -m bank.generate            # about 800 answers; minutes with vLLM on an L4 or A100
 python -m bank.label
 python -m bank.make_pairs          # prints how many pairs you got
 ```
 
 If vLLM won't install, use `python -m bank.generate --backend hf` (slower).
+
+## On CARC (Discovery)
+
+GPU jobs go to the `gpu` partition through Slurm. Request an L40S, A40 or A100, and check CARC's "Running Jobs" guide for the exact GPU-request syntax. You need a CARC account on a project allocation, usually added by a faculty PI. CARC OnDemand gives a browser-based Jupyter session if you prefer that to batch jobs. A minimal batch job:
+
+```bash
+#!/bin/bash
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1          # add a GPU type per CARC's guide, e.g. an L40S or A100
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=01:00:00
+module load conda             # or your own Python environment
+cd CSCI-544-Course-Project
+python -m bank.generate && python -m bank.label && python -m bank.make_pairs
+```
 
 **Expected yield (est.):** Phi-4-mini solves most GSM8K questions, so only some questions produce both a correct and a wrong answer, perhaps 30–60 pairs from 200 questions. If you get fewer than about 30, select more questions with a **new** seed and exclude the IDs already used, rather than re-sampling the same questions.
 
