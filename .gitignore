@@ -1,0 +1,17 @@
+# Allow-list: ignore everything at the top level, then track only the files below.
+# The proposal, instructor feedback and review/working files stay local on purpose.
+/*
+!/.gitignore
+!/PLAN.md
+!/PROJECT.md
+!/NEXT_STEPS.md
+
+# When code starts, allow its folders here, for example:
+# !/bank/
+# !/harness/
+# !/analysis/
+# !/decisions/
+
+# Never track these, even inside allowed folders
+.DS_Store
+.Rhistory
