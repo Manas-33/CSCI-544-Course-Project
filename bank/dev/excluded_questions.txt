@@ -1,0 +1,4 @@
+# Questions dropped from the development bank, each with the reason.
+# One problem_id per line; "#" starts the reason. Labels stay programmatic:
+# an excluded question is removed entirely, never relabeled.
+gsm8k-train-01500  # ambiguous: the 5% tip can be charged on the food ($80) or on the bill with the 10% service charge ($88); the second reading gives 7.6, not 8
