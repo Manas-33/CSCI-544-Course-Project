@@ -5,13 +5,16 @@
 !/PLAN.md
 !/PROJECT.md
 !/NEXT_STEPS.md
+!/harness/
 
-# When code starts, allow its folders here, for example:
+# When more code starts, allow its folders here, for example:
 # !/bank/
-# !/harness/
 # !/analysis/
 # !/decisions/
 
 # Never track these, even inside allowed folders
 .DS_Store
 .Rhistory
+__pycache__/
+*.pyc
+.pytest_cache/

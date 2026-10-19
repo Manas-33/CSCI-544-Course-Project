@@ -1,0 +1,9 @@
+# iLLaDA-8B-Instruct environment (PLAN.md §9). Install in its own runtime:
+#   pip install -r harness/diffusion/requirements/illada.txt
+# transformers==4.57.1 and accelerate==0.34.2 are the pins in eval_illada.sh
+# (github.com/ML-GSAI/LLaDA). 4.38.2 cannot read iLLaDA's chat_template.jinja.
+# iLLaDA does not pin torch: keep the runtime's CUDA build.
+transformers==4.57.1
+accelerate==0.34.2
+torch
+numpy  # imported by the official generate.py (parity check)

@@ -1,0 +1,8 @@
+# LLaDA-8B-Instruct environment (PLAN.md §9). Install in its own runtime:
+#   pip install -r harness/diffusion/requirements/llada.txt
+# transformers==4.38.2 is the pin in the README of github.com/ML-GSAI/LLaDA.
+# LLaDA does not pin torch: keep the runtime's CUDA build (Colab preinstalls one).
+transformers==4.38.2
+accelerate==0.34.2  # device_map loading straight to the GPU
+torch
+numpy  # imported by the official generate.py (parity check)

@@ -1,0 +1,8 @@
+# Dream-v0-Instruct-7B environment (PLAN.md §9). Install in its own runtime:
+#   pip install -r harness/diffusion/requirements/dream.txt
+# transformers==4.46.2 and torch==2.5.1 are the pins in the README of
+# github.com/HKUNLP/Dream (Dream uses torch's built-in SDPA attention); needs >= 20 GB GPU.
+# On Colab this replaces the preinstalled torch: restart the runtime after installing.
+transformers==4.46.2
+torch==2.5.1
+accelerate==0.34.2  # device_map loading straight to the GPU
