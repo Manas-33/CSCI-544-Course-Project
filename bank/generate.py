@@ -168,12 +168,61 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
+def resolve_revision(model: str, revision: str | None) -> str | None:
+    """The exact Hugging Face commit SHA to load, so every run is pinned and recorded."""
+    try:
+        from huggingface_hub import HfApi
+
+        return HfApi().model_info(model, revision=revision).sha
+    except Exception as exc:  # offline or hub unavailable: run unpinned, but say so
+        print(f"WARNING: could not resolve a commit SHA for {model} ({exc}); the run is unpinned")
+        return revision
+
+
+def environment_info() -> dict:
+    """Code revision, library versions and GPU, recorded in the manifest (PLAN.md §9)."""
+    import platform
+    import subprocess
+    from importlib import metadata
+
+    def version(pkg: str) -> str | None:
+        try:
+            return metadata.version(pkg)
+        except metadata.PackageNotFoundError:
+            return None
+
+    try:
+        code_revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+    except Exception:
+        code_revision = None
+    gpu = None
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            gpu = torch.cuda.get_device_name(0)
+    except Exception:
+        pass
+    return {
+        "code_revision": code_revision,
+        "python": platform.python_version(),
+        "versions": {p: version(p) for p in ("torch", "transformers", "vllm", "huggingface-hub")},
+        "gpu": gpu,
+    }
+
+
 def main() -> None:
+    from datetime import datetime, timezone
+
     args = build_parser().parse_args()
     args.dtype = resolve_dtype(args.dtype)
-    print(f"Using dtype {args.dtype}")
+    args.revision = resolve_revision(args.model, args.revision)
+    print(f"Using dtype {args.dtype}, {args.model} at revision {args.revision}")
 
     questions = read_jsonl(args.questions)
+    started = datetime.now(timezone.utc).isoformat(timespec="seconds")
     start = time.time()
     rows = generate_vllm(questions, args) if args.backend == "vllm" else generate_hf(questions, args)
     elapsed = time.time() - start
@@ -189,6 +238,9 @@ def main() -> None:
         "prompt": PROMPT,
         "settings": {k: v for k, v in vars(args).items() if k not in ("questions", "out")},
         "seconds": round(elapsed, 1),
+        "started_utc": started,
+        "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "environment": environment_info(),
     }
     Path(args.out).with_name("generations_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"Wrote {len(rows)} answers for {len(questions)} questions in {elapsed:.0f}s to {args.out}")

@@ -36,6 +36,18 @@ def checker_boxed(text: str, reference: str) -> tuple[bool | None, str | None]:
     return extracted == reference, extracted
 
 
+def _checker2_version(name: str) -> str:
+    """"math_verify==0.9.0" when Math-Verify is used, so its exact version is recorded."""
+    if name != "math_verify":
+        return name
+    from importlib import metadata
+
+    try:
+        return f"math_verify=={metadata.version('math-verify')}"
+    except metadata.PackageNotFoundError:
+        return name
+
+
 def _math_verify():
     try:
         from math_verify import parse, verify  # type: ignore
@@ -84,7 +96,7 @@ def label_row(gen: dict, reference: str, use_math_verify: bool = True) -> dict:
         "checker2_name": c2_name,
         "status": status,
         "label": int(c1) if status == "ok" else None,
-        "checker_version": f"{LABELER_VERSION}+{c2_name}",
+        "checker_version": f"{LABELER_VERSION}+{_checker2_version(c2_name)}",
     }
 
 

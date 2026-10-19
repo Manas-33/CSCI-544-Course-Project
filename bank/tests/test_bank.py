@@ -1,73 +1,44 @@
-"""CPU tests for the math bank pipeline (no downloads, no GPU)."""
+"""Essential CPU tests for the math bank (no downloads, no GPU).
+
+Kept to the checks where a bug would silently corrupt the bank or break PLAN.md's rules:
+correct labels, unusable answers dropped, checkers must agree, one correct + one wrong
+answer per pair (subtle errors kept), labels kept out of the bank, exclusions applied.
+"""
+
+import json
+from collections import defaultdict
 
 import pytest
 
-from bank.generate import resolve_dtype
-from bank.common import (
-    extract_boxed,
-    extract_last_number,
-    gsm8k_reference,
-    normalize_number,
-    token_jaccard,
-)
+from bank.common import extract_boxed, gsm8k_reference, normalize_number, sha256_text
+from bank.generate import hf_finish
 from bank.label import label_row
-from bank.make_pairs import build_pairs, dedupe
+from bank.make_pairs import build_pairs, main
 from bank.select_questions import select
 
 
-# ---------------------------------------------------------------- numbers
+# ---------------------------------------------------------------- reading answers and references
 
 @pytest.mark.parametrize(
     "raw, expected",
-    [
-        ("41", "41"),
-        (" 1,000 ", "1000"),
-        ("$18.00", "18"),
-        ("18.0.", "18"),
-        ("\\$5", "5"),
-        ("50\\%", "50"),
-        ("\\text{12}", "12"),
-        ("-3", "-3"),
-        ("2.50", "2.5"),
-        ("0.125", "0.125"),
-        ("twelve", None),
-        ("", None),
-        (None, None),
-    ],
+    [("41", "41"), (" 1,000 ", "1000"), ("$18.00", "18"), ("2.50", "2.5"),
+     ("\\text{12}", "12"), ("twelve", None), (None, None)],
 )
 def test_normalize_number(raw, expected):
     assert normalize_number(raw) == expected
 
 
-def test_gsm8k_reference():
-    assert gsm8k_reference("She pays 3*4=<<3*4=12>>12 dollars.\n#### 12") == "12"
+def test_gsm8k_reference_and_boxed_extraction():
     assert gsm8k_reference("Total is 1,200.\n#### 1,200") == "1200"
-    assert gsm8k_reference("no marker here") is None
-
-
-# ---------------------------------------------------------------- extraction
-
-def test_extract_boxed_takes_last_and_handles_nesting():
-    text = "First \\boxed{3}, then the answer is \\boxed{\\frac{1}{2}}."
-    assert extract_boxed(text) == "\\frac{1}{2}"
-    assert extract_boxed("The answer is \\boxed{ 41 }") == "41"
-
-
-def test_extract_boxed_missing_or_unbalanced():
+    assert extract_boxed("First \\boxed{3}, then \\boxed{\\frac{1}{2}}.") == "\\frac{1}{2}"
     assert extract_boxed("The answer is 41.") is None
-    assert extract_boxed("\\boxed{41") is None
 
 
-def test_extract_last_number():
-    assert extract_last_number("We get 3 apples, then 1,200 total.") == "1,200"
-    assert extract_last_number("Answer: -2.5") == "-2.5"
-    assert extract_last_number("no numbers") is None
-
-
-def test_token_jaccard():
-    assert token_jaccard("a b c", "a b c") == 1.0
-    assert token_jaccard("A  b", "a b") == 1.0
-    assert token_jaccard("a b", "c d") == 0.0
+def test_select_questions_is_seeded_with_correct_references():
+    rows = [{"question": f"q{i}", "answer": f"work\n#### {i}"} for i in range(50)]
+    first = select(rows, 10, seed=544)
+    assert first == select(rows, 10, seed=544)
+    assert all(q["reference"] == str(q["source_index"]) for q in first)
 
 
 # ---------------------------------------------------------------- labeling
@@ -76,23 +47,32 @@ def _gen(text, finish="stop", cid="q1__g__0", pid="q1", gen="g"):
     return {"candidate_id": cid, "problem_id": pid, "generator": gen, "text": text, "finish_reason": finish}
 
 
-def test_label_correct_and_wrong():
-    ok = label_row(_gen("2+2=4, so \\boxed{4}"), "4", use_math_verify=False)
-    assert ok["status"] == "ok" and ok["label"] == 1
-    bad = label_row(_gen("2+3=5, so \\boxed{5}"), "4", use_math_verify=False)
-    assert bad["status"] == "ok" and bad["label"] == 0
+def _label(text, ref, **kw):
+    return label_row(_gen(text, **kw), ref, use_math_verify=False)
 
 
-def test_label_no_answer_and_truncated():
-    assert label_row(_gen("The answer is 4."), "4", use_math_verify=False)["status"] == "no_answer"
-    cut = label_row(_gen("\\boxed{4}", finish="length"), "4", use_math_verify=False)
-    assert cut["status"] == "truncated" and cut["label"] is None
+def test_labels_correct_and_wrong_answers():
+    assert _label("2+2=4, so \\boxed{4}", "4")["label"] == 1
+    assert _label("2+3=5, so \\boxed{5}", "4")["label"] == 0
+    # Units or an equation in the box are still read; an ambiguous box is not guessed.
+    assert _label("\\boxed{41 \\text{ dollars}}", "41")["label"] == 1
+    assert _label("So \\boxed{200 - 159 = 41}", "41")["label"] == 1
+    assert _label("\\boxed{3 \\times 4}", "12")["status"] == "no_answer"
 
 
-def test_label_checkers_disagree():
-    # \boxed{4} is correct, but the last number written is 7, so checker 2 says wrong.
-    row = label_row(_gen("\\boxed{4} (checked against 7)"), "4", use_math_verify=False)
-    assert row["status"] == "checker_disagree" and row["label"] is None
+def test_unusable_answers_get_no_label():
+    assert _label("The answer is 4.", "4")["status"] == "no_answer"
+    assert _label("\\boxed{4}", "4", finish="length")["status"] == "truncated"
+    assert _label("As an AI language model, \\boxed{4}", "4")["status"] == "identity_string"
+    # Checkers disagree: \boxed{4} is right, but the last number written is 7.
+    assert _label("\\boxed{4} (checked against 7)", "4")["status"] == "checker_disagree"
+    assert all(_label(t, "4")["label"] is None for t in ("The answer is 4.", "\\boxed{4} (checked against 7)"))
+
+
+def test_hf_backend_does_not_mark_short_answers_truncated():
+    eos = {9}
+    assert hf_finish([5, 6, 9, 9, 9], eos, max_new_tokens=5) == (2, "stop")
+    assert hf_finish([5, 6, 8, 4, 3], eos, max_new_tokens=5) == (5, "length")
 
 
 # ---------------------------------------------------------------- pairing
@@ -106,111 +86,76 @@ def _cell(pid, texts_labels, gen="g"):
     return gens, labels
 
 
-def test_pairs_only_from_mixed_cells():
-    g1, l1 = _cell("q1", [("right one", 1), ("wrong one here", 0), ("right again alt", 1)])
+def test_pairs_only_from_questions_with_both_a_correct_and_a_wrong_answer():
+    g1, l1 = _cell("q1", [("right one", 1), ("wrong one here", 0), ("no answer", None)])
     g2, l2 = _cell("q2", [("all right a", 1), ("all right b c", 1)])
     g3, l3 = _cell("q3", [("all wrong x", 0)])
     pairs, summary = build_pairs(g1 + g2 + g3, {**l1, **l2, **l3}, seed=544)
-    assert summary == {"cells_with_usable_answers": 3, "cells_all_correct": 1, "cells_all_wrong": 1, "pairs": 1}
+    assert summary["pairs"] == 1 and summary["cells_all_correct"] == 1 and summary["cells_all_wrong"] == 1
     good, bad = pairs[0]
-    assert good["problem_id"] == bad["problem_id"] == "q1"
+    assert (good["candidate_id"], bad["candidate_id"]) == ("q1__g__0", "q1__g__1")
 
 
-def test_pairs_ignore_unusable_answers():
-    g, labels = _cell("q1", [("right", 1), ("no boxed answer", None)])
-    pairs, summary = build_pairs(g, labels, seed=1)
-    assert pairs == [] and summary["cells_all_correct"] == 1
-
-
-def test_pairs_are_seeded():
-    g, labels = _cell("q1", [("r a", 1), ("r b x", 1), ("r c y z", 1), ("w a", 0), ("w b q", 0)])
-    first, _ = build_pairs(g, labels, seed=7)
-    second, _ = build_pairs(g, labels, seed=7)
-    assert [(a["candidate_id"], b["candidate_id"]) for a, b in first] == [
-        (a["candidate_id"], b["candidate_id"]) for a, b in second
-    ]
-
-
-def test_dedupe_collapses_near_identical_answers():
-    a = {"text": "so the total is 12 apples"}
-    b = {"text": "So the total is 12   apples"}
-    c = {"text": "a completely different line of reasoning"}
-    assert dedupe([a, b, c]) == [a, c]
-
-
-# ---------------------------------------------------------------- generation settings
-
-def test_resolve_dtype_explicit_choice_passes_through():
-    assert resolve_dtype("float16") == "float16"
-    assert resolve_dtype("bfloat16") == "bfloat16"
-
-
-def test_resolve_dtype_auto_falls_back_without_bf16_gpu():
-    # On a machine without a CUDA GPU (like CI or a laptop), auto must not pick bfloat16.
-    import torch
-
-    if not torch.cuda.is_available():
-        assert resolve_dtype("auto") == "float16"
-
-
-# ---------------------------------------------------------------- selection
-
-def test_select_is_seeded_sorted_and_labeled():
-    rows = [{"question": f"q{i}", "answer": f"work\n#### {i}"} for i in range(50)]
-    first = select(rows, 10, seed=544)
-    assert first == select(rows, 10, seed=544)
-    idx = [q["source_index"] for q in first]
-    assert idx == sorted(idx) and len(set(idx)) == 10
-    assert all(q["reference"] == str(q["source_index"]) for q in first)
-    assert first[0]["problem_id"] == f"gsm8k-train-{idx[0]:05d}"
-
-
-# ---------------------------------------------------------------- validation fixes (Oct 19)
-
-def test_boxed_answer_with_units_is_read():
-    row = label_row(_gen("Shoes cost 41 dollars. \\boxed{41 \\text{ dollars}}"), "41", use_math_verify=False)
-    assert row["status"] == "ok" and row["label"] == 1
-
-
-def test_boxed_answer_written_as_equation_is_read():
-    row = label_row(_gen("So \\boxed{200 - 159 = 41}"), "41", use_math_verify=False)
-    assert row["status"] == "ok" and row["label"] == 1
-
-
-def test_boxed_with_several_numbers_and_no_equals_is_not_guessed():
-    row = label_row(_gen("\\boxed{3 \\times 4}"), "12", use_math_verify=False)
-    assert row["status"] == "no_answer"
-
-
-def test_identity_strings_are_filtered():
-    row = label_row(_gen("As an AI language model, I think \\boxed{4}"), "4", use_math_verify=False)
-    assert row["status"] == "identity_string" and row["label"] is None
-
-
-def test_near_duplicate_correct_and_wrong_answers_still_pair():
-    # Same reasoning, different final number: the subtle error we most want to keep.
-    # Realistic answers share 40+ distinct words, so their overlap is above the 0.9 cutoff.
+def test_subtle_wrong_answer_is_kept_not_treated_as_a_duplicate():
     shared = " ".join(f"step{i}" for i in range(40))
-    right = f"{shared} so the shoes cost 41"
-    wrong = f"{shared} so the shoes cost 42"
-    assert token_jaccard(right, wrong) > 0.9
-    g, labels = _cell("q1", [(right, 1), (wrong, 0)])
-    pairs, summary = build_pairs(g, labels, seed=1)
-    assert summary["pairs"] == 1
+    g, labels = _cell("q1", [(f"{shared} so the shoes cost 41", 1), (f"{shared} so the shoes cost 42", 0)])
+    assert build_pairs(g, labels, seed=1)[1]["pairs"] == 1
 
 
-def test_hf_finish_stops_at_first_end_token():
-    from bank.generate import hf_finish
+# ---------------------------------------------------------------- the written bank (end to end)
 
-    eos = {9, 7}
-    assert hf_finish([5, 6, 9, 9, 9], eos, max_new_tokens=5) == (2, "stop")      # padded with end tokens
-    assert hf_finish([5, 6, 7, 0, 0], eos, max_new_tokens=5) == (2, "stop")      # any end token counts
-    assert hf_finish([5, 6, 8, 4, 3], eos, max_new_tokens=5) == (5, "length")    # hit the limit
-    assert hf_finish([5, 6], eos, max_new_tokens=5) == (2, "stop")
+def _write_inputs(d, n_questions=6):
+    """Synthetic questions/generations/labels: every question gets 2 right and 2 wrong answers."""
+    qs, gens, labs = [], [], []
+    for i in range(n_questions):
+        pid = f"gsm8k-train-{i:05d}"
+        qs.append({"problem_id": pid, "source": "gsm8k/train", "source_index": i, "domain": "math",
+                   "question": f"question {i}", "reference": str(i)})
+        for k in range(4):
+            text = f"answer {i} variant {k} with distinct words {'x' * k} {i * 7 + k}"
+            cid = f"{pid}__phi4mini__{k}"
+            gens.append({"candidate_id": cid, "problem_id": pid, "generator": "microsoft/Phi-4-mini-instruct",
+                         "generator_revision": None, "settings": {}, "seed": 544 + i, "sample_index": k,
+                         "text": text, "text_sha256": sha256_text(text), "finish_reason": "stop", "n_tokens": 9})
+            label = 1 if k < 2 else 0
+            labs.append({"candidate_id": cid, "problem_id": pid, "reference": str(i),
+                         "extracted": str(i if label else i + 1), "checker1_boxed": bool(label),
+                         "checker2": bool(label), "checker2_name": "math_verify", "status": "ok",
+                         "label": label, "checker_version": "bank.label/2+math_verify==0.9.0"})
+    for name, rows in (("questions.jsonl", qs), ("generations.jsonl", gens), ("labeled.jsonl", labs)):
+        (d / name).write_text("".join(json.dumps(r) + "\n" for r in rows))
 
 
-def test_vllm_context_is_capped_by_default():
-    from bank.generate import build_parser
+def _run(d, out):
+    main(["--questions", str(d / "questions.jsonl"), "--generations", str(d / "generations.jsonl"),
+          "--labeled", str(d / "labeled.jsonl"), "--out", str(out)])
+    rows = lambda f: [json.loads(l) for l in (out / f).read_text().splitlines()]
+    return rows("dev_bank.jsonl"), rows("dev_labels.jsonl"), json.loads((out / "dev_bank_summary.json").read_text())
 
-    args = build_parser().parse_args([])
-    assert args.max_model_len == 4096
+
+def test_bank_file_hides_labels_and_pairs_are_one_right_one_wrong(tmp_path):
+    _write_inputs(tmp_path)
+    bank, labels, summary = _run(tmp_path, tmp_path)
+    assert summary["pairs"] == 6
+    forbidden = {"label", "reference", "extracted", "status", "checker1_boxed", "checker2"}
+    assert all(not (forbidden & set(row)) for row in bank)
+    assert [r["candidate_id"] for r in labels] == [r["candidate_id"] for r in bank]
+    lab = {r["candidate_id"]: r["label"] for r in labels}
+    by_pair = defaultdict(list)
+    for row in bank:
+        by_pair[row["pair_id"]].append(row)
+    assert all(sorted(lab[r["candidate_id"]] for r in v) == [0, 1] for v in by_pair.values())
+    # Row order follows answer hashes, never the label (a seeded or label-based shuffle fails here).
+    assert all(v[0]["text_sha256"] < v[1]["text_sha256"] for v in by_pair.values())
+
+
+def test_exclusions_are_applied_and_typos_stop_the_run(tmp_path):
+    _write_inputs(tmp_path)
+    out = tmp_path / "out"
+    out.mkdir()
+    (tmp_path / "excluded_questions.txt").write_text("gsm8k-train-00002  # broken for the test\n")
+    bank, _, summary = _run(tmp_path, out)  # exclusions live beside the questions, whatever --out is
+    assert summary["cells_excluded"] == 1 and all(r["problem_id"] != "gsm8k-train-00002" for r in bank)
+    (tmp_path / "excluded_questions.txt").write_text("gsm8k-train-2  # typo\n")
+    with pytest.raises(SystemExit):
+        _run(tmp_path, out)

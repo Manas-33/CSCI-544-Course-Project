@@ -3,5 +3,5 @@
 vllm>=0.8.0          # default backend; recent enough for Phi-4-mini-instruct
 transformers>=4.49   # only for --backend hf
 torch
-math-verify          # second labeling checker; without it, label.py falls back to the last-number checker
+math-verify==0.9.0   # second labeling checker (version used for the Oct 19 bank); without it, label.py falls back to the last-number checker
 pytest               # CPU unit tests

@@ -3,7 +3,7 @@
 Train questions are used so the clean GSM8K-Platinum test set stays free for the
 final bank. The selected IDs are saved so later banks can exclude them (PLAN.md §2).
 
-    python -m bank.select_questions --n 200 --seed 544 --out bank/dev
+    python -m bank.select_questions --n 500 --seed 544 --out bank/dev
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ def select(rows: list[dict], n: int, seed: int) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--n", type=int, default=200)
+    ap.add_argument("--n", type=int, default=500)
     ap.add_argument("--seed", type=int, default=544)
     ap.add_argument("--source", default=GSM8K_TRAIN_URL, help="URL or local path of GSM8K train.jsonl")
     ap.add_argument("--out", default="bank/dev")
