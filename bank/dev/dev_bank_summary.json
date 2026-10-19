@@ -1,0 +1,26 @@
+{
+  "cells_with_usable_answers": 498,
+  "cells_excluded": 1,
+  "cells_all_correct": 405,
+  "cells_all_wrong": 21,
+  "pairs": 71,
+  "questions": 500,
+  "generations": 2000,
+  "candidates": 142,
+  "excluded_questions": {
+    "gsm8k-train-01500": "ambiguous: the 5% tip can be charged on the food ($80) or on the bill with the 10% service charge ($88); the second reading gives 7.6, not 8"
+  },
+  "exclusions_file": "bank/dev/excluded_questions.txt",
+  "exclusions_sha256": "95c17bd9d3ac98852113d1df80ea13097c0b2cdcd7393e50e441b1091205ac0e",
+  "inputs": {
+    "questions.jsonl": "4b821dad65e02babe3c35de9c7208f6c39b878a7420a310a9dd7a34de0e0a6b3",
+    "generations.jsonl": "665f18885b92cc2bfe707b0b7847190df8c03911e894e8058bbb044cbbbe4109",
+    "labeled.jsonl": "0283d4b9c92b9c0f6599918ba054d2694aa6524e4a84ae35aa2ee4474eaf4b05"
+  },
+  "outputs": {
+    "dev_bank.jsonl": "1b3b776afd89cbb72306ea9ff94ea1131a53ae588a130e5ecba3f901074b88cc",
+    "dev_labels.jsonl": "8607433a8d6bc46c4f82c3f0eca040d4807e24ee5b8b7e49bfbaacf868a10e25"
+  },
+  "seed": 544,
+  "python": "3.12.0"
+}
