@@ -1,0 +1,102 @@
+{
+  "status": "completed",
+  "model_id": "GSAI-ML/LLaDA-8B-Instruct",
+  "template": "T1",
+  "template_text": "Problem:\n{problem}\n\nCandidate solution:\n{candidate_answer}\n\nIs the final answer correct? Answer Yes or No.",
+  "bank_sha256": "f431f8d60448eb9324f1fa6afb9a5d121003da0d2ef1f5e4b52d76813d841ecf",
+  "dev_bank_sha256": "6d9f2d56923b525693d18074f2167462e9a7c08342d8c590523cac6a05bbbfa9",
+  "mask_id": 126336,
+  "ar_manifest_sha256": "a89a51037c42c4566841442a9769c4922f30541908f02f5feec5178e5b34885d",
+  "ar_score_hashes": {
+    "pairs.jsonl": "5dcfb2d02894136d3e3afd6a10bfd60ac84d2302a9bfe5f19ed4f94af18f61d8",
+    "scores_A.jsonl": "695f10416aeb6bfe95dd7ba66173303f27ce81b11da73f1e2b7e1949ab8e5b72",
+    "scores_B.jsonl": "243eabc7f3e3246512f190205194182203b811db899e1f6856f0ef98abc221c5"
+  },
+  "started_utc": "2026-10-20T04:31:09.667592+00:00",
+  "gpu": "NVIDIA A100-PCIE-40GB",
+  "dtype": "torch.bfloat16",
+  "batch_size": 1,
+  "packages": {
+    "torch": "2.6.0+cu124",
+    "transformers": "4.38.2",
+    "accelerate": "0.27.2",
+    "tokenizers": "0.15.2",
+    "protobuf": "4.25.3"
+  },
+  "source_sha256": {
+    "evaluate.py": "6527dd2e6c03cc038dc8cf6e976c05edacc0c09e7e56267cba0710eaaeb4118e",
+    "test_llada_compare.py": "818170c687de85210a0c194d7ad664e50e5233cb16a608044bf18616dd4178a5",
+    "test_diagnose_ar.py": "3531a44ab58ad69085474f83c4cc735c9ccb7dac2c891179cf48623b87bbe20e",
+    "__init__.py": "26b6c1398045a76e209d3c67e7a0129892cbcf283838483e0cd06c63d4e30c12",
+    "prompts.py": "5146610511aaa9ecce8e071cad1f5c4dd484b6aadd9a42fb481bd00d63ad4a4f",
+    "data.py": "2e4a946191b4fbfc3e67fc44900620d96413c35a8ecbdbf9795ba5ffca8fb0ba",
+    "run.py": "04b5eee39d63e77327670d66ef1f6b547aef3eecc38c6b5c3ce040bb9e3fecf1",
+    "ar.py": "55d848394a47935c8bc2d6a32a21603b3063a1579b8387d77bdc08d8d3cbb43b",
+    "diagnose_ar.py": "0d73875d6b31802db72a4220973e24246bbd6e75fc0fdaac03a157dd22307ad2",
+    "llada_compare.py": "46d04e226423b5e4b7862b3bc841692a29a9f6fc380b5b0f37a55718c332e0d2"
+  },
+  "model_revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+  "token_sets": {
+    "yes": {
+      "spellings": {
+        "Yes": 8647,
+        " Yes": 9228,
+        "yes": 13746,
+        " yes": 6177,
+        "YES": 38836,
+        " YES": 34425
+      },
+      "ids": [
+        6177,
+        8647,
+        9228,
+        13746,
+        34425,
+        38836
+      ]
+    },
+    "no": {
+      "spellings": {
+        "No": 4127,
+        " No": 2968,
+        "no": 4938,
+        " no": 1037,
+        "NO": 14637,
+        " NO": 11075
+      },
+      "ids": [
+        1037,
+        2968,
+        4127,
+        4938,
+        11075,
+        14637
+      ]
+    }
+  },
+  "chat_template": "{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}",
+  "rendered_prompt_example": "<|startoftext|><|start_header_id|>user<|end_header_id|>\n\nProblem:\nWrite a Python function add(a, b) that returns the sum of the integers a and b.\n\nCandidate solution:\ndef add(a, b):\n    return a + b\n\nIs the final answer correct? Answer Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+  "answer_slots": 1,
+  "dev_median_yes_no_mass": {
+    "1": 0.9779118237525137,
+    "8": 0.85591272049038,
+    "32": 0.9732271366950096
+  },
+  "slot_selection": "highest median Yes+No mass on dev; ties favor fewer slots",
+  "finished_utc": "2026-10-20T04:33:56.849521+00:00",
+  "checks": {
+    "reference_passed": true,
+    "reference_prompts": 20,
+    "reference_tolerance": 0.001,
+    "method": "repeat official remote-model forward; independent Torch reduction",
+    "batching_check": "pending; scoring is unbatched",
+    "full_project_gates_passed": false
+  },
+  "outputs_sha256": {
+    "dev_slots32.jsonl": "bb5a1bee6d3bfb974bf034a8471717505f216f05f2ade2d8816a9b8b5accbf9c",
+    "dev_slots1.jsonl": "f3b61eff3a931648bc4243636e828f7c2a88426c80c3d5c3446720056a821399",
+    "reference_checks.jsonl": "3268440402a693e626f172de08e424b596bc9e68c3f1d0ca958b3ddd41bddce6",
+    "scores_llada.jsonl": "9a299472f614f8637cfd1886d19d099ec62a5c63028f03fe8b6d45d3bab1b5a7",
+    "dev_slots8.jsonl": "9c17240f588b47990bb3b569448d38e7b1456ff1fdd76ca22eebc89fd129acda"
+  }
+}

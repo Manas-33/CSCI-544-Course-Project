@@ -1,0 +1,18 @@
+{
+  "note": "Provenance for the October 19, 2026 Colab run, reconstructed afterwards because that run predates generate.py recording it. generations_manifest.json is the run's own file and is left unchanged; generator_revision is null in generations.jsonl for the same reason.",
+  "reconstructed": true,
+  "generator": "microsoft/Phi-4-mini-instruct",
+  "generator_revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+  "generator_revision_basis": "The run loaded the repository's main branch. Hugging Face reports main = cfbefacb... with lastModified 2025-12-10, before the run, so that is the revision downloaded.",
+  "math_verify": "0.9.0",
+  "math_verify_basis": "Installed unpinned on Colab. 0.9.0 (released 2026-01-10) is PyPI's latest and only post-2025 release, so pip installed it. Recorded labels show checker_version 'bank.label/2+math_verify'. Re-labeling these generations with the current label.py would write 'bank.label/2+math_verify==0.9.0' instead, which changes the bank file's hash but no label.",
+  "vllm": "0.32.0",
+  "vllm_basis": "Run log: 'Initializing a V1 LLM engine (v0.32.0)'.",
+  "gpu": "NVIDIA L4",
+  "gpu_basis": "Run log: 22.03 GiB device memory, and torch reported too few SMs for max-autotune GEMM (L4 has 58 SMs; an A100 has 108).",
+  "dtype": "bfloat16",
+  "max_model_len": 4096,
+  "code_revision": "2917c37",
+  "code_revision_basis": "Cloned from feature/dev-bank after commit 2917c37 was pushed; the run log shows max_model_len=4096, which that commit introduced.",
+  "run_window_colab_clock": "2026-10-19 22:49:48 to 22:55:17 (first and last log timestamps)"
+}

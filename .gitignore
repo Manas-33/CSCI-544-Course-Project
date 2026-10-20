@@ -1,20 +1,57 @@
 # Allow-list: ignore everything at the top level, then track only the files below.
 # The proposal, instructor feedback and review/working files stay local on purpose.
 /*
+!/bank/
 !/.gitignore
+!/.gitattributes
 !/PLAN.md
 !/PROJECT.md
 !/NEXT_STEPS.md
-!/harness/
 
-# When more code starts, allow its folders here, for example:
+# AR+AR component only; runtime outputs/caches remain outside the allow-list.
+!/requirements.txt
+!/requirements-analysis.txt
+!/harness/
+/harness/*
+!/harness/*.py
+!/harness/README.md
+!/configs/
+/configs/*
+!/configs/ar_pair.json
+!/configs/ar_pair_dev.json
+!/configs/ar_pair_sanity.json
+
+# Track AR verifier experiment results
+!/results/
+/results/*
+
+# BF16 experiments
+!/results/bf16/
+/results/bf16/*
+!/results/bf16/ar-sanity-bf16-20261020-015535/
+!/results/bf16/ar-sanity-analysis-bf16-20261020-015535/
+
+# FP32 experiments
+!/results/fp32/
+/results/fp32/*
+!/results/fp32/ar-sanity-analysis/
+!/results/fp32/ar-sanity-nf4-fp32/
+
+# When code starts, allow its folders here, for example:
 # !/bank/
+# !/harness/
 # !/analysis/
 # !/decisions/
 
 # Never track these, even inside allowed folders
 .DS_Store
 .Rhistory
+
+# Diffusion adapters and LLaDA comparison assets
+!/harness/diffusion/
+!/harness/requirements-llada.txt
+!/results/llada-comparison-20261019-213107/
+
 __pycache__/
 *.pyc
 .pytest_cache/

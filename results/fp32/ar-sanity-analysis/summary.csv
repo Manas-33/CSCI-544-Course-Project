@@ -1,0 +1,3 @@
+model,candidates,problems,matched_pairs,correct,incorrect,model_id,model_revision,auroc,within_pair_ranking_accuracy,warm_forward_seconds,warm_calls,warm_mean_forward_seconds,cold_calls_excluded,median_yes_no_mass,loading_seconds,peak_gpu_allocated_bytes,actual_dtype,compute_dtype,quantization_mode,sanity_auroc_at_least_0_90
+A,50,50,0,25,25,Qwen/Qwen2.5-7B-Instruct,a09a35458c702b33eeacc393d103063234e8bc28,0.8544,,45.41793796499985,49,0.9268966931632623,1,0.9999999329701478,280.84428474099997,8568251392,torch.float32,torch.float32,nf4,False
+B,50,50,0,25,25,mistralai/Mistral-7B-Instruct-v0.3,c170c708c41dac9275d15a8fff4eca08d52bab71,0.72,,48.12479182100026,49,0.982138608591842,1,0.9998250519280779,283.94885952800007,5459639296,torch.float32,torch.float32,nf4,False
