@@ -1,0 +1,9 @@
+# Keep LF line endings on every platform. Bank versions are identified by file hashes
+# (PLAN.md §2), and Windows checkouts with core.autocrlf=true would otherwise rewrite
+# data files with CRLF, so the same bank would hash differently on different machines.
+* text=auto eol=lf
+
+# Never touch these byte for byte.
+*.parquet binary
+*.png binary
+*.pdf binary
