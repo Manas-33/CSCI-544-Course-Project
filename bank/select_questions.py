@@ -71,7 +71,9 @@ def main() -> None:
     questions = select(rows, args.n, args.seed)
     out = Path(args.out)
     write_jsonl(out / "questions.jsonl", questions)
-    (out / "question_ids.txt").write_text("\n".join(q["problem_id"] for q in questions) + "\n")
+    (out / "question_ids.txt").write_text(
+        "\n".join(q["problem_id"] for q in questions) + "\n", encoding="utf-8", newline="\n"
+    )
     manifest = {
         "step": "select_questions",
         "source_url": args.source,
@@ -81,7 +83,7 @@ def main() -> None:
         "seed": args.seed,
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
-    (out / "questions_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    (out / "questions_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Wrote {len(questions)} questions to {out / 'questions.jsonl'}")
 
 

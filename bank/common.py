@@ -30,7 +30,8 @@ def read_jsonl(path: str | Path) -> list[dict]:
 def write_jsonl(path: str | Path, rows: Iterable[dict]) -> int:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     n = 0
-    with open(path, "w", encoding="utf-8") as f:
+    # newline="\n": the same bytes, and so the same hash, on Windows as elsewhere.
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
             n += 1

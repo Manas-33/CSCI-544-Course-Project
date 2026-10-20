@@ -29,6 +29,19 @@ from bank.common import read_jsonl, token_jaccard, write_jsonl
 
 NEAR_DUPLICATE_JACCARD = 0.9
 EXCLUSIONS_FILENAME = "excluded_questions.txt"
+PROVENANCE_FILENAME = "generations_provenance.json"
+
+
+def load_provenance_revisions(path: str | Path) -> dict[str, str]:
+    """generator -> commit SHA from a provenance file, for runs that predate generate.py
+    recording the revision. Missing file: none."""
+    p = Path(path)
+    if not p.is_file():
+        return {}
+    prov = json.loads(p.read_text(encoding="utf-8"))
+    if prov.get("generator") and prov.get("generator_revision"):
+        return {prov["generator"]: prov["generator_revision"]}
+    return {}
 
 
 def dedupe(candidates: list[dict], threshold: float = NEAR_DUPLICATE_JACCARD) -> list[dict]:
@@ -156,6 +169,10 @@ def main(argv: list[str] | None = None) -> None:
         if not exclude_path.is_file():
             raise SystemExit(f"Exclusion file not found: {exclude_path}")
 
+    # Fills in generator_revision where the generation rows have none (the Oct 19 run).
+    provenance_path = Path(args.generations).parent / PROVENANCE_FILENAME
+    provenance_revisions = load_provenance_revisions(provenance_path)
+
     questions = {q["problem_id"]: q for q in read_jsonl(args.questions)}
     generations = read_jsonl(args.generations)
     labeled_rows = read_jsonl(args.labeled)
@@ -181,11 +198,13 @@ def main(argv: list[str] | None = None) -> None:
                     "problem_id": cand["problem_id"],
                     "source": q["source"],
                     "domain": q["domain"],
-                    "question": q["question"],
+                    # "problem", not "question": the field every scorer reads (PLAN.md §9).
+                    "problem": q["question"],
                     "candidate": cand["text"],
                     "text_sha256": cand["text_sha256"],
                     "generator": cand["generator"],
-                    "generator_revision": cand["generator_revision"],
+                    "generator_revision": cand["generator_revision"]
+                    or provenance_revisions.get(cand["generator"]),
                     "settings": cand["settings"],
                     "seed": cand["seed"],
                     "checker_version": lab.get("checker_version"),
@@ -219,8 +238,11 @@ def main(argv: list[str] | None = None) -> None:
             "generations": len(generations),
             "candidates": len(bank_rows),
             "excluded_questions": exclusions,
-            "exclusions_file": str(exclude_path) if exclusions else None,
+            "exclusions_file": exclude_path.as_posix() if exclusions else None,
             "exclusions_sha256": _sha256_file(exclude_path) if exclude_path.exists() else None,
+            "generator_revisions_from_provenance": (
+                {"file": provenance_path.as_posix(), **provenance_revisions} if provenance_revisions else None
+            ),
             "inputs": {
                 Path(p).name: _sha256_file(Path(p)) for p in (args.questions, args.generations, args.labeled)
             },
@@ -229,7 +251,9 @@ def main(argv: list[str] | None = None) -> None:
             "python": platform.python_version(),
         }
     )
-    (out / f"{args.split}_bank_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    (out / f"{args.split}_bank_summary.json").write_text(
+        json.dumps(summary, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
     print(json.dumps({k: v for k, v in summary.items() if k not in ("inputs", "outputs")}, indent=2))
 
 

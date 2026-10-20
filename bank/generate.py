@@ -242,7 +242,9 @@ def main() -> None:
         "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "environment": environment_info(),
     }
-    Path(args.out).with_name("generations_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    Path(args.out).with_name("generations_manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
     print(f"Wrote {len(rows)} answers for {len(questions)} questions in {elapsed:.0f}s to {args.out}")
 
 

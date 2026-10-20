@@ -22,6 +22,8 @@ Close-call labels were checked against the official solutions; none needed chang
 - **Labels are automatic.** Two checkers (the boxed answer, and Math-Verify) must agree. An answer is dropped if it is cut off, has no boxed number, or says "As an AI…". No label is ever set by hand.
 - **One correct + one wrong answer per question,** drawn with fixed seeds. Near-identical answers are merged, but only within the same label, so a wrong answer that differs from a correct one by a final slip is kept.
 - **Labels never appear in the bank file,** and row order inside a pair doesn't reveal which answer is correct.
+- **Scorers read `candidate_id`, `problem` and `candidate`** from each bank row. (`questions.jsonl` keeps GSM8K's own `question` field; the bank renames it.)
+- **Files are written with LF line endings on every OS,** and `.gitattributes` keeps them that way in git, so a file's SHA-256 is the same on every machine.
 - **Exclusions:** add a broken or ambiguous question to `dev/excluded_questions.txt` as `problem_id  # reason`. It is removed, never relabeled.
 
 ## Rebuilding
@@ -39,7 +41,7 @@ On Colab, with an **L4** runtime (about 6 minutes for generation):
 
 ```
 %cd /content
-!git clone -b feature/dev-bank https://github.com/Manas-33/CSCI-544-Course-Project.git
+!git clone https://github.com/Manas-33/CSCI-544-Course-Project.git
 %cd /content/CSCI-544-Course-Project
 !pip install -q -r bank/requirements.txt
 !python -m bank.generate && python -m bank.label && python -m bank.make_pairs
