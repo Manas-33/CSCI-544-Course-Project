@@ -2,17 +2,19 @@
 
 Run commands from the repository root. Qwen2.5-7B-Instruct + Mistral-7B-Instruct-v0.3 is the initial cross-family baseline. T1 matches PLAN §4 and is identical across models; native chat templates differ. T2/T3 remain provisional (T3 asks whether the final answer is incorrect, not whether every reasoning step is valid).
 
-Only the 200 selected GSM8K train questions exist locally as of integration. Generations, labels, paired bank, and pair summary are missing; the pair count and actual generation/checker settings are unknown. Bank-owner prerequisites, in the separate bank environment (not run by this integration):
+The current bank is complete: 500 selected questions, 2,000 generations, **142 candidates in 71 matched pairs**, with separate labels. The official **50-item sanity fixture** is `bank/sanity/sanity_set.jsonl`: 25 correct/25 wrong (26 math, 24 code), outside the development bank. It supersedes the separate 12-example synthetic smoke fixture for the project's sanity check; neither is research evidence.
+
+Sanity scoring strips `label` and `note` before prompt construction. After the second-person review required by `bank/sanity/README.md`, score all 50 with T1 and evaluate against the same file. Each model must reach AUROC >= 0.90; partial runs cannot pass. No matched pairs or problem IDs are invented. Sanity evaluation writes `sanity.png`, null within-pair rankings, and a `sanity_check` in `metrics.json`; a failed AUROC check returns exit code 1. Threshold diagnostics are disabled for this fixture.
 
 ```bash
-python -m bank.generate
-python -m bank.label
-python -m bank.make_pairs
+python -m harness.run --config configs/ar_pair_sanity.json --input bank/sanity/sanity_set.jsonl --validate-only
+python -m harness.run --config configs/ar_pair_sanity.json --input bank/sanity/sanity_set.jsonl --output-dir results/ar-sanity-nf4-fp32 --device cuda:0 --dtype fp32 --load-in-4bit
+python -m harness.evaluate --sanity --bank bank/sanity/sanity_set.jsonl --labels bank/sanity/sanity_set.jsonl --run-dir results/ar-sanity-nf4-fp32 --output-dir results/ar-sanity-analysis
 ```
 
-Defaults: Phi-4-mini, temperature 0.7, top-p 0.95, 4 samples/question, 1024 new tokens, seed 544; use `--revision COMMIT` to pin generation. `bank.label/2` compares boxed-answer correctness with Math-Verify correctness (last-number fallback if absent), not the extracted answers themselves. Label 1 means correct final answer; 0 means wrong. Keep selected development questions excluded from pilot/final banks via `bank/dev/question_ids.txt`.
+The generation manifest records Phi-4-mini, temperature 0.7, top-p 0.95, 4 samples/question, 1024 new tokens, seed 544, vLLM and BF16. `generations_provenance.json` explicitly reconstructs the model revision, versions and L4 hardware afterwards; these are not contemporaneous run metadata. `bank.label/2+math_verify` compares correctness outcomes, not extracted answers. Label 1 means correct; 0 means wrong. Keep selected development questions excluded from pilot/final banks via `bank/dev/question_ids.txt`.
 
-The dev adapter maps `candidate_id → id`, `question → problem`, and full `candidate → candidate_answer`; it retains `problem_id` and `pair_id`. It checks text hashes and pair structure. Only problem/solution text enters prompts. Labels are joined only by the evaluator. Offline validation does **not** check tokenizer lengths:
+The dev adapter maps `candidate_id → id`, `problem → problem`, and full `candidate → candidate_answer`; it retains `problem_id` and `pair_id`. (`question` is only in the questions file, not the current paired bank.) It checks text hashes and pair structure. Only problem/solution text enters prompts. Labels are joined only by the evaluator. Offline validation does **not** check tokenizer lengths:
 
 ```bash
 python -m harness.run --config configs/ar_pair_dev.json --input bank/dev/dev_bank.jsonl --validate-only

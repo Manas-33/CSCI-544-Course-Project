@@ -10,7 +10,7 @@ import statistics
 import sys
 import textwrap
 
-from .data import BANK_MAPPING, load_records, parse_json, read_jsonl
+from .data import BANK_MAPPING, SANITY_MAPPING, load_records, parse_json, read_jsonl
 from .prompts import TEMPLATES, messages
 from .run import digest, finite_number, json_bytes, validate_config
 
@@ -43,7 +43,7 @@ def join_labels(records, label_rows, bank_hash):
         if "bank_sha256" in row and row["bank_sha256"] != bank_hash:
             raise ValueError(f"label bank hash mismatch for {record['id']!r}")
         for key in ("problem_id", "pair_id"):
-            if key in row and row[key] != record[key]:
+            if key in row and row[key] != record.get(key):
                 raise ValueError(f"label {key} mismatch for {record['id']!r}")
     return {candidate_id: row["label"] for candidate_id, row in labels.items()}
 
@@ -124,7 +124,7 @@ def score_coverage(records, scores, bank_hash, model):
             continue
         if row.get("candidate_id") != cid or row.get("bank_sha256") != bank_hash or row.get("model") != model:
             raise ValueError(f"model {model}, ID {cid!r}: incompatible score identity/bank hash")
-        if any(row.get(key) != record[key] for key in ("problem_id", "pair_id")):
+        if any(row.get(key) != record.get(key) for key in ("problem_id", "pair_id", "domain")):
             raise ValueError(f"model {model}, ID {cid!r}: inconsistent grouping")
         status = row.get("status")
         if status in ("failed", "missing"):
@@ -145,13 +145,13 @@ def score_coverage(records, scores, bank_hash, model):
             "missing": len(missing), "failed_ids": failed, "missing_ids": missing}
 
 
-def check_manifest(manifest, records, bank_hash):
+def check_manifest(manifest, records, bank_hash, input_format="dev_bank"):
     if manifest.get("score_contract_version") != 2 or manifest.get("input_sha256") != bank_hash:
         raise ValueError("incompatible scoring contract or bank SHA-256; score this exact bank with the integrated harness")
     config = manifest["effective_config"]
     validate_config(config)
-    if config.get("input_format") != "dev_bank":
-        raise ValueError("evaluation requires a dev_bank scoring run")
+    if config.get("input_format") != input_format:
+        raise ValueError(f"evaluation requires a {input_format} scoring run")
     template = config["template"]
     limit = manifest.get("limit")
     if limit is not None and (type(limit) is not int or limit <= 0):
@@ -168,10 +168,12 @@ def check_manifest(manifest, records, bank_hash):
 def review_rows(records, labels, scores, thresholds, threshold_source):
     for record in records:
         cid = record["id"]
-        row = {"candidate_id": cid, "problem_id": record["problem_id"], "pair_id": record["pair_id"],
+        row = {"candidate_id": cid, "problem_id": record.get("problem_id"), "pair_id": record.get("pair_id"),
                "question": record["problem"], "candidate_solution": record["candidate_answer"], "label": labels[cid]}
         for model in ("A", "B"):
             row.update({f"{key}_{model}": scores[model][cid][key] for key in ("score", "p_yes", "p_no", "yes_no_mass")})
+        if "domain" in record:
+            row["domain"] = record["domain"]
         if thresholds is not None:
             a, b = (scores[name][cid]["score"] >= thresholds[name] for name in ("A", "B"))
             if labels[cid] == 0:
@@ -218,7 +220,8 @@ def make_figure(path, labels, values, metrics, diagnostic):
     for ax in axes:
         ax.grid(alpha=0.15)
     counts = metrics["counts"]
-    fig.suptitle(f"Development bank — exploratory\n{counts['candidates']} candidates · {counts['problems']} problems · {counts['matched_pairs']} matched pairs", fontsize=14)
+    title = "Sanity fixture — scoring check" if metrics["input_kind"] == "sanity" else "Development bank — exploratory"
+    fig.suptitle(f"{title}\n{counts['candidates']} candidates · {counts['problems']} problems · {counts['matched_pairs']} matched pairs", fontsize=14)
     precision = " | ".join(f"{name}: {metrics['models'][name]['quantization_mode']} weights, {metrics['models'][name]['compute_dtype']} compute" for name in ("A", "B"))
     fig.text(0.5, 0.025, textwrap.fill(precision, 110), ha="center", fontsize=9)
     fig.tight_layout(rect=(0, 0.08, 1, 0.89))
@@ -230,23 +233,35 @@ def evaluate(args):
     output = Path(args.output_dir)
     if output.exists():
         raise ValueError("evaluation output directory already exists")
-    records, bank_hash = load_records(args.bank, BANK_MAPPING, "dev_bank")
+    sanity = args.sanity
+    if sanity and args.diagnostic_threshold_zero:
+        raise ValueError("sanity is a fixed T1 AUROC check, not a threshold-diagnostic dataset")
+    input_format = "sanity" if sanity else "dev_bank"
+    records, bank_hash = load_records(args.bank, SANITY_MAPPING if sanity else BANK_MAPPING, input_format)
     label_rows, label_hash = read_jsonl(args.labels)
     labels = join_labels(records, label_rows, bank_hash)
-    pairs = matched_pairs(records, labels)
+    if sanity:
+        if label_hash != bank_hash:
+            raise ValueError("sanity labels must come from the exact scored fixture (--labels equals --bank)")
+        if (len(records) != 50 or sum(labels.values()) != 25
+                or any(sum(r["domain"] == domain and labels[r["id"]] == label for r in records) != count
+                       for domain, count in (("math", 13), ("code", 12)) for label in (0, 1))):
+            raise ValueError("expected the full 50-item sanity fixture: 13+13 math, 12+12 code")
+    pairs = [] if sanity else matched_pairs(records, labels)
     run_dir = Path(args.run_dir)
     manifest_raw = (run_dir / "manifest.json").read_bytes()
     manifest = parse_json(manifest_raw.decode("utf-8"))
-    check_manifest(manifest, records, bank_hash)
+    check_manifest(manifest, records, bank_hash, input_format)
     scores, coverage = {}, {}
     for name in ("A", "B"):
         path = run_dir / f"scores_{name}.jsonl"
         rows = read_jsonl(path)[0] if path.exists() and path.stat().st_size else []
         scores[name] = index_rows(rows, "id", path.name)
         coverage[name] = score_coverage(records, scores[name], bank_hash, name)
-    counts = {"candidates": len(records), "problems": len({r["problem_id"] for r in records}),
+    counts = {"candidates": len(records), "problems": len({r["problem"] if sanity else r["problem_id"] for r in records}),
               "matched_pairs": len(pairs), "correct": sum(labels.values()), "incorrect": len(labels) - sum(labels.values())}
-    metrics = {"status": "incomplete", "description": "Development bank — exploratory; initial AR+AR baseline",
+    metrics = {"status": "incomplete", "input_kind": input_format,
+               "description": "Sanity fixture — scoring check; not research evidence" if sanity else "Development bank — exploratory; initial AR+AR baseline",
                "bank_sha256": bank_hash, "labels_sha256": label_hash, "run_manifest_sha256": digest(manifest_raw),
                "counts": counts, "coverage": coverage, "run_kind": manifest.get("run_kind"), "gpu": manifest.get("gpu"),
                "interpretation": "Not test results, matched-TAR evidence, or proof of ensemble benefit. Final-answer labels do not establish correct reasoning; token-event probabilities are not calibrated correctness confidence."}
@@ -270,7 +285,7 @@ def evaluate(args):
         model_metrics = {
             "model_id": meta["requested"]["model_id"], "model_revision": meta.get("resolved_model_revision"),
             "auroc": roc_curve(ordered_labels, values[name])[2],
-            "within_pair_ranking_accuracy": pair_ranking(pairs, {cid: row["score"] for cid, row in scores[name].items()}),
+            "within_pair_ranking_accuracy": pair_ranking(pairs, {cid: row["score"] for cid, row in scores[name].items()}) if pairs else None,
             "warm_forward_seconds": math.fsum(warm), "warm_calls": len(warm),
             "warm_mean_forward_seconds": statistics.mean(warm) if warm else None,
             "cold_calls_excluded": sum(row["cold"] for row in rows),
@@ -292,21 +307,28 @@ def evaluate(args):
             row.update({f"exploratory_zero_AND_{key}": value for key, value in diagnostics["AND"].items()})
     metrics["review_thresholds"] = thresholds
     metrics["review_threshold_source"] = threshold_source if thresholds is not None else None
+    if sanity:
+        passes = {name: metrics["models"][name]["auroc"] >= 0.90 for name in ("A", "B")}
+        metrics["sanity_check"] = {"required_auroc": 0.90, "template": "T1", "passed": passes,
+                                   "all_passed": all(passes.values()), "research_evidence": False}
+        for row in summary:
+            row["sanity_auroc_at_least_0_90"] = passes[row["model"]]
     # Check plotting availability only after coverage, without importing GPU libraries.
     import matplotlib  # noqa: F401
     output.mkdir(parents=True, exist_ok=False)
-    make_figure(output / "development.png", ordered_labels, values, metrics, args.diagnostic_threshold_zero)
+    make_figure(output / ("sanity.png" if sanity else "development.png"), ordered_labels, values, metrics, args.diagnostic_threshold_zero)
     (output / "metrics.json").write_bytes(json_bytes(metrics) + b"\n")
     write_csv(output / "summary.csv", summary)
     write_csv(output / "review.csv", review_rows(records, labels, scores, thresholds, threshold_source))
-    print(f"Exploratory evaluation saved to {output}; {len(records)} candidates, {len(pairs)} matched pairs")
-    return 0
+    print(f"{input_format} evaluation saved to {output}; {len(records)} candidates, {len(pairs)} matched pairs")
+    return 1 if sanity and not metrics["sanity_check"]["all_passed"] else 0
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("bank", "labels", "run-dir", "output-dir"):
         parser.add_argument(f"--{name}", required=True)
+    parser.add_argument("--sanity", action="store_true", help="evaluate the official 50-item T1 fixture; --bank and --labels point to the same file")
     parser.add_argument("--diagnostic-threshold-zero", action="store_true",
                         help="exploratory fixed-zero diagnostics; never fits or changes scoring thresholds")
     args = parser.parse_args(argv)

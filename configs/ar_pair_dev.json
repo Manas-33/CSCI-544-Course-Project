@@ -6,7 +6,7 @@
   "input_format": "dev_bank",
   "field_mapping": {
     "id": "candidate_id",
-    "problem": "question",
+    "problem": "problem",
     "candidate_answer": "candidate",
     "problem_id": "problem_id",
     "pair_id": "pair_id"

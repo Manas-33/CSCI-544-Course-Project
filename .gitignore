@@ -8,6 +8,19 @@
 !/PROJECT.md
 !/NEXT_STEPS.md
 
+# AR+AR component only; runtime outputs/caches remain outside the allow-list.
+!/requirements.txt
+!/requirements-analysis.txt
+!/harness/
+/harness/*
+!/harness/*.py
+!/harness/README.md
+!/configs/
+/configs/*
+!/configs/ar_pair.json
+!/configs/ar_pair_dev.json
+!/configs/ar_pair_sanity.json
+
 # When code starts, allow its folders here, for example:
 # !/bank/
 # !/harness/

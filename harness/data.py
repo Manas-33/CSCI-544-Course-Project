@@ -5,7 +5,8 @@ import json
 from pathlib import Path
 
 
-BANK_MAPPING = {"id": "candidate_id", "problem": "question", "candidate_answer": "candidate",
+SANITY_MAPPING = {"id": "candidate_id", "problem": "problem", "candidate_answer": "candidate"}
+BANK_MAPPING = {"id": "candidate_id", "problem": "problem", "candidate_answer": "candidate",
                 "problem_id": "problem_id", "pair_id": "pair_id"}
 
 
@@ -120,13 +121,22 @@ def bank_records(sources):
 
 
 def load_records(path, mapping, input_format="mapped"):
-    if input_format not in ("mapped", "dev_bank"):
-        raise ValueError("input_format must be mapped or dev_bank")
+    if input_format not in ("mapped", "dev_bank", "sanity"):
+        raise ValueError("input_format must be mapped, dev_bank, or sanity")
     sources, input_hash = read_jsonl(path)
     if input_format == "dev_bank":
         if mapping != BANK_MAPPING:
             raise ValueError("dev_bank requires the exact make_pairs.py field mapping")
         records = bank_records(sources)
+    elif input_format == "sanity":
+        if mapping != SANITY_MAPPING:
+            raise ValueError("sanity requires candidate_id, problem, and full candidate text")
+        records = map_records(sources, mapping)
+        for number, (source, record) in enumerate(zip(sources, records), 1):
+            if source.get("domain") not in ("math", "code"):
+                raise ValueError(f"line {number}, ID {record['id']!r}: expected math/code domain")
+            record["domain"] = source["domain"]
+        # Labels and explanatory notes are deliberately excluded from scoring records.
     else:
         records = map_records(sources, mapping)
     return records, input_hash

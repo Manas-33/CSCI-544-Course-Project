@@ -1,0 +1,18 @@
+{
+  "models": {
+    "A": {"model_id": "Qwen/Qwen2.5-7B-Instruct", "revision": "main", "tokenizer_revision": "main"},
+    "B": {"model_id": "mistralai/Mistral-7B-Instruct-v0.3", "revision": "main", "tokenizer_revision": "main"}
+  },
+  "input_format": "sanity",
+  "field_mapping": {
+    "id": "candidate_id",
+    "problem": "problem",
+    "candidate_answer": "candidate"
+  },
+  "template": "T1",
+  "max_prompt_tokens": 1760,
+  "device": "cuda:0",
+  "dtype": "bf16",
+  "load_in_4bit": false,
+  "thresholds": null
+}

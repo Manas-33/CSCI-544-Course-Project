@@ -12,7 +12,7 @@ import platform
 import re
 import sys
 
-from .data import BANK_MAPPING, load_records, parse_json, validate_mapping
+from .data import BANK_MAPPING, SANITY_MAPPING, load_records, parse_json, validate_mapping
 from .prompts import TEMPLATES, encode_prompt, messages
 
 
@@ -34,10 +34,13 @@ def validate_config(config):
     if not isinstance(config, dict) or not keys <= config.keys() or config.keys() - keys - {"input_format"}:
         raise ValueError(f"config requires {', '.join(sorted(keys))}; input_format is optional")
     validate_mapping(config["field_mapping"])
-    if config.get("input_format", "mapped") not in ("mapped", "dev_bank"):
-        raise ValueError("input_format must be mapped or dev_bank")
+    if config.get("input_format", "mapped") not in ("mapped", "dev_bank", "sanity"):
+        raise ValueError("input_format must be mapped, dev_bank, or sanity")
     if config.get("input_format") == "dev_bank" and config["field_mapping"] != BANK_MAPPING:
         raise ValueError("dev_bank requires the exact make_pairs.py field mapping")
+    if config.get("input_format") == "sanity":
+        if config["field_mapping"] != SANITY_MAPPING or config["template"] != "T1":
+            raise ValueError("sanity requires the official fixture mapping and shared T1")
     if not isinstance(config["template"], str) or config["template"] not in TEMPLATES:
         raise ValueError("template must be T1, T2, or T3")
     maximum = config["max_prompt_tokens"]
@@ -120,7 +123,7 @@ def join_scores(directory, records, thresholds):
             decision, status = pair_decision(a, b, thresholds)
             pair_counts[status] += 1
             row = {"id": candidate_id, "A": a, "B": b, "decision": decision, "status": status}
-            for key in ("problem_id", "pair_id"):
+            for key in ("problem_id", "pair_id", "domain"):
                 if key in record:
                     row[key] = record[key]
             write_line(handle, row)
@@ -132,6 +135,7 @@ def execute(config, records, all_records, input_hash, config_raw, args):
     directory.mkdir(parents=True, exist_ok=False)
     manifest = {
         "score_contract_version": 2, "command": sys.argv,
+        "input_kind": config.get("input_format", "mapped"),
         "status": "running", "started_at_utc": datetime.now(timezone.utc).isoformat(),
         "input_sha256": input_hash, "config_file_sha256": digest(config_raw),
         "effective_config_sha256": digest(json_bytes(config)), "effective_config": config,
@@ -209,7 +213,7 @@ def execute(config, records, all_records, input_hash, config_raw, args):
                                model_id=config["models"][name]["model_id"],
                                model_revision=meta.get("resolved_model_revision"),
                                template=config["template"])
-                    row.update({key: record[key] for key in ("problem_id", "pair_id") if key in record})
+                    row.update({key: record[key] for key in ("problem_id", "pair_id", "domain") if key in record})
                     write_line(handle, row)
                     written.add(row["id"])
 
