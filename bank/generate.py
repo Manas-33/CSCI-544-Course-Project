@@ -1,10 +1,15 @@
 """Step 2: generate candidate answers with a generator outside the verifier families (GPU; run on Colab).
 
-Defaults follow PLAN.md §2: Phi-4-mini-instruct, temperature 0.7, top-p 0.95,
-4 answers per question, at most 1,024 new tokens. Each question gets its own seed
-(base seed + question position), so a rerun reproduces the same answers.
+Defaults follow PLAN.md §2 for the questions' domain, with Phi-4-mini-instruct:
+- math: "solve step by step, final answer in \\boxed{}", temperature 0.7, top-p 0.95,
+  4 answers per question, at most 1,024 new tokens;
+- code: the EvalPlus chat prompt with the reply pre-filled up to a ```python fence,
+  temperature 0.8, top-p 0.95, 8 answers per problem, at most 768 new tokens.
+Each question gets its own seed (base seed + question position), so a rerun
+reproduces the same answers.
 
     python -m bank.generate --questions bank/dev/questions.jsonl --out bank/dev/generations.jsonl
+    python -m bank.generate --questions bank/dev_code/questions.jsonl --out bank/dev_code/generations.jsonl
 """
 
 from __future__ import annotations
@@ -23,8 +28,46 @@ PROMPT = (
 )
 
 
-def build_messages(question: str) -> list[dict]:
+# EvalPlus's chat prompt for instruction models (evalplus/provider/utility.py). The
+# assistant turn is pre-filled up to an opening ```python fence, so the model writes
+# the program directly and bank.code_exec.extract_program reads up to the closing fence.
+CODE_PROMPT = (
+    "Please provide a self-contained Python script that solves the following problem "
+    "in a markdown code block:\n```\n{question}\n```\n"
+)
+CODE_RESPONSE_PREFIX = (
+    "Below is a Python script with a self-contained function that solves the problem "
+    "and passes corresponding tests:\n```python\n"
+)
+
+DOMAIN_DEFAULTS = {
+    "math": {"n_samples": 4, "temperature": 0.7, "top_p": 0.95, "max_new_tokens": 1024},
+    "code": {"n_samples": 8, "temperature": 0.8, "top_p": 0.95, "max_new_tokens": 768},
+}
+
+
+def build_messages(question: str, domain: str = "math") -> list[dict]:
+    if domain == "code":
+        return [
+            {"role": "user", "content": CODE_PROMPT.format(question=question.strip())},
+            {"role": "assistant", "content": CODE_RESPONSE_PREFIX},
+        ]
     return [{"role": "user", "content": PROMPT.format(question=question)}]
+
+
+def questions_domain(questions: list[dict]) -> str:
+    """The one domain of a question file; mixing math and code in one run is refused."""
+    domains = {q.get("domain", "math") for q in questions}
+    if len(domains) != 1 or not domains <= set(DOMAIN_DEFAULTS):
+        raise SystemExit(f"Expected one domain (math or code) per question file, got {sorted(domains)}")
+    return domains.pop()
+
+
+def apply_domain_defaults(args, domain: str) -> None:
+    """Fill sampling settings the user didn't set with PLAN.md §2's defaults for the domain."""
+    for key, value in DOMAIN_DEFAULTS[domain].items():
+        if getattr(args, key) is None:
+            setattr(args, key, value)
 
 
 def resolve_dtype(choice: str) -> str:
@@ -58,7 +101,13 @@ def generate_vllm(questions, args) -> list[dict]:
         )
         for i in range(len(questions))
     ]
-    outputs = llm.chat([build_messages(q["question"]) for q in questions], params)
+    prefill = args.domain == "code"
+    outputs = llm.chat(
+        [build_messages(q["question"], args.domain) for q in questions],
+        params,
+        add_generation_prompt=not prefill,
+        continue_final_message=prefill,
+    )
     rows = []
     for i, (q, out) in enumerate(zip(questions, outputs)):
         for k, comp in enumerate(out.outputs):
@@ -78,8 +127,12 @@ def generate_hf(questions, args) -> list[dict]:
     rows = []
     for i, q in enumerate(questions):
         torch.manual_seed(args.seed + i)
+        prefill = args.domain == "code"
         ids = tok.apply_chat_template(
-            build_messages(q["question"]), add_generation_prompt=True, return_tensors="pt"
+            build_messages(q["question"], args.domain),
+            add_generation_prompt=not prefill,
+            continue_final_message=prefill,
+            return_tensors="pt",
         ).to(model.device)
         out = model.generate(
             ids,
@@ -146,10 +199,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--model", default=DEFAULT_GENERATOR)
     ap.add_argument("--revision", default=None, help="Pin a Hugging Face commit for reproducibility")
     ap.add_argument("--tag", default="phi4mini", help="Short generator name used in candidate IDs")
-    ap.add_argument("--n-samples", type=int, default=4)
-    ap.add_argument("--temperature", type=float, default=0.7)
-    ap.add_argument("--top-p", type=float, default=0.95)
-    ap.add_argument("--max-new-tokens", type=int, default=1024)
+    # Sampling settings default to PLAN.md §2's values for the questions' domain (DOMAIN_DEFAULTS).
+    ap.add_argument("--n-samples", type=int, default=None)
+    ap.add_argument("--temperature", type=float, default=None)
+    ap.add_argument("--top-p", type=float, default=None)
+    ap.add_argument("--max-new-tokens", type=int, default=None)
     ap.add_argument("--seed", type=int, default=544)
     ap.add_argument("--backend", choices=["vllm", "hf"], default="vllm")
     ap.add_argument(
@@ -217,11 +271,13 @@ def main() -> None:
     from datetime import datetime, timezone
 
     args = build_parser().parse_args()
+    questions = read_jsonl(args.questions)
+    args.domain = questions_domain(questions)
+    apply_domain_defaults(args, args.domain)
     args.dtype = resolve_dtype(args.dtype)
     args.revision = resolve_revision(args.model, args.revision)
-    print(f"Using dtype {args.dtype}, {args.model} at revision {args.revision}")
+    print(f"Using dtype {args.dtype}, {args.model} at revision {args.revision}, {args.domain} settings")
 
-    questions = read_jsonl(args.questions)
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
     start = time.time()
     rows = generate_vllm(questions, args) if args.backend == "vllm" else generate_hf(questions, args)
@@ -235,7 +291,8 @@ def main() -> None:
         "n_generations": len(rows),
         "generator": args.model,
         "generator_revision": args.revision,
-        "prompt": PROMPT,
+        "prompt": PROMPT if args.domain == "math" else CODE_PROMPT,
+        "response_prefix": CODE_RESPONSE_PREFIX if args.domain == "code" else None,
         "settings": {k: v for k, v in vars(args).items() if k not in ("questions", "out")},
         "seconds": round(elapsed, 1),
         "started_utc": started,

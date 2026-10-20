@@ -1,0 +1,11 @@
+{
+  "step": "select_code_questions",
+  "source_url": "https://raw.githubusercontent.com/google-research/google-research/master/mbpp/mbpp.jsonl",
+  "source_sha256": "ccf64ceae9c5403bf50a044cb6d505bfd2a2963ee58338ba268fd65beab92a9f",
+  "excluded_source_url": "https://github.com/evalplus/mbppplus_release/releases/download/v0.2.0/MbppPlus.jsonl.gz",
+  "excluded_source_sha256": "af43697e8791c4c149bdfd6b489d8b5412507551ac20e28a439f650b8225db63",
+  "eligible": 594,
+  "n": 150,
+  "seed": 544,
+  "created_utc": "2026-10-20T01:39:42+00:00"
+}

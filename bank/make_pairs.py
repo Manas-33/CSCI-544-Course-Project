@@ -25,11 +25,20 @@ import random
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from bank.common import read_jsonl, token_jaccard, write_jsonl
+from bank.common import read_jsonl, sha256_text, token_jaccard, write_jsonl
 
 NEAR_DUPLICATE_JACCARD = 0.9
 EXCLUSIONS_FILENAME = "excluded_questions.txt"
 PROVENANCE_FILENAME = "generations_provenance.json"
+
+
+def shown_answer(gen: dict, label: dict) -> dict:
+    """For code, the answer verifiers see (and that dedupe and pair order use) is the tested
+    program from bank.label_code, not the raw response; the raw response's hash is kept."""
+    program = label.get("program")
+    if not program:
+        return gen
+    return {**gen, "text": program, "text_sha256": sha256_text(program), "response_sha256": gen["text_sha256"]}
 
 
 def load_provenance_revisions(path: str | Path) -> dict[str, str]:
@@ -179,6 +188,7 @@ def main(argv: list[str] | None = None) -> None:
     _require_unique([g["candidate_id"] for g in generations], "candidate_id in generations")
     _require_unique([r["candidate_id"] for r in labeled_rows], "candidate_id in labels")
     labels = {r["candidate_id"]: r for r in labeled_rows}
+    generations = [shown_answer(g, labels.get(g["candidate_id"], {})) for g in generations]
     exclusions = load_exclusions(exclude_path)
     unknown = sorted(set(exclusions) - set(questions))
     if unknown:
@@ -200,6 +210,7 @@ def main(argv: list[str] | None = None) -> None:
                     "domain": q["domain"],
                     # "problem", not "question": the field every scorer reads (PLAN.md §9).
                     "problem": q["question"],
+                    **({"entry_point": q["entry_point"]} if "entry_point" in q else {}),
                     "candidate": cand["text"],
                     "text_sha256": cand["text_sha256"],
                     "generator": cand["generator"],
@@ -211,6 +222,19 @@ def main(argv: list[str] | None = None) -> None:
                     "split": args.split,
                 }
             )
+            if q["domain"] == "code":
+                label_rows.append(
+                    {
+                        "candidate_id": cand["candidate_id"],
+                        "label": lab["label"],
+                        "status": lab["status"],
+                        "error_type": lab.get("error_type"),
+                        "run_statuses": lab.get("run_statuses"),
+                        "detail": lab.get("detail"),
+                        "checker_version": lab.get("checker_version"),
+                    }
+                )
+                continue
             label_rows.append(
                 {
                     "candidate_id": cand["candidate_id"],
