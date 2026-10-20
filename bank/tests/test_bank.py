@@ -10,7 +10,7 @@ from collections import defaultdict
 
 import pytest
 
-from bank.common import extract_boxed, gsm8k_reference, normalize_number, sha256_text
+from bank.common import extract_boxed, gsm8k_reference, normalize_number, sha256_bytes, sha256_text
 from bank.generate import hf_finish
 from bank.label import label_row
 from bank.make_pairs import build_pairs, main
@@ -147,6 +147,36 @@ def test_bank_file_hides_labels_and_pairs_are_one_right_one_wrong(tmp_path):
     assert all(sorted(lab[r["candidate_id"]] for r in v) == [0, 1] for v in by_pair.values())
     # Row order follows answer hashes, never the label (a seeded or label-based shuffle fails here).
     assert all(v[0]["text_sha256"] < v[1]["text_sha256"] for v in by_pair.values())
+
+
+def test_bank_rows_have_the_fields_scorers_read(tmp_path):
+    # Every scorer reads candidate_id, problem and candidate; "question" would crash them.
+    _write_inputs(tmp_path)
+    bank, _, _ = _run(tmp_path, tmp_path)
+    assert all({"candidate_id", "problem", "candidate"} <= set(r) and "question" not in r for r in bank)
+    assert bank[0]["problem"].startswith("question ")
+
+
+def test_written_files_use_lf_so_hashes_match_on_every_platform(tmp_path):
+    # Windows text mode would write CRLF, so the summary's hashes would describe bytes
+    # that git (eol=lf) never stores and no other machine reproduces.
+    _write_inputs(tmp_path)
+    _, _, summary = _run(tmp_path, tmp_path)
+    for name in ("dev_bank.jsonl", "dev_labels.jsonl", "dev_bank_summary.json"):
+        assert b"\r" not in (tmp_path / name).read_bytes()
+    for name, digest in summary["outputs"].items():
+        assert sha256_bytes((tmp_path / name).read_bytes()) == digest
+
+
+def test_missing_generator_revision_comes_from_provenance(tmp_path):
+    _write_inputs(tmp_path)
+    bank, _, summary = _run(tmp_path, tmp_path)
+    assert all(r["generator_revision"] is None for r in bank)
+    (tmp_path / "generations_provenance.json").write_text(
+        json.dumps({"generator": "microsoft/Phi-4-mini-instruct", "generator_revision": "abc123"}))
+    bank, _, summary = _run(tmp_path, tmp_path)
+    assert all(r["generator_revision"] == "abc123" for r in bank)
+    assert summary["generator_revisions_from_provenance"]["microsoft/Phi-4-mini-instruct"] == "abc123"
 
 
 def test_exclusions_are_applied_and_typos_stop_the_run(tmp_path):
