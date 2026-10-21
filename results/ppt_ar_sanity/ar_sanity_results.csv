@@ -1,0 +1,3 @@
+model,model_short,overall_auroc,math_auroc,code_auroc,sanity_gate,sanity_threshold,precision,attention,items,math_items,code_items
+Qwen2.5-7B-Instruct,Qwen,0.92,0.88,1.0,PASS,0.9,BF16,SDPA,50,26,24
+Mistral-7B-Instruct-v0.3,Mistral,0.752,0.6,0.94,FAIL,0.9,BF16,SDPA,50,26,24

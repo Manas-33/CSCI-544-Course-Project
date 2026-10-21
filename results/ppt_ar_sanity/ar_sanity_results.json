@@ -1,0 +1,54 @@
+{
+  "title": "AR verifier sanity check",
+  "fixture": "Official 50-item T1 sanity fixture",
+  "fixture_items": 50,
+  "composition": {
+    "correct": 25,
+    "incorrect": 25,
+    "math": 26,
+    "code": 24
+  },
+  "settings": {
+    "precision": "BF16",
+    "attention": "SDPA",
+    "gpu": "NVIDIA A100-SXM4-40GB"
+  },
+  "required_overall_auroc": 0.9,
+  "models": [
+    {
+      "model": "Qwen2.5-7B-Instruct",
+      "model_short": "Qwen",
+      "overall_auroc": 0.92,
+      "math_auroc": 0.88,
+      "code_auroc": 1.0,
+      "sanity_gate": "PASS",
+      "sanity_threshold": 0.9,
+      "precision": "BF16",
+      "attention": "SDPA",
+      "items": 50,
+      "math_items": 26,
+      "code_items": 24
+    },
+    {
+      "model": "Mistral-7B-Instruct-v0.3",
+      "model_short": "Mistral",
+      "overall_auroc": 0.752,
+      "math_auroc": 0.6,
+      "code_auroc": 0.94,
+      "sanity_gate": "FAIL",
+      "sanity_threshold": 0.9,
+      "precision": "BF16",
+      "attention": "SDPA",
+      "items": 50,
+      "math_items": 26,
+      "code_items": 24
+    }
+  ],
+  "interpretation": [
+    "Qwen passes the 0.90 sanity AUROC threshold.",
+    "Mistral fails the 0.90 sanity AUROC threshold, primarily because of weak math discrimination.",
+    "The overall sanity gate fails because every verifier must pass.",
+    "These are scoring sanity-check results, not final research evidence."
+  ],
+  "provenance_note": "Overall values are from the completed BF16+SDPA run supplied by the team; math/code values are the reported domain breakdowns."
+}

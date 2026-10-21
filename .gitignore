@@ -37,6 +37,10 @@
 !/results/fp32/ar-sanity-analysis/
 !/results/fp32/ar-sanity-nf4-fp32/
 
+# PPT-ready result package
+!/results/ppt_ar_sanity/
+!/results/ppt_ar_sanity/*
+
 # When code starts, allow its folders here, for example:
 # !/bank/
 # !/harness/
