@@ -124,7 +124,7 @@ def run_model(spec, tokenizer, records, config, device, dtype, metadata, emit):
         model = AutoModelForCausalLM.from_pretrained(
             spec["model_id"], revision=metadata["resolved_model_revision"] or spec["revision"],
             config=model_config, torch_dtype=dtype, device_map={"": str(device)},
-            low_cpu_mem_usage=True, trust_remote_code=False, attn_implementation="eager", **kwargs,
+            low_cpu_mem_usage=True, trust_remote_code=False, attn_implementation="sdpa", **kwargs,
         )
         model.eval()
         if is_cuda:

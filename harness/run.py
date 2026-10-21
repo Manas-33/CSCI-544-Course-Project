@@ -148,7 +148,7 @@ def execute(config, records, all_records, input_hash, config_raw, args):
         "probability_semantics": "raw token events; not calibrated correctness probabilities",
         "run_kind": "development_4bit" if config["load_in_4bit"] else "unquantized_baseline",
         "planned_research_precision": "bf16", "batch_size": 1, "use_cache": False,
-        "shared_token_budget": 2048, "reserved_tokens": 288, "attention_implementation": "eager",
+        "shared_token_budget": 2048, "reserved_tokens": 288, "attention_implementation": "sdpa",
         "python": platform.python_version(), "platform": platform.platform(), "packages": {},
         "source_sha256": {p.name: digest(p.read_bytes()) for p in Path(__file__).parent.glob("*.py")},
         "models": {name: {"requested": spec, "quantization": None, "actual_dtype": None,
