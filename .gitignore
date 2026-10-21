@@ -8,6 +8,35 @@
 !/PROJECT.md
 !/NEXT_STEPS.md
 
+# AR+AR component only; runtime outputs/caches remain outside the allow-list.
+!/requirements.txt
+!/requirements-analysis.txt
+!/harness/
+/harness/*
+!/harness/*.py
+!/harness/README.md
+!/configs/
+/configs/*
+!/configs/ar_pair.json
+!/configs/ar_pair_dev.json
+!/configs/ar_pair_sanity.json
+
+# Track AR verifier experiment results
+!/results/
+/results/*
+
+# BF16 experiments
+!/results/bf16/
+/results/bf16/*
+!/results/bf16/ar-sanity-bf16-20261020-015535/
+!/results/bf16/ar-sanity-analysis-bf16-20261020-015535/
+
+# FP32 experiments
+!/results/fp32/
+/results/fp32/*
+!/results/fp32/ar-sanity-analysis/
+!/results/fp32/ar-sanity-nf4-fp32/
+
 # When code starts, allow its folders here, for example:
 # !/bank/
 # !/harness/

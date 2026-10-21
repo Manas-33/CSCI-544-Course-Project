@@ -1,0 +1,2 @@
+# Offline evaluation only. Scoring does not import plotting dependencies.
+matplotlib>=3.7,<4
