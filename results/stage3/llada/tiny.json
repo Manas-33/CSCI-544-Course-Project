@@ -1,0 +1,40 @@
+{
+  "check": "tiny-model smoke test",
+  "status": "PASS",
+  "model": "llada",
+  "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+  "mask_token": "<|mdm_mask|>",
+  "n_slots": {
+    "1": {
+      "parity_max_abs_diff": 0.0,
+      "batch_max_abs_diff": 9.5367431640625e-07
+    },
+    "8": {
+      "parity_max_abs_diff": 0.0,
+      "batch_max_abs_diff": 9.5367431640625e-07
+    },
+    "32": {
+      "parity_max_abs_diff": 0.0,
+      "batch_max_abs_diff": 9.5367431640625e-07
+    }
+  },
+  "yes": [
+    "Yes",
+    " Yes",
+    "yes",
+    " yes",
+    "YES",
+    " YES"
+  ],
+  "no": [
+    "No",
+    " No",
+    "no",
+    " no",
+    "NO",
+    " NO"
+  ],
+  "dropped": [],
+  "rendered_prompt_example": "<|startoftext|><|start_header_id|>user<|end_header_id|>\n\nProblem:\nWrite a Python function add(a, b) that returns the sum of the integers a and b.\n\nCandidate solution:\ndef add(a, b):\n    return a + b\n\nIs the final answer correct? Answer Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+  "problems": []
+}
