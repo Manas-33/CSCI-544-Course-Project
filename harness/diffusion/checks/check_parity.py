@@ -82,6 +82,18 @@ def official_slot_logits(scorer, prompt_ids, llada_generate=None) -> torch.Tenso
     raise RuntimeError("the official sampler returned without a forward pass")
 
 
+def balanced_items(items: list, n: int) -> list:
+    """The first n items, half from each domain when items carry one (the sanity set
+    lists its code items first, so a plain slice would test no math prompt)."""
+    domains = sorted({it.get("domain") for it in items})
+    if len(domains) < 2:
+        return items[:n]
+    per = n // len(domains)
+    chosen = [it for d in domains for it in [x for x in items if x.get("domain") == d][:per]]
+    rest = [it for it in items if it not in chosen]
+    return chosen + rest[:n - len(chosen)]
+
+
 def main(argv=None):
     ap = model_args(__doc__.splitlines()[0])
     ap.add_argument("--llada-repo", default=None,
@@ -97,7 +109,7 @@ def main(argv=None):
         sys.path.insert(0, args.llada_repo)
         from generate import generate as llada_generate  # the official sampler
 
-    items = load_items(args.items)[:args.n]
+    items = balanced_items(load_items(args.items), args.n)
     scorer = scorer_from_args(args)
     results, failures = [], 0
     for it in items:

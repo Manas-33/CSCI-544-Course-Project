@@ -8,7 +8,8 @@ from harness.diffusion.checks.common import auroc, ranks, spearman
 from harness.diffusion.interface import (
     SCORE_ROW_FIELDS, read_jsonl, score_row, t1_message, write_jsonl,
 )
-from harness.diffusion.run_score import score_items
+from harness.diffusion.checks.check_parity import balanced_items
+from harness.diffusion.run_score import previous_rows, score_items
 from harness.diffusion.scorer import SPECS, LLaDAScorer, Verdict
 
 from .mocks import MASK, MockTokenizer, SlotMarkerModel
@@ -98,3 +99,34 @@ def test_spearman_with_ties():
     assert spearman([1, 2, 3, 4, 5], [5, 6, 7, 8, 7]) == pytest.approx(8 / math.sqrt(95))
     assert spearman([1, 2, 3], [3, 2, 1]) == pytest.approx(-1.0)
     assert math.isnan(spearman([1, 2, 3], [4, 4, 4]))
+
+
+def _rows(path, **settings):
+    base = dict(bank_hash="h", model="llada", template="T1", n_slots=1)
+    base.update(settings)
+    return [score_row(candidate_id=c, revision="r", verdict=None if s != "ok" else V, status=s, **base)
+            for c, s in (("a", "ok"), ("b", "error"), ("c", "too_long"))]
+
+
+def test_resume_keeps_finished_rows_and_retries_errors(tmp_path):
+    out = tmp_path / "scores.jsonl"
+    write_jsonl(out, _rows(out))
+    kept = previous_rows(out, model="llada", template="T1", n_slots=1, bank_hash="h")
+    assert [r["candidate_id"] for r in kept] == ["a", "c"]
+    assert [r["candidate_id"] for r in read_jsonl(out)] == ["a", "c"]  # the error row is gone, to be rescored
+
+
+def test_resume_refuses_a_file_scored_with_other_settings(tmp_path):
+    out = tmp_path / "scores.jsonl"
+    write_jsonl(out, _rows(out, n_slots=1))
+    with pytest.raises(SystemExit, match="other settings"):
+        previous_rows(out, model="llada", template="T1", n_slots=8, bank_hash="h")
+    assert previous_rows(tmp_path / "new.jsonl", model="llada", template="T1", n_slots=8, bank_hash="h") == []
+
+
+def test_parity_items_cover_both_domains():
+    items = [{"candidate_id": f"c{i}", "domain": "code"} for i in range(24)] + \
+            [{"candidate_id": f"m{i}", "domain": "math"} for i in range(26)]
+    chosen = balanced_items(items, 20)
+    assert len(chosen) == 20
+    assert sum(it["domain"] == "math" for it in chosen) == 10

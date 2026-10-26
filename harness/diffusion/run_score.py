@@ -3,7 +3,8 @@
 Input rows need ``candidate_id``, ``problem`` and ``candidate``. Output rows
 follow interface.SCORE_ROW_FIELDS; each run appends a small manifest line to
 ``<out>.manifest.jsonl``.
-Ids already in the output file are skipped, so a rerun resumes.
+Ids already in the output file are skipped, so a rerun resumes; `error` rows are
+retried, and a file scored with other settings is refused.
 
     python -m harness.diffusion.run_score --model dream --n-slots 8 \\
         --items dev_bank.jsonl --bank-hash <hash> --out results/dream_T1_n8.jsonl
@@ -89,6 +90,25 @@ def environment_info(device: str) -> dict:
     return info
 
 
+def previous_rows(out, model, template, n_slots, bank_hash) -> list:
+    """Rows a rerun keeps from ``out``: everything except ``error`` rows, which are
+    rescored (the file is rewritten without them). A file holding rows scored with
+    other settings is refused, so a 1-slot file never passes for an 8-slot run."""
+    out = Path(out)
+    if not out.exists():
+        return []
+    rows = list(read_jsonl(out))
+    wanted = (model, template, n_slots, bank_hash)
+    other = {(r["model"], r["template"], r["n_slots"], r["bank_hash"]) for r in rows} - {wanted}
+    if other:
+        raise SystemExit(f"{out} holds rows scored with other settings {sorted(other)}; "
+                         f"this run is {wanted}. Use a new --out.")
+    kept = [r for r in rows if r["status"] != "error"]
+    if len(kept) != len(rows):
+        write_jsonl(out, kept)
+    return kept
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--model", required=True, choices=sorted(SPECS))
@@ -105,7 +125,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     out = Path(args.out)
-    done = {r["candidate_id"] for r in read_jsonl(out)} if out.exists() else set()
+    done = {r["candidate_id"] for r in previous_rows(out, args.model, args.template,
+                                                     args.n_slots, args.bank_hash)}
     items = [it for it in read_jsonl(args.items) if it["candidate_id"] not in done]
     if args.limit is not None:
         items = items[:args.limit]
