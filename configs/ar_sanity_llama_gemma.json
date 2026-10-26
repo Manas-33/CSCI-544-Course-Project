@@ -1,0 +1,27 @@
+{
+  "models": {
+    "A": {
+      "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+      "revision": "main",
+      "tokenizer_revision": "main"
+    },
+    "B": {
+      "model_id": "google/gemma-2-9b-it",
+      "revision": "main",
+      "tokenizer_revision": "main",
+      "attn_implementation": "eager"
+    }
+  },
+  "input_format": "sanity",
+  "field_mapping": {
+    "id": "candidate_id",
+    "problem": "problem",
+    "candidate_answer": "candidate"
+  },
+  "template": "T1",
+  "max_prompt_tokens": 1760,
+  "device": "cuda:0",
+  "dtype": "bf16",
+  "load_in_4bit": false,
+  "thresholds": null
+}

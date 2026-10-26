@@ -17,9 +17,7 @@
 !/harness/README.md
 !/configs/
 /configs/*
-!/configs/ar_pair.json
-!/configs/ar_pair_dev.json
-!/configs/ar_pair_sanity.json
+!/configs/*.json
 
 # Track AR verifier experiment results
 !/results/
@@ -56,6 +54,10 @@
 /results/bf16/sdpa/*
 !/results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459/
 !/results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459/
+
+# Colab notebooks and the stage-3 model runs they produce
+!/notebooks/
+!/results/stage3/
 
 # Diffusion adapters and LLaDA comparison assets
 !/harness/diffusion/
