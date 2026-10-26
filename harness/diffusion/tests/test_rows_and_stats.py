@@ -9,6 +9,7 @@ from harness.diffusion.interface import (
     SCORE_ROW_FIELDS, read_jsonl, score_row, t1_message, write_jsonl,
 )
 from harness.diffusion.checks.check_parity import balanced_items
+from harness.diffusion.choose_slots import choose
 from harness.diffusion.run_score import previous_rows, score_items
 from harness.diffusion.scorer import SPECS, LLaDAScorer, Verdict
 
@@ -130,3 +131,24 @@ def test_parity_items_cover_both_domains():
     chosen = balanced_items(items, 20)
     assert len(chosen) == 20
     assert sum(it["domain"] == "math" for it in chosen) == 10
+
+
+def _slot_rows(n, mass, ids=("a", "b", "c"), model="illada"):
+    return [dict(score_row(bank_hash="h", candidate_id=c, model=model, revision="r", template="T1", n_slots=n,
+                           verdict=Verdict(score=0.0, p_yes=mass / 2, p_no=mass / 2, mass=mass, top_id=1)))
+            for c in ids]
+
+
+def test_choose_slots_takes_highest_median_mass_and_ties_go_to_fewer():
+    result = choose({1: _slot_rows(1, 0.6), 8: _slot_rows(8, 0.9), 32: _slot_rows(32, 0.9)})
+    assert result["chosen_n_slots"] == 8
+    assert result["usable_scores_gate"]["passed"]
+    low = choose({1: _slot_rows(1, 0.3), 8: _slot_rows(8, 0.2), 32: _slot_rows(32, 0.1)})
+    assert low["chosen_n_slots"] == 1 and not low["usable_scores_gate"]["passed"]
+
+
+def test_choose_slots_refuses_mixed_inputs():
+    with pytest.raises(ValueError, match="same items"):
+        choose({1: _slot_rows(1, 0.6), 8: _slot_rows(8, 0.9, ids=("a", "b")), 32: _slot_rows(32, 0.9)})
+    with pytest.raises(ValueError, match="mix"):
+        choose({1: _slot_rows(1, 0.6), 8: _slot_rows(8, 0.9, model="dream"), 32: _slot_rows(32, 0.9)})
