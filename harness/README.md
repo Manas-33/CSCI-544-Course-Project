@@ -14,6 +14,12 @@ python -m harness.run --config configs/ar_pair_sanity.json --input bank/sanity/s
 python -m harness.evaluate --sanity --bank bank/sanity/sanity_set.jsonl --labels bank/sanity/sanity_set.jsonl --run-dir results/ar-sanity-nf4-fp32 --output-dir results/ar-sanity-analysis
 ```
 
+`metrics.json` also records AUROC per domain (`auroc_by_domain`; `auroc_math`/`auroc_code` in `summary.csv`). The verified SDPA run is `results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459` with its analysis next to it. The slide package in `results/ppt_ar_sanity/` (summary, CSV/JSON, PNG and SVG figures) is generated from that analysis, never typed by hand:
+
+```bash
+python -m harness.sanity_package --run-dir results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459 --analysis-dir results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459 --previous-analysis results/bf16/ar-sanity-analysis-bf16-20261020-015535 --output-dir results/ppt_ar_sanity
+```
+
 The generation manifest records Phi-4-mini, temperature 0.7, top-p 0.95, 4 samples/question, 1024 new tokens, seed 544, vLLM and BF16. `generations_provenance.json` explicitly reconstructs the model revision, versions and L4 hardware afterwards; these are not contemporaneous run metadata. `bank.label/2+math_verify` compares correctness outcomes, not extracted answers. Label 1 means correct; 0 means wrong. Keep selected development questions excluded from pilot/final banks via `bank/dev/question_ids.txt`.
 
 The dev adapter maps `candidate_id → id`, `problem → problem`, and full `candidate → candidate_answer`; it retains `problem_id` and `pair_id`. (`question` is only in the questions file, not the current paired bank.) It checks text hashes and pair structure. Only problem/solution text enters prompts. Labels are joined only by the evaluator. Offline validation does **not** check tokenizer lengths:
