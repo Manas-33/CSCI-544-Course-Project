@@ -51,6 +51,31 @@ On Colab, with an **L4** runtime (about 6 minutes for generation):
 
 **Need more pairs?** Phi-4-mini gets about 90% right, so only about 1 question in 7 yields a pair. Enlarge the question set **before** anyone scores the bank, never after seeing results.
 
+## Code development bank (`dev_code/`, in progress)
+
+The code half of the development bank. It covers 150 MBPP problems, chosen with seed 544 from the 594 that are **not** in MBPP+. That keeps all 542 EvalPlus problems (HumanEval+ and MBPP+) free for the pilot and the final bank.
+- **Tests:** MBPP's own three asserts per problem. These are weaker than EvalPlus's tests, which is fine for pipeline checks but never for results.
+- **Problem text:** MBPP+'s layout (the task plus one example assert, in a docstring).
+
+| Step | Command | Needs |
+|---|---|---|
+| 1. Pick problems | `python -m bank.select_code_questions` (done: `dev_code/questions.jsonl`) | — |
+| 2. Generate | `python -m bank.generate --questions bank/dev_code/questions.jsonl --out bank/dev_code/generations.jsonl` | GPU |
+| 3. Label | `python -m bank.label_code` | Docker |
+| 4. Build pairs | `python -m bank.make_pairs --questions bank/dev_code/questions.jsonl --generations bank/dev_code/generations.jsonl --labeled bank/dev_code/labeled.jsonl --out bank/dev_code` | — |
+
+- **Generation** uses the EvalPlus chat prompt. The reply is pre-filled up to an opening ` ```python ` fence, so the model writes the program directly. Settings follow PLAN.md §2: temperature 0.8, top-p 0.95, 8 answers per problem, at most 768 new tokens. These are picked automatically when the questions are code.
+- **What verifiers see:** the tested program. Imports, definitions and the constants they use are kept; example calls, prints, asserts and `__main__` blocks are dropped, as EvalPlus's sanitizer does. An answer that doesn't parse or doesn't define the entry point is dropped as "no answer", not labeled wrong.
+- **Labels:**
+  - Every usable program runs against the tests **twice**, each run in a fresh process, inside a Docker container with no network, a 2 GB memory cap and a read-only filesystem. The timeout is 10 s per program per run.
+  - A program that passes one run and fails the other is **flaky** and dropped.
+  - Each failure gets an error type: `wrong_output`, `exception` or `timeout`.
+  - Each problem's reference solution is run too, and a problem whose reference fails is dropped as broken.
+  - `--sandbox none` runs the same jobs as plain subprocesses (on Colab, or in tests). The choice is recorded in every label's `checker_version`.
+- **Where to run labeling:** on a machine with Docker running (`docker pull python:3.11-slim` first). Copy `generations.jsonl` back from Colab.
+
+**Not tested yet:** the GPU generation step and the Docker sandbox. The CPU tests cover extraction, the runner, labels and pairs.
+
 ## Next: scoring
 
 Score `dev/dev_bank.jsonl` with the same T1 prompt for every verifier:
