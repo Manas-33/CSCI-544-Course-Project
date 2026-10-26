@@ -165,6 +165,8 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help=f'File of "problem_id  # reason" lines to drop. Default: {EXCLUSIONS_FILENAME} next to --questions.',
     )
+    ap.add_argument("--allow-unsandboxed-labels", action="store_true",
+                    help="accept code labels made with --sandbox none (tests only; PLAN.md §2 needs a container)")
     args = ap.parse_args(argv)
     out = Path(args.out)
 
@@ -188,6 +190,12 @@ def main(argv: list[str] | None = None) -> None:
     _require_unique([g["candidate_id"] for g in generations], "candidate_id in generations")
     _require_unique([r["candidate_id"] for r in labeled_rows], "candidate_id in labels")
     labels = {r["candidate_id"]: r for r in labeled_rows}
+    unsandboxed = sorted({r.get("checker_version") for r in labeled_rows
+                          if questions.get(r.get("problem_id"), {}).get("domain") == "code"
+                          and "+docker:" not in (r.get("checker_version") or "")})
+    if unsandboxed and not args.allow_unsandboxed_labels:
+        raise SystemExit(f"Code labels were not made in the Docker sandbox ({unsandboxed}); "
+                         "relabel with bank.label_code --sandbox docker (PLAN.md §2).")
     generations = [shown_answer(g, labels.get(g["candidate_id"], {})) for g in generations]
     exclusions = load_exclusions(exclude_path)
     unknown = sorted(set(exclusions) - set(questions))

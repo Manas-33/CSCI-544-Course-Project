@@ -12,8 +12,9 @@ The runs happen in a container with no network (PLAN.md §2), via Docker by defa
     python -m bank.label_code --questions bank/dev_code/questions.jsonl \\
         --generations bank/dev_code/generations.jsonl --out bank/dev_code/labeled.jsonl
 
-`--sandbox none` runs the same jobs as plain subprocesses, for tests and machines
-without Docker; the choice is recorded in every label's checker_version.
+`--sandbox none` runs the same jobs as plain subprocesses, for tests only: there is no
+network isolation. The choice is recorded in every label's checker_version, and
+bank.make_pairs refuses such code labels unless told they are for a test.
 """
 
 from __future__ import annotations
@@ -29,14 +30,16 @@ from pathlib import Path
 from bank import code_exec
 from bank.common import has_identity_string, read_jsonl, write_jsonl
 
-LABELER_VERSION = "bank.label_code/1"
+LABELER_VERSION = "bank.label_code/2"
 DEFAULT_IMAGE = "python:3.11-slim"
 N_RUNS = 2
 
 
 def prepare(gen: dict, question: dict) -> tuple[str, str | None]:
     """(status, program shown to verifiers) before any code runs."""
-    if gen.get("finish_reason") == "length":
+    # Cut off only if the program itself is: the reply is pre-filled up to an opening fence, so a
+    # closing fence means the program ended and only the explanation after it ran out of tokens.
+    if gen.get("finish_reason") == "length" and code_exec.FENCE not in gen["text"]:
         return "truncated", None
     if has_identity_string(gen["text"]):
         return "identity_string", None
@@ -96,7 +99,10 @@ def label_all(questions: dict[str, dict], generations: list[dict], sandbox: str,
     jobs = [job(f"reference::{pid}", questions[pid]["reference_solution"], questions[pid]) for pid in used]
     jobs += [job(g["candidate_id"], prepared[g["candidate_id"]][1], questions[g["problem_id"]])
              for g in generations if prepared[g["candidate_id"]][0] == "ok"]
-    passes = [run_in_sandbox(jobs, sandbox, image, timeout_s) for _ in range(N_RUNS)]
+    # Each run gets its own fixed hash seed: rebuilds give the same labels, and a program whose
+    # result depends on set order differs between the runs and is dropped as flaky.
+    passes = [run_in_sandbox([{**j, "hash_seed": seed} for j in jobs], sandbox, image, timeout_s)
+              for seed in range(N_RUNS)]
 
     broken = {pid for pid in used if any(p[f"reference::{pid}"]["status"] != "pass" for p in passes)}
     rows = []

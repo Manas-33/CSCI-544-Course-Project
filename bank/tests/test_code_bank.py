@@ -5,6 +5,8 @@ same bank/code_exec.py inside a container.
 """
 
 import json
+import subprocess
+import sys
 from argparse import Namespace
 
 import pytest
@@ -12,7 +14,7 @@ import pytest
 from bank import code_exec
 from bank.common import sha256_text
 from bank.generate import apply_domain_defaults, build_messages, questions_domain
-from bank.label_code import combine, label_all
+from bank.label_code import combine, label_all, prepare
 from bank.make_pairs import main as make_pairs_main
 from bank.select_code_questions import eligible, entry_point, mbpp_prompt
 
@@ -93,8 +95,9 @@ def _questions():
     ]
 
 
-def _gen(pid, k, body, finish="stop"):
-    text = body + "\n```\nExplanation follows."
+def _gen(pid, k, body, finish="stop", fenced=True):
+    # A reply cut off inside the program never reaches its closing fence.
+    text = body + "\n```\nExplanation follows." if fenced else body
     return {"candidate_id": f"{pid}__phi4mini__{k}", "problem_id": pid, "generator": "microsoft/Phi-4-mini-instruct",
             "generator_revision": "abc", "settings": {}, "seed": 544, "sample_index": k, "text": text,
             "text_sha256": sha256_text(text), "finish_reason": finish, "n_tokens": 20}
@@ -105,7 +108,7 @@ def _generations():
         _gen("mbpp-001", 0, "def add_one(x):\n    return x + 1\n\nprint(add_one(1))"),
         _gen("mbpp-001", 1, "def add_one(x):\n    return x - 1"),
         _gen("mbpp-001", 2, "def plus_one(x):\n    return x + 1"),
-        _gen("mbpp-001", 3, "def add_one(x):\n    return x +", finish="length"),
+        _gen("mbpp-001", 3, "def add_one(x):\n    return x +", finish="length", fenced=False),
         _gen("mbpp-002", 0, "def two():\n    return 3"),
     ]
 
@@ -120,7 +123,7 @@ def test_label_all_statuses():
     assert rows["mbpp-001__phi4mini__3"]["status"] == "truncated"
     # The reference fails its own tests, so the problem is excluded even though this answer "passes".
     assert rows["mbpp-002__phi4mini__0"]["status"] == "broken_problem"
-    assert all(r["checker_version"] == "bank.label_code/1+subprocess" for r in rows.values())
+    assert all(r["checker_version"] == "bank.label_code/2+subprocess" for r in rows.values())
 
 
 def test_code_pairs_show_the_tested_program_and_keep_labels_out(tmp_path):
@@ -129,7 +132,8 @@ def test_code_pairs_show_the_tested_program_and_keep_labels_out(tmp_path):
     for name, rows in (("questions.jsonl", qs), ("generations.jsonl", gens), ("labeled.jsonl", labels)):
         (tmp_path / name).write_text("".join(json.dumps(r) + "\n" for r in rows))
     make_pairs_main(["--questions", str(tmp_path / "questions.jsonl"), "--generations", str(tmp_path / "generations.jsonl"),
-                     "--labeled", str(tmp_path / "labeled.jsonl"), "--out", str(tmp_path)])
+                     "--labeled", str(tmp_path / "labeled.jsonl"), "--out", str(tmp_path),
+                     "--allow-unsandboxed-labels"])
     bank = [json.loads(l) for l in (tmp_path / "dev_bank.jsonl").read_text().splitlines()]
     lab = {r["candidate_id"]: r for r in map(json.loads, (tmp_path / "dev_labels.jsonl").read_text().splitlines())}
     assert len(bank) == 2 and {r["problem_id"] for r in bank} == {"mbpp-001"}
@@ -163,3 +167,61 @@ def test_entry_point_and_mbpp_plus_exclusion():
     plus = [{"task_id": "Mbpp/2", "prompt": '"""\nShared elements.\nassert f(1) == 1\n"""\n'},
             {"task_id": "Mbpp/50", "prompt": '"""\nSame text as a plus task.\nassert h(1) == 1\n"""\n'}]
     assert [q["problem_id"] for q in eligible(mbpp, plus)] == ["mbpp-007"]
+
+
+# ---------------------------------------------------------------- review fixes (Oct 25)
+
+def _runs(program, tests, **job):
+    return code_exec.run_job({"job_id": "j", "program": program, "setup": "", "tests": tests, **job})["status"]
+
+
+@pytest.mark.parametrize("program, entry, test", [
+    # a constant defined through another constant: both must be kept
+    ("BASE = 3\nPOW = BASE - 1\ndef f(x):\n    return x ** POW\n", "f", "assert f(3) == 9"),
+    # example input next to a parameter of the same name: must be dropped
+    ("def f(n):\n    return n * 2\n\nn = int(input())\nprint(f(n))\n", "f", "assert f(2) == 4"),
+    # an example call stored in a name the function also uses locally: must be dropped
+    ("def f(x):\n    result = x + 1\n    return result\n\nresult = f(None)\nprint(result)\n", "f", "assert f(1) == 2"),
+    # names evaluated at module level by the definition itself: defaults, decorators, annotations, bases
+    ("LIMIT = 10\ndef f(x, lim=LIMIT):\n    return min(x, lim)\n", "f", "assert f(20) == 10"),
+    ("MOD = 7\ndef f(x, *, m=MOD):\n    return x % m\n", "f", "assert f(9) == 2"),
+    ("from functools import lru_cache\nCACHE = 8\n@lru_cache(maxsize=CACHE)\ndef f(x):\n    return x + 1\n", "f", "assert f(1) == 2"),
+    ("Vec = list\ndef f(x: Vec) -> Vec:\n    return x[::-1]\n", "f", "assert f([1, 2]) == [2, 1]"),
+    ("class Base:\n    k = 2\nB = Base\nclass P(B):\n    pass\ndef f(x):\n    return x * P.k\n", "f", "assert f(3) == 6"),
+    # example code at module level with its own lambda scope: dropped, not kept for the lambda
+    ("def f(xs):\n    return sorted(xs)\n\nk = int(input())\nprint(sorted([[1, 2]], key=lambda t: t[k]))\n", "f", "assert f([2, 1]) == [1, 2]"),
+])
+def test_sanitize_keeps_what_the_solution_reads_and_drops_example_code(program, entry, test):
+    assert _runs(code_exec.sanitize(program, entry), [test]) == "pass"
+
+
+def test_a_complete_program_is_kept_when_only_the_explanation_was_cut_off():
+    q = {"entry_point": "add_one"}
+    complete = {"text": "def add_one(x):\n    return x + 1\n```\n\nThis function adds one, and", "finish_reason": "length"}
+    cut = {"text": "def add_one(x):\n    return x +", "finish_reason": "length"}
+    assert prepare(complete, q)[0] == "ok"
+    assert prepare(cut, q)[0] == "truncated"
+
+
+def test_hash_seed_is_fixed_per_run():
+    expected = subprocess.run([sys.executable, "-c", "print(hash('abc'))"], capture_output=True, text=True,
+                              env={"PYTHONHASHSEED": "0", "PATH": ""}).stdout.strip()
+    program = "def h():\n    return hash('abc')\n"
+    assert _runs(program, [f"assert h() == {expected}"], hash_seed=0) == "pass"
+    assert _runs(program, [f"assert h() == {expected}"], hash_seed=1) == "wrong_output"
+
+
+def test_pairs_refuse_unsandboxed_code_labels(tmp_path):
+    qs, gens = _questions(), _generations()
+    labels = label_all({q["problem_id"]: q for q in qs}, gens, "none", "unused", timeout_s=5)
+    for name, rows in (("questions.jsonl", qs), ("generations.jsonl", gens), ("labeled.jsonl", labels)):
+        (tmp_path / name).write_text("".join(json.dumps(r) + "\n" for r in rows))
+    args = ["--questions", str(tmp_path / "questions.jsonl"), "--generations", str(tmp_path / "generations.jsonl"),
+            "--labeled", str(tmp_path / "labeled.jsonl"), "--out", str(tmp_path)]
+    with pytest.raises(SystemExit, match="sandbox"):
+        make_pairs_main(args)
+
+
+def test_a_program_symtable_rejects_is_no_answer_not_a_crash():
+    # ast.parse accepts this, symtable does not
+    assert code_exec.sanitize("def f(x):\n    global x\n    return x\n", "f") is None
