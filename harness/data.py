@@ -97,6 +97,9 @@ def bank_records(sources):
         try:
             if source.get("split") != "dev":
                 raise ValueError("this adapter accepts only split='dev'")
+            if source.get("domain") not in ("math", "code"):
+                raise ValueError("expected math/code domain")
+            record["domain"] = source["domain"]  # for per-domain AUROC (PLAN.md §5)
             generator = source.get("generator")
             if not isinstance(generator, str) or not generator.strip():
                 raise ValueError("generator must be a nonempty string for pair validation")
