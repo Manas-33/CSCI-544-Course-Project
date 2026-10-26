@@ -16,6 +16,6 @@ Qwen/Mistral: the saved BF16 + SDPA run `results/bf16/sdpa/ar-sanity-bf16-sdpa-2
 
 The zero threshold gives each pair a different TAR, so these FARs cannot be compared with each other and establish nothing about H1. The sanity fixture is a scoring check, not a validation or test set; no threshold or prompt was fitted to its labels.
 
-LLaDA's answer-slot count was chosen on the development bank by median Yes+No mass. Its run's repeat check (the same forward pass run twice on 20 items) passed: True. That is not the PLAN.md §4 parity test, which is still pending (`--parity`); batch invariance is pending too.
+LLaDA's answer-slot count was chosen on the development bank by median Yes+No mass. Its run's repeat check (the same forward pass run twice on 20 items) passed: True. Still pending: PLAN.md §4 test 2 (reference parity against the official model code, `harness/diffusion/checks/check_parity.py`), test 3's batch invariance, and agreement between this run and the shared scorer `harness/diffusion` (`--parity`).
 
 See `single_metrics.csv`, `pair_metrics.csv` and `comparison_review.csv` for every count and score.

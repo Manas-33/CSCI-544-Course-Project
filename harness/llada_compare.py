@@ -130,7 +130,7 @@ def analyze(run_dir, records, bank_hash, ar_manifest, ar_scores, bank, ar_dir):
                   singles=singles, pairs=pairs,
                   sanity_auroc_passed={r['model']: r['auroc'] >= .90 for r in singles if r['domain'] == 'all'},
                   llada_repeat_check=dict(passed=lm['checks']['reference_passed'], prompts=lm['checks']['reference_prompts'],
-                                          note='The same forward pass run twice; not the PLAN.md §4 parity test.'),
+                                          note='The same forward pass run twice; not PLAN.md §4 test 2 (reference parity).'),
                   llada_batching_check=lm['checks']['batching_check'],
                   comparable_cost_claim=False,
                   cost_note='AR and LLaDA ran in different environments and on different A100s; no matched-cost claim.')
@@ -153,8 +153,9 @@ def analyze(run_dir, records, bank_hash, ar_manifest, ar_scores, bank, ar_dir):
               'no threshold or prompt was fitted to its labels.', '',
               f"LLaDA's answer-slot count was chosen on the development bank by median Yes+No mass. "
               f"Its run's repeat check (the same forward pass run twice on {lm['checks']['reference_prompts']} items) "
-              f"passed: {lm['checks']['reference_passed']}. That is not the PLAN.md §4 parity test, which is still "
-              "pending (`--parity`); batch invariance is pending too.", '',
+              f"passed: {lm['checks']['reference_passed']}. Still pending: PLAN.md §4 test 2 (reference parity against "
+              "the official model code, `harness/diffusion/checks/check_parity.py`), test 3's batch invariance, and "
+              "agreement between this run and the shared scorer `harness/diffusion` (`--parity`).", '',
               'See `single_metrics.csv`, `pair_metrics.csv` and `comparison_review.csv` for every count and score.']
     (out/'REPORT.md').write_text('\n'.join(lines)+'\n', encoding='utf-8')
     print('\n'.join(lines))

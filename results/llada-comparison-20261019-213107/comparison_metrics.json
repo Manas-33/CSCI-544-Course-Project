@@ -292,7 +292,7 @@
   "llada_repeat_check": {
     "passed": true,
     "prompts": 20,
-    "note": "The same forward pass run twice; not the PLAN.md \u00a74 parity test."
+    "note": "The same forward pass run twice; not PLAN.md \u00a74 test 2 (reference parity)."
   },
   "llada_batching_check": "pending; scoring is unbatched",
   "comparable_cost_claim": false,
