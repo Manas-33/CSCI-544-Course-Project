@@ -1,0 +1,144 @@
+candidate_id,problem_id,pair_id,question,candidate_solution,label,score_A,p_yes_A,p_no_A,yes_no_mass_A,score_B,p_yes_B,p_no_B,yes_no_mass_B,domain
+sanity-c001,,,"Write a Python function add(a, b) that returns the sum of the integers a and b.","def add(a, b):
+    return a + b",1,1.7499780727682082,0.8518314279203826,0.14802935222308042,0.999860780143463,11.93728752937193,0.9995261423597476,6.538769897076406e-06,0.9995326811296447,code
+sanity-c002,,,Write a Python function is_even(n) that returns True if the integer n is even and False otherwise.,"def is_even(n):
+    return n % 2 == 1",0,-10.124963209702033,4.0057246927094595e-05,0.999762284135711,0.9998023413826381,-11.999965303782636,6.144033343345293e-06,0.9999361706629584,0.9999423146963017,code
+sanity-c003,,,Write a Python function max_of_list(nums) that returns the largest number in the non-empty list nums.,"def max_of_list(nums):
+    best = nums[0]
+    for n in nums[1:]:
+        if n > best:
+            best = n
+    return best",1,-2.1249089224408984,0.10652480319801008,0.8918400268080459,0.9983648300060559,8.312304457090056,0.9992349566326609,0.0002452898971467032,0.9994802465298076,code
+sanity-c004,,,Write a Python function min_of_list(nums) that returns the smallest number in the non-empty list nums.,"def min_of_list(nums):
+    best = nums[0]
+    for n in nums[1:]:
+        if n > best:
+            best = n
+    return best",0,-7.999890160630043,0.0003352981945210582,0.9994000514972833,0.9997353496918043,-11.24997078078354,1.300411031967116e-05,0.9997257463575853,0.999738750467905,code
+sanity-c005,,,Write a Python function square(n) that returns n squared.,"def square(n):
+    return n * 2",0,-11.624971183220921,8.93955183574744e-06,0.9999460844094133,0.9999550239612491,-12.687474100807176,3.0895051998054594e-06,0.9999744917430009,0.9999775812482007,code
+sanity-c006,,,Write a Python function reverse_string(s) that returns the string s reversed.,"def reverse_string(s):
+    return s[::-1]",1,0.5000048722655841,0.6219615861998973,0.3772369331907353,0.9991985193906325,11.499845451200216,0.9996439538849066,1.012805197548664e-05,0.9996540819368821,code
+sanity-c007,,,Write a Python function absolute_value(n) that returns the absolute value of the number n.,"def absolute_value(n):
+    return n if n < 0 else -n",0,-0.49996672908756407,0.37689411006281687,0.621372662082812,0.9982667721456289,5.562381466292835,0.9949796366110969,0.0038203452760669572,0.9987999818871639,code
+sanity-c008,,,"Write a Python function count_vowels(s) that returns how many of the letters a, e, i, o, u appear in the string s, ignoring case.","def count_vowels(s):
+    return sum(1 for ch in s.lower() if ch in ""aeiou"")",1,3.5937077720649135e-05,0.4995104673843072,0.499492516760367,0.9990029841446741,9.624688529727042,0.9993936918122357,6.603702279361036e-05,0.9994597288350293,code
+sanity-c009,,,Write a Python function factorial(n) that returns n! for an integer n >= 0.,"def factorial(n):
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result",1,-1.6249327138181269,0.1642534931832454,0.8340919419548279,0.9983454351380734,0.25004157216462697,0.5558419682723436,0.4328721643475137,0.9887141326198572,code
+sanity-c010,,,Write a Python function count_positive(nums) that returns how many numbers in the list nums are greater than 0.,"def count_positive(nums):
+    return sum(1 for n in nums if n < 0)",0,-9.999959814962267,4.539700016225343e-05,0.9998952896234236,0.9999406866235858,-10.749958482712376,2.144206563476146e-05,0.9998026206966081,0.9998240627622429,code
+sanity-c011,,,"Write a Python function is_palindrome(s) that returns True if the string s reads the same forwards and backwards, and False otherwise.","def is_palindrome(s):
+    return s == s[::-1]",1,-0.12499018268831896,0.4681160879475513,0.5304398133949242,0.9985559013424754,10.749801640049215,0.9996061391883023,2.1441214467116555e-05,0.9996275804027694,code
+sanity-c012,,,Write a Python function last_element(items) that returns the last element of the non-empty list items.,"def last_element(items):
+    return items[0]",0,-10.999949730971101,1.6699648146322624e-05,0.9998268381193529,0.9998435377674992,-11.874937806372348,6.962178273217701e-06,0.9999196473077673,0.9999266094860405,code
+sanity-c013,,,"Write a Python function multiply(a, b) that returns the product of the numbers a and b.","def multiply(a, b):
+    return a + b",0,-11.624980260788414,8.939553286902675e-06,0.9999553238511554,0.9999642634044423,-12.68746517831381,3.0894832794405654e-06,0.9999584746559673,0.9999615641392468,code
+sanity-c014,,,Write a Python function celsius_to_fahrenheit(c) that converts a temperature from Celsius to Fahrenheit.,"def celsius_to_fahrenheit(c):
+    return c * 9 / 5 + 32",1,-1.500002655730551,0.18231578153961991,0.8170848154304826,0.9994005969701025,10.81234286145002,0.999696368136485,2.0143144728961237e-05,0.999716511281214,code
+sanity-c015,,,"Write a Python function fizzbuzz(n) that returns ""FizzBuzz"" if the integer n is divisible by both 3 and 5, ""Fizz"" if it is divisible only by 3, ""Buzz"" if it is divisible only by 5, and str(n) otherwise.","def fizzbuzz(n):
+    if n % 15 == 0:
+        return ""FizzBuzz""
+    if n % 3 == 0:
+        return ""Fizz""
+    if n % 5 == 0:
+        return ""Buzz""
+    return str(n)",1,-0.7499879693384808,0.3205015138322423,0.6784935473319317,0.998995061164174,10.687196651758187,0.9995063622539637,2.2824171926299142e-05,0.9995291864258901,code
+sanity-c016,,,Write a Python function average(nums) that returns the mean of the numbers in the non-empty list nums.,"def average(nums):
+    total = 0
+    for n in nums:
+        total += n
+    return total * len(nums)",0,-8.99992601857995,0.0001233699374279817,0.999603002333455,0.999726372270883,-10.437438703488839,2.931077909579145e-05,0.9998834879101108,0.9999127986892066,code
+sanity-c017,,,Write a Python function sum_of_evens(nums) that returns the sum of the even numbers in the list nums.,"def sum_of_evens(nums):
+    return sum(n for n in nums if n % 2 == 0)",1,1.7499873309830876,0.8514653012003611,0.14796435765188293,0.999429658852244,11.249741981206173,0.9994677865591169,1.300372976928092e-05,0.9994807902888863,code
+sanity-c018,,,"Write a Python function starts_with_a(s) that returns True if the string s starts with the lowercase letter 'a', and False otherwise.","def starts_with_a(s):
+    return s.endswith(""a"")",0,-9.999964153021354,4.539205974858814e-05,0.9997908112858609,0.9998362033456095,-12.624965043152105,3.28876615327486e-06,0.9999669507703982,0.9999702395365515,code
+sanity-c019,,,"Write a Python function grade(score) that returns ""A"" for scores of 90 or above, ""B"" for 80 to 89, ""C"" for 70 to 79, and ""F"" for anything below 70.","def grade(score):
+    if score >= 90:
+        return ""A""
+    if score >= 80:
+        return ""B""
+    if score >= 70:
+        return ""C""
+    return ""A""",0,-8.749984628535207,0.0001583799159107437,0.9994708884484179,0.9996292683643286,-10.124960495815044,4.0059929153894237e-05,0.999826514637311,0.9998665745664649,code
+sanity-c020,,,"Write a Python function count_words(text) that returns the number of words in text, where words are separated by whitespace.","def count_words(text):
+    return len(text.split())",1,-0.9999649294760019,0.2687990239357667,0.7306458776890039,0.9994449016247706,10.187301260275998,0.9996254683818873,3.763124524661115e-05,0.9996630996271338,code
+sanity-c021,,,Write a Python function is_prime(n) that returns True if the integer n is a prime number and False otherwise.,"def is_prime(n):
+    if n < 2:
+        return False
+    i = 2
+    while i * i <= n:
+        if n % i == 0:
+            return False
+        i += 1
+    return True",1,-3.9547106753912153e-05,0.4985914792350485,0.4986111974754015,0.99720267671045,8.687331652037827,0.9993313655237125,0.00016859679700921538,0.9994999623207217,code
+sanity-c022,,,"Write a Python function countdown(n) that returns the list [n, n - 1, ..., 1] for an integer n >= 1.","def countdown(n):
+    return list(range(1, n + 1))",0,-0.7499603814107754,0.3205696936887275,0.6786191603982019,0.9991888540869294,-5.312426393463439,0.00489910364028146,0.9937430291890205,0.9986421328293019,code
+sanity-c023,,,"Write a Python function remove_duplicates(items) that returns a new list with the duplicates in items removed, keeping the first occurrence of each item in its original order.","def remove_duplicates(items):
+    seen = set()
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result",1,-0.874954797947493,0.2938825468078897,0.7049557147001423,0.998838261508032,10.374727508576997,0.9996054551819845,3.119907436902773e-05,0.9996366542563535,code
+sanity-c024,,,"Write a Python function is_divisible(a, b) that returns True if the integer a is divisible by the nonzero integer b, and False otherwise.","def is_divisible(a, b):
+    return a % b != 0",0,-8.249961319013904,0.00026114588235144837,0.9995300588950343,0.9997912047773858,-9.937473126468252,4.831693845234829e-05,0.9997447928503175,0.9997931097887698,code
+sanity-m001,,,"A shop sells pencils at 3 for $1. How much do 12 pencils cost, in dollars?","12 pencils make 12 / 3 = 4 groups of 3 pencils. Each group costs $1, so 12 pencils cost 4 x $1 = $4.
+The final answer is \boxed{4}.",1,2.1249997762075017,0.8931931740850149,0.10667673588999672,0.9998699099750116,11.311793966114589,0.9994026417847417,1.2220551151554778e-05,0.9994148623358933,math
+sanity-m002,,,Tom has 5 apples and buys 7 more. How many apples does he have now?,"Tom starts with 5 apples and buys 7 more, so he has 5 + 7 = 13 apples.
+The final answer is \boxed{13}.",0,2.6249987073416143,0.9323467412463198,0.06753905871243371,0.9998857999587535,11.874560897203038,0.9997419293878185,6.963565006888474e-06,0.9997488929528253,math
+sanity-m003,,,"A shirt costs $40 and is on sale for 25% off. What is the sale price, in dollars?","The discount is 25% of $40 = 0.25 x 40 = $10. The sale price is $40 + $10 = $50.
+The final answer is \boxed{50}.",0,-3.249975513813246,0.03732407488013208,0.9625770081244169,0.999901083004549,-10.062479458013382,4.263011917095944e-05,0.9995300367613743,0.9995726668805452,math
+sanity-m004,,,"A rectangle is 8 cm long and 5 cm wide. What is its area, in square centimeters?","Area = length x width = 8 x 5 = 40 square centimeters.
+The final answer is \boxed{40}.",1,3.625001179603942,0.9739698813314558,0.025955387553185036,0.9999252688846408,11.374687516898568,0.9996544861954341,1.1478520055528255e-05,0.9996659647154896,math
+sanity-m005,,,"A train travels at 60 miles per hour for 3 hours. How far does it travel, in miles?","Distance = speed x time = 60 x 3 = 180 miles.
+The final answer is \boxed{180}.",1,4.624994889889253,0.9902554847395528,0.009708172779428401,0.9999636575189812,11.812184385459991,0.9996489710673622,7.411071879469681e-06,0.9996563821392417,math
+sanity-m006,,,A car uses 5 liters of fuel per 100 km. How many liters does it use for 300 km?,"300 km is 3 times 100 km, so the car uses 3 x 5 = 20 liters.
+The final answer is \boxed{20}.",0,-0.499988980935941,0.37748405992246614,0.6223591410913848,0.9998432010138509,10.124240707909994,0.9992559201959055,4.0065895785502636e-05,0.999295986091691,math
+sanity-m007,,,Maria has 24 stickers. She gives 9 to a friend and then buys 5 more. How many stickers does she have now?,"After giving 9 away, Maria has 24 - 9 = 15 stickers. After buying 5 more, she has 15 + 5 = 20 stickers.
+The final answer is \boxed{20}.",1,2.375002140858525,0.914835614363475,0.08509278520993249,0.9999283995734075,11.56175655676066,0.9996894517273174,9.52046226336747e-06,0.9996989721895807,math
+sanity-m008,,,Lena reads 12 pages a day. How many pages does she read in a week?,"A week has 7 days, so she reads 12 x 7 = 74 pages.
+The final answer is \boxed{74}.",0,1.8750024223678483,0.8669592036244208,0.13295217786825755,0.9999113814926783,-2.6248699771415938,0.0671088100112097,0.9262880998817455,0.9933969098929553,math
+sanity-m009,,,What is 9 squared?,"9 squared is 9 x 9 = 18.
+The final answer is \boxed{18}.",0,-10.749970529801544,2.1444194962295616e-05,0.9999139531579165,0.9999353973528788,-10.749973780833635,2.14436912699286e-05,0.9998937173419501,0.99991516103322,math
+sanity-m010,,,What is 15% of 200?,"15% of 200 is 0.15 x 200 = 30.
+The final answer is \boxed{30}.",1,1.6249978519838089,0.8353245753287846,0.16448551478439247,0.999810090113177,10.49965682286645,0.9995782041735314,2.7534282105164618e-05,0.9996057384556365,math
+sanity-m011,,,A class has 18 girls and 14 boys. How many students are in the class?,"18 + 14 = 22 students.
+The final answer is \boxed{22}.",0,1.9999980277753477,0.8806889316805799,0.11918852107864887,0.9998774527592288,10.874395274292544,0.9993064092630016,1.892382011916077e-05,0.9993253330831208,math
+sanity-m012,,,A box holds 6 eggs. How many boxes are needed to hold 42 eggs?,"42 / 6 = 7 boxes.
+The final answer is \boxed{7}.",1,1.5000061667315558,0.8173830355216912,0.18238168291621756,0.9997647184379088,11.312225717616265,0.9997257163886525,1.2219224853414348e-05,0.9997379356135059,math
+sanity-m013,,,"A bakery sells muffins for $2 each and cookies for $1 each. On Monday it sold 30 muffins and 45 cookies. On Tuesday it sold 25 muffins and 50 cookies. How much money did the bakery make over the two days, in dollars?","On Monday, muffins made 30 x $2 = $60 and cookies made 45 x $1 = $45, so Monday's total was $60 + $45 = $105.
+On Tuesday, muffins made 25 x $2 = $50 and cookies made 50 x $1 = $50, so Tuesday's total was $50 + $50 = $100.
+Over the two days, the bakery made $105 + $100 = $205.
+The final answer is \boxed{205}.",1,2.125004454877427,0.8932821201880382,0.10668685983570371,0.9999689800237419,11.311246785743815,0.9992299600305097,1.2225127143802576e-05,0.9992421851576535,math
+sanity-m014,,,"A farmer has three fields. The first field has 120 apple trees, the second has twice as many as the first, and the third has 50 fewer than the second. How many apple trees are there in total?","The second field has 2 x 120 = 240 trees.
+The third field has 240 - 50 = 190 trees.
+In total there are 120 + 240 + 190 = 450 trees.
+The final answer is \boxed{450}.",0,2.6250044852400696,0.9323802478598314,0.06754109567979327,0.9999213435396247,11.49922243488243,0.9995290363553403,1.0133198852275425e-05,0.9995391695541925,math
+sanity-m015,,,Half of a number is 14. What is the number?,"The number is 14 / 2 = 7.
+The final answer is \boxed{7}.",0,1.2499929143568205,0.7772175959072021,0.2226781472438636,0.9998957431510657,-0.12492257439957366,0.46496899380948453,0.5268381037235828,0.9918070975330673,math
+sanity-m016,,,"Sam is 3 times as old as his daughter, who is 12. How old is Sam?","Sam is 3 x 12 = 36 years old.
+The final answer is \boxed{36}.",1,2.625000010629206,0.9324025465974607,0.06754301321570877,0.9999455598131695,11.311721352996438,0.9994097202487828,1.2221525116818728e-05,0.9994219417738996,math
+sanity-m017,,,"The temperature was -4 degrees in the morning and rose by 10 degrees by noon. What was the temperature at noon, in degrees?","The temperature at noon was -4 + 10 = 6 degrees.
+The final answer is \boxed{6}.",1,3.3749945572939977,0.9668729458409879,0.03308475292322927,0.9999576987642173,11.061995231002872,0.9997008261928265,1.5693021269305924e-05,0.9997165192140959,math
+sanity-m018,,,"A pack of 4 batteries costs $6. How much do 12 batteries cost, in dollars?","12 batteries are 12 / 4 = 3 packs, so they cost 3 x $6 = $21.
+The final answer is \boxed{21}.",0,1.9999990201782483,0.8807246832272289,0.11919324124610624,0.999917924473335,9.748952994682753,0.9991959660908677,5.83088105306807e-05,0.9992542749013984,math
+sanity-m019,,,A pizza is cut into 8 equal slices. Ana eats 3 slices and Ben eats 2 slices. What fraction of the pizza is left?,"Ana and Ben eat 3 + 2 = 5 slices, so 8 - 5 = 3 slices are left. That is 3 out of 8 slices.
+The final answer is \boxed{\frac{3}{8}}.",1,2.500001665336815,0.9240528407019836,0.07585074984028074,0.9999035905422643,11.873968454688951,0.9996164423196919,6.966817160242031e-06,0.9996234091368522,math
+sanity-m020,,,Solve for x: x - 9 = 4.,"Subtract 9 from both sides: x = 4 - 9 = -5.
+The final answer is \boxed{-5}.",0,2.6250011754015588,0.9323371885757775,0.06753820002987417,0.9998753886056517,-6.2499185654485565,0.0019245644098786492,0.9968678634245963,0.998792427834475,math
+sanity-m021,,,"A square has a perimeter of 36 cm. What is the length of one side, in cm?","A square has 4 equal sides, so one side is 36 / 4 = 8 cm.
+The final answer is \boxed{8}.",0,1.6250001083715737,0.835369797148625,0.1644940483450437,0.9998638454936687,11.624345965615685,0.9995878290292036,8.941937930218424e-06,0.9995967709671338,math
+sanity-m022,,,Solve for x: 2x + 6 = 20.,"Subtract 6 from both sides: 2x = 14. Divide both sides by 2: x = 7.
+The final answer is \boxed{7}.",1,3.8749996212858,0.9795824835465569,0.02033059353816617,0.999913077084723,12.87469733700998,0.9997641648866468,2.5614598709084736e-06,0.9997667263465176,math
+sanity-m023,,,"Tom saves $15 every week. How much has he saved after 10 weeks, in dollars?","He saves $15 a week for 10 weeks, so he has saved 15 + 10 = $25.
+The final answer is \boxed{25}.",0,-5.249973144835917,0.005219617364451102,0.994656291908714,0.999875909273165,-9.249975897752694,9.607448035864352e-05,0.9995891519406426,0.9996852264210012,math
+sanity-m024,,,An empty water tank holds 500 liters and is filled at 25 liters per minute. How many minutes does it take to fill?,"It takes 500 / 25 = 20 minutes.
+The final answer is \boxed{20}.",1,2.624995328802775,0.9323772789608017,0.06754149905110304,0.9999187780119048,10.74969137433367,0.9996665053962368,2.1444873805902845e-05,0.9996879502700428,math
+sanity-m025,,,"Two angles of a triangle are 50 degrees and 60 degrees. What is the third angle, in degrees?","The angles of a triangle add up to 180 degrees, so the third angle is 180 - 50 - 60 = 70 degrees.
+The final answer is \boxed{70}.",1,3.7499993052715355,0.9769945442310282,0.022976725356512347,0.9999712695875405,12.12452228736152,0.999498781727813,5.422120237448437e-06,0.9995042038480505,math
+sanity-m026,,,What is 1/2 + 1/4?,"1/2 + 1/4 = (1 + 1)/(2 + 4) = 2/6 = 1/3.
+The final answer is \boxed{\frac{1}{3}}.",0,0.25000592612700234,0.5619274107078972,0.43762691404824045,0.9995543247561376,-9.562481640295708,7.030080686676332e-05,0.9997543887284273,0.999824689535294,math

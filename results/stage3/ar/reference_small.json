@@ -1,0 +1,548 @@
+{
+  "config": "configs/ar_sanity_small.json",
+  "input": "bank/sanity/sanity_set.jsonl",
+  "input_sha256": "f431f8d60448eb9324f1fa6afb9a5d121003da0d2ef1f5e4b52d76813d841ecf",
+  "template": "T1",
+  "tolerance": 0.05,
+  "items": [
+    "sanity-c001",
+    "sanity-c002",
+    "sanity-c003",
+    "sanity-c004",
+    "sanity-c005",
+    "sanity-c006",
+    "sanity-c007",
+    "sanity-c008",
+    "sanity-c009",
+    "sanity-c010",
+    "sanity-m001",
+    "sanity-m002",
+    "sanity-m003",
+    "sanity-m004",
+    "sanity-m005",
+    "sanity-m006",
+    "sanity-m007",
+    "sanity-m008",
+    "sanity-m009",
+    "sanity-m010"
+  ],
+  "models": {
+    "A": {
+      "model_id": "meta-llama/Llama-3.2-3B-Instruct",
+      "requested_attention": "sdpa",
+      "rendered_prompt_example": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nCutting Knowledge Date: December 2023\nToday Date: 26 Oct 2026\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nProblem:\nWrite a Python function add(a, b) that returns the sum of the integers a and b.\n\nCandidate solution:\ndef add(a, b):\n    return a + b\n\nIs the final answer correct? Answer Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+      "single_bos": true,
+      "token_sets": {
+        "yes": {
+          "spellings": {
+            "Yes": 9642,
+            " Yes": 7566,
+            "yes": 9891,
+            " yes": 10035,
+            "YES": 14331,
+            " YES": 14410
+          },
+          "ids": [
+            7566,
+            9642,
+            9891,
+            10035,
+            14331,
+            14410
+          ]
+        },
+        "no": {
+          "spellings": {
+            "No": 2822,
+            " No": 2360,
+            "no": 2201,
+            " no": 912,
+            "NO": 9173,
+            " NO": 5782
+          },
+          "ids": [
+            912,
+            2201,
+            2360,
+            2822,
+            5782,
+            9173
+          ]
+        }
+      },
+      "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+      "attention_implementation": "sdpa",
+      "items": [
+        {
+          "id": "sanity-c001",
+          "score": 5.1219587100415076e-05,
+          "reference_score": 5.1219587100415076e-05,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c002",
+          "score": -5.999657577555371,
+          "reference_score": -5.999657577555371,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c003",
+          "score": -0.7498856020336565,
+          "reference_score": -0.7498856020336565,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c004",
+          "score": -3.9998033717490005,
+          "reference_score": -3.9998033717490005,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c005",
+          "score": -6.6248428247450315,
+          "reference_score": -6.6248428247450315,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c006",
+          "score": -0.12491137984450251,
+          "reference_score": -0.12491137984450251,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c007",
+          "score": -2.124866169577477,
+          "reference_score": -2.124866169577477,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c008",
+          "score": 0.5000736149011265,
+          "reference_score": 0.5000736149011265,
+          "score_delta": 0.0,
+          "top_token": 9642,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c009",
+          "score": -2.374852742114187,
+          "reference_score": -2.374852742114187,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c010",
+          "score": -5.6248157779197925,
+          "reference_score": -5.6248157779197925,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m001",
+          "score": 2.980492735704665e-05,
+          "reference_score": 2.980492735704665e-05,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m002",
+          "score": -0.6249704490929712,
+          "reference_score": -0.6249704490929712,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m003",
+          "score": -3.624883503569916,
+          "reference_score": -3.624883503569916,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m004",
+          "score": 1.2500186209867108,
+          "reference_score": 1.2500186209867108,
+          "score_delta": 0.0,
+          "top_token": 9642,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m005",
+          "score": 1.875012569986141,
+          "reference_score": 1.875012569986141,
+          "score_delta": 0.0,
+          "top_token": 9642,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m006",
+          "score": -2.2499375279469125,
+          "reference_score": -2.2499375279469125,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m007",
+          "score": -1.2499424666915444,
+          "reference_score": -1.2499424666915444,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m008",
+          "score": -0.8749398759557323,
+          "reference_score": -0.8749398759557323,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m009",
+          "score": -5.374855602392976,
+          "reference_score": -5.374855602392976,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m010",
+          "score": -0.9999213846023542,
+          "reference_score": -0.9999213846023542,
+          "score_delta": 0.0,
+          "top_token": 2822,
+          "same_top_raw_logit": true,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "fp32_check": {
+        "max_abs_score_change": 0.10915883148248362,
+        "spearman": 0.9984962406015038,
+        "same_verdict_at_zero": 20,
+        "items": 20,
+        "fp32_scores": {
+          "sanity-c001": 0.00039406033995992296,
+          "sanity-c002": -5.997837156882278,
+          "sanity-c003": -0.7304596533539471,
+          "sanity-c004": -4.031297792234216,
+          "sanity-c005": -6.734001656227515,
+          "sanity-c006": -0.11167986040799094,
+          "sanity-c007": -2.067877214192628,
+          "sanity-c008": 0.6021103764736923,
+          "sanity-c009": -2.423433349401874,
+          "sanity-c010": -5.631846697291398,
+          "sanity-m001": 0.030301372653792846,
+          "sanity-m002": -0.6341391839097027,
+          "sanity-m003": -3.523269693298554,
+          "sanity-m004": 1.1913630573052192,
+          "sanity-m005": 1.8529170817460714,
+          "sanity-m006": -2.32964505021532,
+          "sanity-m007": -1.2899199907541314,
+          "sanity-m008": -0.8802437873694324,
+          "sanity-m009": -5.374864036618922,
+          "sanity-m010": -1.024374442546038
+        },
+        "note": "descriptive; no pass bar"
+      }
+    },
+    "B": {
+      "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "requested_attention": "sdpa",
+      "rendered_prompt_example": "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n<|im_start|>user\nProblem:\nWrite a Python function add(a, b) that returns the sum of the integers a and b.\n\nCandidate solution:\ndef add(a, b):\n    return a + b\n\nIs the final answer correct? Answer Yes or No.<|im_end|>\n<|im_start|>assistant\n",
+      "single_bos": true,
+      "token_sets": {
+        "yes": {
+          "spellings": {
+            "Yes": 9454,
+            " Yes": 7414,
+            "yes": 9693,
+            " yes": 9834,
+            "YES": 14004,
+            " YES": 14080
+          },
+          "ids": [
+            7414,
+            9454,
+            9693,
+            9834,
+            14004,
+            14080
+          ]
+        },
+        "no": {
+          "spellings": {
+            "No": 2753,
+            " No": 2308,
+            "no": 2152,
+            " no": 902,
+            "NO": 8996,
+            " NO": 5664
+          },
+          "ids": [
+            902,
+            2152,
+            2308,
+            2753,
+            5664,
+            8996
+          ]
+        }
+      },
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+      "attention_implementation": "sdpa",
+      "items": [
+        {
+          "id": "sanity-c001",
+          "score": 2.125016268587549,
+          "reference_score": 2.125016268587549,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c002",
+          "score": -4.124970421588409,
+          "reference_score": -4.124970421588409,
+          "score_delta": 0.0,
+          "top_token": 2753,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c003",
+          "score": 1.5000345251903422,
+          "reference_score": 1.5000345251903422,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c004",
+          "score": 0.6250391679626106,
+          "reference_score": 0.6250391679626106,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c005",
+          "score": -3.1249694282287286,
+          "reference_score": -3.1249694282287286,
+          "score_delta": 0.0,
+          "top_token": 2753,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c006",
+          "score": 2.375021269779169,
+          "reference_score": 2.375021269779169,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c007",
+          "score": 0.6250295453769277,
+          "reference_score": 0.6250295453769277,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c008",
+          "score": 3.125017914791196,
+          "reference_score": 3.125017914791196,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c009",
+          "score": 1.6250259283777715,
+          "reference_score": 1.6250259283777715,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-c010",
+          "score": -3.1249645876163266,
+          "reference_score": -3.1249645876163266,
+          "score_delta": 0.0,
+          "top_token": 2753,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m001",
+          "score": 2.0000301318236575,
+          "reference_score": 2.0000301318236575,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m002",
+          "score": 1.500040318668264,
+          "reference_score": 1.500040318668264,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m003",
+          "score": 1.8750238563540318,
+          "reference_score": 1.8750238563540318,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m004",
+          "score": 1.6250219010723161,
+          "reference_score": 1.6250219010723161,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m005",
+          "score": 1.2500249045082914,
+          "reference_score": 1.2500249045082914,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m006",
+          "score": 0.3750335035160164,
+          "reference_score": 0.3750335035160164,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m007",
+          "score": 1.375042095711966,
+          "reference_score": 1.375042095711966,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m008",
+          "score": 0.37504146445793685,
+          "reference_score": 0.37504146445793685,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m009",
+          "score": -0.8749358792141195,
+          "reference_score": -0.8749358792141195,
+          "score_delta": 0.0,
+          "top_token": 2753,
+          "same_top_raw_logit": true,
+          "passed": true
+        },
+        {
+          "id": "sanity-m010",
+          "score": 1.6250310345536136,
+          "reference_score": 1.6250310345536136,
+          "score_delta": 0.0,
+          "top_token": 9454,
+          "same_top_raw_logit": true,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "fp32_check": {
+        "max_abs_score_change": 0.1616378776675944,
+        "spearman": 0.9969924812030075,
+        "same_verdict_at_zero": 20,
+        "items": 20,
+        "fp32_scores": {
+          "sanity-c001": 2.0983270469169564,
+          "sanity-c002": -4.286608299256003,
+          "sanity-c003": 1.510780771552499,
+          "sanity-c004": 0.642378534973878,
+          "sanity-c005": -3.0608239218624136,
+          "sanity-c006": 2.4812076939908168,
+          "sanity-c007": 0.5312851427830454,
+          "sanity-c008": 3.132739004466652,
+          "sanity-c009": 1.6382280384760572,
+          "sanity-c010": -3.081724599509326,
+          "sanity-m001": 1.9798619396346115,
+          "sanity-m002": 1.5289505673244008,
+          "sanity-m003": 1.764805724305673,
+          "sanity-m004": 1.614820036153141,
+          "sanity-m005": 1.2559249783060547,
+          "sanity-m006": 0.312340415581862,
+          "sanity-m007": 1.3384612863573628,
+          "sanity-m008": 0.2997158285090723,
+          "sanity-m009": -0.793926570127397,
+          "sanity-m010": 1.661780647977122
+        },
+        "note": "descriptive; no pass bar"
+      }
+    }
+  },
+  "passed": true
+}
