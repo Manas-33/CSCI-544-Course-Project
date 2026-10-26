@@ -79,36 +79,52 @@ What it runs (PLAN.md §4 and §7):
  ("markdown", "A sanity evaluation that fails the 0.90 bar exits with code 1 and prints an error line; that is the result, not a crash. Keep going."),
 ] + finish("ar"))
 
-def diffusion(model, title, env, llada_repo, restart_note=""):
+def diffusion(model, title, env, llada_repo, restart_note="", name=None, prefixes=("none",)):
+    """One diffusion notebook. With several answer prefixes (iLLaDA), the prefix is chosen on the
+    development bank together with the slot count (decisions/2026-10-25-illada-thinking-off.md)."""
+    name = name or model
     repo_flag = " --llada-repo /content/LLaDA" if llada_repo else ""
     clone = "\n!git clone -q https://github.com/ML-GSAI/LLaDA /content/LLaDA && git -C /content/LLaDA checkout -q 9182493" if llada_repo else ""
-    cells = setup(title, f"!pip install -q -r harness/diffusion/requirements/{env}.txt{clone}", f'OUT = "results/stage3/{model}"\n!mkdir -p {{OUT}}\n' + DEV_HASH)
+    cells = setup(title, f"!pip install -q -r harness/diffusion/requirements/{env}.txt{clone}", f'OUT = "results/stage3/{name}"\n!mkdir -p {{OUT}}\n' + DEV_HASH)
     if restart_note:
         cells.insert(2, ("markdown", restart_note))
-    cells += [
-        ("markdown", "## 1. Smoke test on a tiny random-weight copy of the official code (CPU)"),
-        ("code", f"!python -m harness.diffusion.checks.check_tiny --model {model}{repo_flag} --report {{OUT}}/tiny.json"),
-    ]
     if model == "llada":
         cells += [
-            ("markdown", "## 2. Checks at LLaDA's chosen answer-slot count (1, chosen earlier on the development bank)"),
-            ("code", "N = 1"),
+            ("markdown", "## 1. LLaDA's answer-slot count (1, chosen earlier on the development bank) and no answer prefix"),
+            ("code", 'N = 1\nPREFIX = "none"'),
         ]
-    else:
+    elif len(prefixes) == 1:
         cells += [
-            ("markdown", "## 2. Choose the answer-slot count on the development bank (PLAN.md §4)\nScores the 142 development answers with 1, 8 and 32 slots (labels are never read), then picks the highest median Yes+No mass, ties to fewer slots. Also reports the usable-scores gate."),
+            ("markdown", "## 1. Choose the answer-slot count on the development bank (PLAN.md §4)\nScores the 142 development answers with 1, 8 and 32 slots (labels are never read), then picks the highest median Yes+No mass, ties to fewer slots. Also reports the usable-scores gate."),
             ("code", f'''for n in (1, 8, 32):
     !python -m harness.diffusion.run_score --model {model} --n-slots {{n}} --items bank/dev/dev_bank.jsonl --bank-hash {{DEV_HASH}} --out {{OUT}}/dev_T1_n{{n}}.jsonl
 !python -m harness.diffusion.choose_slots {{OUT}}/dev_T1_n1.jsonl {{OUT}}/dev_T1_n8.jsonl {{OUT}}/dev_T1_n32.jsonl --report {{OUT}}/slots.json
 import json
-N = json.load(open(f"{{OUT}}/slots.json"))["chosen_n_slots"]
-print("answer slots:", N)'''),
+choice = json.load(open(f"{{OUT}}/slots.json"))
+N, PREFIX = choice["chosen_n_slots"], choice["chosen_answer_prefix"]
+print("answer slots:", N, "| answer prefix:", PREFIX)'''),
+        ]
+    else:
+        names = ", ".join(f'"{p}"' for p in prefixes)
+        cells += [
+            ("markdown", "## 1. Choose the answer prefix and slot count on the development bank\nScores the 142 development answers with every answer prefix and 1, 8 and 32 slots (labels are never read), then picks the combination with the highest median Yes+No mass; ties go to fewer slots, then to the simpler prefix. Also reports the usable-scores gate. The rule is fixed in `decisions/2026-10-25-illada-thinking-off.md`."),
+            ("code", f'''for p in ({names}):
+    for n in (1, 8, 32):
+        !python -m harness.diffusion.run_score --model {model} --answer-prefix {{p}} --n-slots {{n}} --items bank/dev/dev_bank.jsonl --bank-hash {{DEV_HASH}} --out {{OUT}}/dev_T1_{{p}}_n{{n}}.jsonl
+FILES = " ".join(f"{{OUT}}/dev_T1_{{p}}_n{{n}}.jsonl" for p in ({names}) for n in (1, 8, 32))
+!python -m harness.diffusion.choose_slots {{FILES}} --report {{OUT}}/slots.json
+import json
+choice = json.load(open(f"{{OUT}}/slots.json"))
+N, PREFIX = choice["chosen_n_slots"], choice["chosen_answer_prefix"]
+print("answer slots:", N, "| answer prefix:", PREFIX)'''),
         ]
     cells += [
+        ("markdown", "## 2. Smoke test on a tiny random-weight copy of the official code (CPU)"),
+        ("code", f"!python -m harness.diffusion.checks.check_tiny --model {model}{repo_flag} --answer-prefix {{PREFIX}} --report {{OUT}}/tiny.json"),
         ("markdown", "## 3. Scoring-code tests 1–3 (PLAN.md §4)\nTest 2 compares our scorer with the official model code's first forward pass; test 1 is the sanity bar (AUROC ≥ 0.90); test 3 checks batched against unbatched scores and repeat runs."),
-        ("code", f'''!python -m harness.diffusion.checks.check_parity --model {model} --n-slots {{N}}{repo_flag} --report {{OUT}}/test2_parity_n{{N}}.json
-!python -m harness.diffusion.checks.check_sanity --model {model} --n-slots {{N}} --report {{OUT}}/test1_sanity_n{{N}}.json --out {{OUT}}/sanity_scores_n{{N}}.jsonl
-!python -m harness.diffusion.checks.check_invariance --model {model} --n-slots {{N}} --report {{OUT}}/test3_invariance_n{{N}}.json --save {{OUT}}/invariance_scores_n{{N}}.json'''),
+        ("code", f'''!python -m harness.diffusion.checks.check_parity --model {model} --n-slots {{N}} --answer-prefix {{PREFIX}}{repo_flag} --report {{OUT}}/test2_parity_n{{N}}.json
+!python -m harness.diffusion.checks.check_sanity --model {model} --n-slots {{N}} --answer-prefix {{PREFIX}} --report {{OUT}}/test1_sanity_n{{N}}.json --out {{OUT}}/sanity_scores_n{{N}}.jsonl
+!python -m harness.diffusion.checks.check_invariance --model {model} --n-slots {{N}} --answer-prefix {{PREFIX}} --report {{OUT}}/test3_invariance_n{{N}}.json --save {{OUT}}/invariance_scores_n{{N}}.json'''),
     ]
     if model == "llada":
         cells += [
@@ -117,7 +133,7 @@ print("answer slots:", N)'''),
 !python -m harness.llada_compare --parity {OUT}/sanity_T1_n1.jsonl | tee {OUT}/agreement_with_saved_run.json'''),
         ]
     cells.append(("markdown", "Each check prints PASS or FAIL and writes its report even when it fails; a FAIL is a result, not a crash. Keep going."))
-    return nb(cells + finish(model))
+    return nb(cells + finish(name))
 
 llada = diffusion("llada", '''
 # Stage 3 · LLaDA-8B-Instruct: scoring-code tests
@@ -127,9 +143,12 @@ Runtime: **A100** (the saved LLaDA run used an A100 with torch 2.6.0; matching i
 LLaDA already has a saved sanity run (AUROC 0.885, fails the 0.90 bar). This notebook runs what is still missing: the parity test against the official code (test 2), batch invariance (test 3), the sanity check through the shared scorer, and agreement with the saved run.''', "llada", True)
 
 illada = diffusion("illada", '''
-# Stage 3 · iLLaDA-8B-Instruct: answer slots and scoring-code tests
+# Stage 3 · iLLaDA-8B-Instruct with thinking off: answer prefix, slots and scoring-code tests
 
-Runtime: **A100**. One fresh runtime for this notebook only. iLLaDA runs on LLaDA's official code (`mask_id=5`) and is scored unbatched, so test 3 checks repeat runs only.''', "illada", True)
+Runtime: **L4 or A100**. One fresh runtime for this notebook only. iLLaDA runs on LLaDA's official code (`mask_id=5`) and is scored unbatched, so test 3 checks repeat runs only.
+
+The first run (`results/stage3/illada/`) failed the usable-scores gate: iLLaDA opens every answer with a `<think>` block, so its first answer slot holds `<`, not Yes/No. As recorded in `decisions/2026-10-25-illada-thinking-off.md`, this run turns thinking off with an empty think block after the generation prompt, choosing the exact text and the slot count on the development bank by median Yes+No mass. Results go to `results/stage3/illada-thinking-off/`.''', "illada", True,
+                  name="illada-thinking-off", prefixes=("none", "think_nl", "think_nlnl"))
 
 dream = diffusion("dream", '''
 # Stage 3 · Dream-v0-Instruct-7B: answer slots and scoring-code tests

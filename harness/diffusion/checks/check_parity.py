@@ -25,7 +25,7 @@ import sys
 
 import torch
 
-from ..scorer import verdict_from_logits
+from ..scorer import ANSWER_PREFIXES, verdict_from_logits
 from .common import finish, load_items, message, model_args, scorer_from_args
 
 N_PROMPTS = 20
@@ -40,13 +40,17 @@ class _FirstForward(Exception):
         self.logits = logits
 
 
-def official_prompt_ids(key, tokenizer, user_message) -> list:
+def official_prompt_ids(key, tokenizer, user_message, answer_prefix="none") -> list:
+    """The prompt ids the official code builds, with the same answer prefix appended to the text."""
     messages = [{"role": "user", "content": user_message}]
     if key == "dream":
+        if answer_prefix != "none":
+            raise NotImplementedError("answer prefixes are not wired into Dream's official encoding")
         enc = tokenizer.apply_chat_template(
             messages, return_tensors="pt", return_dict=True, add_generation_prompt=True)
         return enc["input_ids"][0].tolist()
     text = tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+    text += ANSWER_PREFIXES[answer_prefix]
     if key == "llada":
         return tokenizer(text, add_special_tokens=False)["input_ids"]
     return tokenizer(text)["input_ids"]  # iLLaDA instruct eval: add_bos_token=False
@@ -115,7 +119,7 @@ def main(argv=None):
     for it in items:
         user_message = message(it)
         ours_ids = scorer.prompt_ids(user_message)
-        official_ids = official_prompt_ids(args.model, scorer.tokenizer, user_message)
+        official_ids = official_prompt_ids(args.model, scorer.tokenizer, user_message, args.answer_prefix)
         ours = scorer.score_ids([ours_ids])[0]
         ref = verdict_from_logits(
             official_slot_logits(scorer, official_ids, llada_generate), scorer.tokens)
@@ -143,9 +147,10 @@ def main(argv=None):
         status = "PASS"
     finish("test 2 parity", status, {
         "model": args.model, "revision": scorer.revision, "n_slots": args.n_slots,
+        "answer_prefix": args.answer_prefix,
         "llada_repo_commit": LLADA_REPO_COMMIT if args.model != "dream" else None,
         "score_tol": SCORE_TOL, "n_prompts": len(items), "failures": failures,
-        "rendered_prompt_example": scorer.render(example),
+        "rendered_prompt_example": scorer.render(example) + ANSWER_PREFIXES[scorer.answer_prefix],
         "prompt_ids_example": scorer.prompt_ids(example),
         "results": results,
     }, args.report)

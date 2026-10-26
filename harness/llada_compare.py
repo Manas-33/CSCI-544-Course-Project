@@ -188,6 +188,8 @@ def parity(new_rows, lm, llada, bank_hash):
     new = index_rows(new_rows, 'candidate_id', 'parity scores')
     require_same_ids(set(llada), new, 'parity scores')
     for cid, row in new.items():
+        if row.get('answer_prefix', 'none') != 'none':
+            raise ValueError(f"{cid}: answer_prefix {row.get('answer_prefix')} differs from the saved run's none")
         if row.get('bank_hash') != bank_hash:
             raise ValueError(f"{cid}: bank_hash {row.get('bank_hash')} is not the sanity set's {bank_hash}")
         if row.get('status') != 'ok' or row.get('model') != 'llada' or row.get('template') != 'T1':

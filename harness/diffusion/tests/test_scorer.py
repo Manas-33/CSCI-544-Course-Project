@@ -11,7 +11,7 @@ import pytest
 import torch
 
 from harness.diffusion.scorer import (
-    SPECS, DreamScorer, ILLaDAScorer, LLaDAScorer, PromptTooLong, answer_slot_index,
+    ANSWER_PREFIXES, SPECS, DreamScorer, ILLaDAScorer, LLaDAScorer, PromptTooLong, answer_slot_index,
     build_batch, check_environment, verdict_from_logits, verdict_tokens,
 )
 
@@ -232,3 +232,15 @@ def test_check_environment(monkeypatch):
         check_environment(SPECS["dream"])
     monkeypatch.setattr(torch, "__version__", "2.5.1+cu124")
     check_environment(SPECS["dream"])
+
+
+def test_answer_prefix_follows_the_generation_prompt():
+    plain = make("illada", SlotMarkerModel())
+    thinking_off = ILLaDAScorer(plain.model, MockTokenizer(), plain.spec, 8, device="cpu", answer_prefix="think_nl")
+    assert thinking_off.answer_prefix == "think_nl"
+    text = thinking_off.render("Is it right") + ANSWER_PREFIXES["think_nl"]
+    assert thinking_off.prompt_ids("Is it right") == thinking_off.tokenizer.encode(text, add_special_tokens=False)
+    assert len(thinking_off.prompt_ids("Is it right")) > len(plain.prompt_ids("Is it right"))
+    assert plain.answer_prefix == "none" and ANSWER_PREFIXES["none"] == ""
+    with pytest.raises(ValueError, match="answer prefix"):
+        ILLaDAScorer(plain.model, MockTokenizer(), plain.spec, 8, device="cpu", answer_prefix="made_up")

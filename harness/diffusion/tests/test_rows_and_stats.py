@@ -9,7 +9,8 @@ from harness.diffusion.interface import (
     SCORE_ROW_FIELDS, read_jsonl, score_row, t1_message, write_jsonl,
 )
 from harness.diffusion.checks.check_parity import balanced_items
-from harness.diffusion.choose_slots import choose
+from harness.diffusion.choose_slots import choose, choose_combination
+from harness.diffusion.choose_slots import main as choose_slots_main
 from harness.diffusion.run_score import previous_rows, score_items
 from harness.diffusion.scorer import SPECS, LLaDAScorer, Verdict
 
@@ -152,3 +153,49 @@ def test_choose_slots_refuses_mixed_inputs():
         choose({1: _slot_rows(1, 0.6), 8: _slot_rows(8, 0.9, ids=("a", "b")), 32: _slot_rows(32, 0.9)})
     with pytest.raises(ValueError, match="mix"):
         choose({1: _slot_rows(1, 0.6), 8: _slot_rows(8, 0.9, model="dream"), 32: _slot_rows(32, 0.9)})
+
+
+def test_score_rows_record_the_answer_prefix():
+    row = score_row(bank_hash="h", candidate_id="c", model="illada", revision="r", template="T1",
+                    n_slots=8, verdict=V, answer_prefix="think_nl")
+    assert row["answer_prefix"] == "think_nl" and "answer_prefix" in SCORE_ROW_FIELDS
+    assert score_row(bank_hash="h", candidate_id="c", model="llada", revision="r", template="T1",
+                     n_slots=1, verdict=V)["answer_prefix"] == "none"
+
+
+def test_resume_refuses_a_file_scored_with_another_prefix(tmp_path):
+    out = tmp_path / "scores.jsonl"
+    write_jsonl(out, [score_row(bank_hash="h", candidate_id="a", model="illada", revision="r", template="T1",
+                                n_slots=8, verdict=V, answer_prefix="none")])
+    with pytest.raises(SystemExit, match="other settings"):
+        previous_rows(out, model="illada", template="T1", n_slots=8, bank_hash="h", answer_prefix="think_nl")
+    assert len(previous_rows(out, model="illada", template="T1", n_slots=8, bank_hash="h")) == 1
+
+
+def _prefix_rows(prefix, n, mass):
+    return [dict(score_row(bank_hash="h", candidate_id=c, model="illada", revision="r", template="T1", n_slots=n,
+                           verdict=Verdict(score=0.0, p_yes=mass / 2, p_no=mass / 2, mass=mass, top_id=1),
+                           answer_prefix=prefix)) for c in ("a", "b")]
+
+
+def test_choose_picks_prefix_and_slots_jointly_with_ties_to_fewer_slots_then_simpler_prefix():
+    groups = {("none", 1): _prefix_rows("none", 1, 0.001), ("none", 8): _prefix_rows("none", 8, 0.001),
+              ("think_nl", 1): _prefix_rows("think_nl", 1, 0.9), ("think_nl", 8): _prefix_rows("think_nl", 8, 0.9),
+              ("think_nlnl", 1): _prefix_rows("think_nlnl", 1, 0.9)}
+    result = choose_combination(groups)
+    assert (result["chosen_answer_prefix"], result["chosen_n_slots"]) == ("think_nl", 1)
+    assert result["usable_scores_gate"]["passed"]
+    assert result["median_yes_no_mass"]["none"]["8"] == 0.001
+
+
+def test_choose_slots_cli_ignores_run_manifests(tmp_path):
+    for prefix in ("none", "think_nl"):
+        for n in (1, 8, 32):
+            path = tmp_path / f"dev_T1_{prefix}_n{n}.jsonl"
+            write_jsonl(path, _prefix_rows(prefix, n, 0.9 if prefix == "think_nl" else 0.01))
+            write_jsonl(str(path) + ".manifest.jsonl", [{"model": "illada", "n_slots": n}])
+    report = tmp_path / "slots.json"
+    files = sorted(str(p) for p in tmp_path.glob("dev_T1_*_n*.jsonl"))  # the shell glob, manifests included
+    assert any(f.endswith(".manifest.jsonl") for f in files)
+    assert choose_slots_main(files + ["--report", str(report)]) == 0
+    assert json.loads(report.read_text())["chosen_answer_prefix"] == "think_nl"

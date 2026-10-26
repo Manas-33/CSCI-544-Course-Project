@@ -47,7 +47,8 @@ def main(argv=None):
     if args.out:
         write_jsonl(args.out, [
             score_row(bank_hash="sanity", candidate_id=it["candidate_id"], model=args.model,
-                      revision=scorer.revision, template="T1", n_slots=args.n_slots, verdict=v)
+                      revision=scorer.revision, template="T1", n_slots=args.n_slots, verdict=v,
+                      answer_prefix=args.answer_prefix)
             for it, v in zip(items, verdicts)])
 
     if n_pos < PER_LABEL or n_neg < PER_LABEL:
@@ -56,6 +57,7 @@ def main(argv=None):
         status = "PASS" if value >= AUROC_MIN else "FAIL"
     finish("test 1 sanity", status, {
         "model": args.model, "revision": scorer.revision, "n_slots": args.n_slots,
+        "answer_prefix": args.answer_prefix,
         "auroc": value, "auroc_min": AUROC_MIN, "n_correct": n_pos, "n_wrong": n_neg,
         "median_yes_no_mass": median_mass,
         "items": [{"candidate_id": it["candidate_id"], "label": y, "score": v.score,

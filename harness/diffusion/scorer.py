@@ -76,6 +76,20 @@ SPECS = {
     ),
 }
 
+# Text appended after the chat template's generation prompt, before the answer slots. The
+# user message (T1-T3) is the same for every model; a prefix only changes how the model's
+# own turn begins. iLLaDA opens every answer with a <think> block (its official evaluation
+# closes it with "</think>"), so its first slot holds "<", not Yes/No; an empty think block
+# turns thinking off, as PLAN.md does for Qwen3-8B. The variant is chosen on the
+# development bank by median Yes+No mass (choose_slots.py; decisions/2026-10-25-illada-thinking-off.md).
+# Each variant has a newline before "</think>", so the closing tag tokenizes as the official
+# end-of-thinking text encode("</think>") does ("</", "think", ">"); "<think></think>" would not.
+ANSWER_PREFIXES = {
+    "none": "",
+    "think_nl": "<think>\n</think>\n",
+    "think_nlnl": "<think>\n\n</think>\n\n",
+}
+
 YES_SPELLINGS = ("Yes", " Yes", "yes", " yes", "YES", " YES")
 NO_SPELLINGS = ("No", " No", "no", " no", "NO", " NO")
 
@@ -178,7 +192,10 @@ class DiffusionScorer:
 
     def __init__(self, model, tokenizer, spec: ModelSpec, n_slots: int,
                  device=None, tokens: Optional[VerdictTokens] = None,
-                 revision: Optional[str] = None):
+                 revision: Optional[str] = None, answer_prefix: str = "none"):
+        if answer_prefix not in ANSWER_PREFIXES:
+            raise ValueError(f"unknown answer prefix {answer_prefix!r}; choose from {sorted(ANSWER_PREFIXES)}")
+        self.answer_prefix = answer_prefix
         self.model = model
         self.tokenizer = tokenizer
         self.spec = spec
@@ -197,7 +214,8 @@ class DiffusionScorer:
 
     def prompt_ids(self, user_message: str) -> list:
         # The templates already insert BOS, so no special tokens are added here.
-        return self.tokenizer.encode(self.render(user_message), add_special_tokens=False)
+        text = self.render(user_message) + ANSWER_PREFIXES[self.answer_prefix]
+        return self.tokenizer.encode(text, add_special_tokens=False)
 
     def check_length(self, prompt: Sequence[int]) -> None:
         if len(prompt) + self.n_slots > self.spec.max_len:
@@ -274,7 +292,8 @@ def check_environment(spec: ModelSpec) -> None:
 
 
 def load_scorer(key: str, n_slots: int, device: str = "cuda",
-                revision: Optional[str] = None, strict_env: bool = True) -> DiffusionScorer:
+                revision: Optional[str] = None, strict_env: bool = True,
+                answer_prefix: str = "none") -> DiffusionScorer:
     """Download and load one model in bf16 and wrap it in its scorer."""
     from transformers import AutoModel, AutoTokenizer
 
@@ -289,4 +308,5 @@ def load_scorer(key: str, n_slots: int, device: str = "cuda",
     model = AutoModel.from_pretrained(
         spec.hf_id, revision=revision, trust_remote_code=True,
         torch_dtype=torch.bfloat16, device_map={"": device}).eval()
-    return SCORERS[key](model, tokenizer, spec, n_slots, device=device, revision=revision)
+    return SCORERS[key](model, tokenizer, spec, n_slots, device=device, revision=revision,
+                        answer_prefix=answer_prefix)

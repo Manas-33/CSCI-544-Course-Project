@@ -37,6 +37,7 @@ def main(argv=None):
     first = [v.score for v in verdicts_for(scorer, prompts, 1)]
     second = [v.score for v in verdicts_for(scorer, prompts, 1)]
     report = {"model": args.model, "revision": scorer.revision, "n_slots": args.n_slots,
+              "answer_prefix": args.answer_prefix,
               "n_items": len(items), "spearman_min": SPEARMAN_MIN, "batch_tol": BATCH_TOL}
     checks = {}
 
@@ -48,6 +49,9 @@ def main(argv=None):
 
     if args.previous:
         saved = json.loads(Path(args.previous).read_text())
+        if ((saved.get("model"), saved.get("revision"), saved.get("n_slots"), saved.get("answer_prefix", "none"))
+                != (args.model, scorer.revision, args.n_slots, args.answer_prefix)):
+            raise SystemExit(f"{args.previous} was scored with other settings; compare like with like")
         shared = [i for i, cid in enumerate(ids) if cid in saved["scores"]]
         report["previous_spearman"] = spearman(
             [first[i] for i in shared], [saved["scores"][ids[i]] for i in shared])
@@ -72,7 +76,7 @@ def main(argv=None):
         Path(args.save).parent.mkdir(parents=True, exist_ok=True)
         Path(args.save).write_text(json.dumps(
             {"model": args.model, "revision": scorer.revision, "n_slots": args.n_slots,
-             "scores": dict(zip(ids, first))}, indent=2))
+             "answer_prefix": args.answer_prefix, "scores": dict(zip(ids, first))}, indent=2))
 
     report["checks"] = checks
     finish("test 3 invariance", "PASS" if all(checks.values()) else "FAIL", report, args.report)
