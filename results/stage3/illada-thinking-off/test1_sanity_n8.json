@@ -1,0 +1,365 @@
+{
+  "check": "test 1 sanity",
+  "status": "FAIL",
+  "model": "illada",
+  "revision": "5769f049224b2cff61106ebce0429ede5deeb434",
+  "n_slots": 8,
+  "answer_prefix": "think_nlnl",
+  "auroc": 0.728,
+  "auroc_min": 0.9,
+  "n_correct": 25,
+  "n_wrong": 25,
+  "median_yes_no_mass": 0.22699300199747086,
+  "items": [
+    {
+      "candidate_id": "sanity-c001",
+      "label": 1,
+      "score": 3.1799604892730713,
+      "yes_no_mass": 0.5176309924572706,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c002",
+      "label": 0,
+      "score": -0.1280651092529297,
+      "yes_no_mass": 0.16545771807432175,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c003",
+      "label": 1,
+      "score": 1.6772189140319824,
+      "yes_no_mass": 0.33240818604826927,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c004",
+      "label": 0,
+      "score": 0.9919939041137695,
+      "yes_no_mass": 0.29478827118873596,
+      "top_token": "Is"
+    },
+    {
+      "candidate_id": "sanity-c005",
+      "label": 0,
+      "score": 1.0582029819488525,
+      "yes_no_mass": 0.17135192453861237,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c006",
+      "label": 1,
+      "score": 2.1797375679016113,
+      "yes_no_mass": 0.22256319038569927,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c007",
+      "label": 0,
+      "score": 1.2440584897994995,
+      "yes_no_mass": 0.18253718689084053,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c008",
+      "label": 1,
+      "score": 3.165982484817505,
+      "yes_no_mass": 0.45628204569220543,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c009",
+      "label": 1,
+      "score": 2.6783607006073,
+      "yes_no_mass": 0.3571997731924057,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c010",
+      "label": 0,
+      "score": 0.4967160224914551,
+      "yes_no_mass": 0.21941736340522766,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c011",
+      "label": 1,
+      "score": 2.4283814430236816,
+      "yes_no_mass": 0.27715425565838814,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c012",
+      "label": 0,
+      "score": -0.6265097856521606,
+      "yes_no_mass": 0.2259506806731224,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c013",
+      "label": 0,
+      "score": -1.5005956888198853,
+      "yes_no_mass": 0.32395076379179955,
+      "top_token": "No"
+    },
+    {
+      "candidate_id": "sanity-c014",
+      "label": 1,
+      "score": 1.8079928159713745,
+      "yes_no_mass": 0.22556616365909576,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c015",
+      "label": 1,
+      "score": 2.1800265312194824,
+      "yes_no_mass": 0.4773268662393093,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c016",
+      "label": 0,
+      "score": -0.6274100542068481,
+      "yes_no_mass": 0.2127211019396782,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c017",
+      "label": 1,
+      "score": 2.677764654159546,
+      "yes_no_mass": 0.2804562672972679,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c018",
+      "label": 0,
+      "score": -1.127685308456421,
+      "yes_no_mass": 0.1783783882856369,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c019",
+      "label": 0,
+      "score": -0.9386501312255859,
+      "yes_no_mass": 0.15674686059355736,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c020",
+      "label": 1,
+      "score": 2.8056492805480957,
+      "yes_no_mass": 0.330030657351017,
+      "top_token": "Yes"
+    },
+    {
+      "candidate_id": "sanity-c021",
+      "label": 1,
+      "score": 1.2417618036270142,
+      "yes_no_mass": 0.25419700145721436,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c022",
+      "label": 0,
+      "score": 3.426617383956909,
+      "yes_no_mass": 0.24992219731211662,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c023",
+      "label": 1,
+      "score": 0.8713536262512207,
+      "yes_no_mass": 0.18377191200852394,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-c024",
+      "label": 0,
+      "score": -0.43932008743286133,
+      "yes_no_mass": 0.20672115683555603,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m001",
+      "label": 1,
+      "score": 2.7449374198913574,
+      "yes_no_mass": 0.23079085443168879,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m002",
+      "label": 0,
+      "score": 2.871152400970459,
+      "yes_no_mass": 0.3101872578263283,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m003",
+      "label": 0,
+      "score": 2.118955135345459,
+      "yes_no_mass": 0.16770938597619534,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m004",
+      "label": 1,
+      "score": 1.9337886571884155,
+      "yes_no_mass": 0.20437672547996044,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m005",
+      "label": 1,
+      "score": 2.246121406555176,
+      "yes_no_mass": 0.25813665986061096,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m006",
+      "label": 0,
+      "score": 1.808156132698059,
+      "yes_no_mass": 0.19074499979615211,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m007",
+      "label": 1,
+      "score": 2.6189401149749756,
+      "yes_no_mass": 0.1720299981534481,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m008",
+      "label": 0,
+      "score": 2.4329981803894043,
+      "yes_no_mass": 0.2868775650858879,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m009",
+      "label": 0,
+      "score": 1.810723066329956,
+      "yes_no_mass": 0.2929226718842983,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m010",
+      "label": 1,
+      "score": 1.9345918893814087,
+      "yes_no_mass": 0.32545755058526993,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m011",
+      "label": 0,
+      "score": 2.433833122253418,
+      "yes_no_mass": 0.21259716898202896,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m012",
+      "label": 1,
+      "score": 0.1236867904663086,
+      "yes_no_mass": 0.17648565024137497,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m013",
+      "label": 1,
+      "score": 2.6830825805664062,
+      "yes_no_mass": 0.2682904452085495,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m014",
+      "label": 0,
+      "score": 2.1206395626068115,
+      "yes_no_mass": 0.16406173259019852,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m015",
+      "label": 0,
+      "score": 1.685103416442871,
+      "yes_no_mass": 0.2056000977754593,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m016",
+      "label": 1,
+      "score": 1.8728947639465332,
+      "yes_no_mass": 0.2321475613862276,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m017",
+      "label": 1,
+      "score": 1.3086624145507812,
+      "yes_no_mass": 0.2280353233218193,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m018",
+      "label": 0,
+      "score": 2.369845390319824,
+      "yes_no_mass": 0.27240519784390926,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m019",
+      "label": 1,
+      "score": 1.6221890449523926,
+      "yes_no_mass": 0.13934875093400478,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m020",
+      "label": 0,
+      "score": 1.621338129043579,
+      "yes_no_mass": 0.1326148472726345,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m021",
+      "label": 0,
+      "score": 2.5584421157836914,
+      "yes_no_mass": 0.24885449558496475,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m022",
+      "label": 1,
+      "score": 1.2460296154022217,
+      "yes_no_mass": 0.16367878392338753,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m023",
+      "label": 0,
+      "score": 0.49721431732177734,
+      "yes_no_mass": 0.1560945101082325,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m024",
+      "label": 1,
+      "score": 2.1217355728149414,
+      "yes_no_mass": 0.25419033877551556,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m025",
+      "label": 1,
+      "score": 2.747598648071289,
+      "yes_no_mass": 0.3122201319783926,
+      "top_token": "The"
+    },
+    {
+      "candidate_id": "sanity-m026",
+      "label": 0,
+      "score": -0.06344318389892578,
+      "yes_no_mass": 0.1980472058057785,
+      "top_token": "The"
+    }
+  ]
+}
