@@ -79,13 +79,22 @@ What it runs (PLAN.md §4 and §7):
  ("markdown", "A sanity evaluation that fails the 0.90 bar exits with code 1 and prints an error line; that is the result, not a crash. Keep going."),
 ] + finish("ar"))
 
-def diffusion(model, title, env, llada_repo, restart_note="", name=None, prefixes=("none",)):
+def diffusion(model, title, env, llada_repo, restart_note="", name=None, prefixes=("none",), python311=False):
     """One diffusion notebook. With several answer prefixes (iLLaDA), the prefix is chosen on the
     development bank together with the slot count (decisions/2026-10-25-illada-thinking-off.md)."""
     name = name or model
     repo_flag = " --llada-repo /content/LLaDA" if llada_repo else ""
     clone = "\n!git clone -q https://github.com/ML-GSAI/LLaDA /content/LLaDA && git -C /content/LLaDA checkout -q 9182493" if llada_repo else ""
-    cells = setup(title, f"!pip install -q -r harness/diffusion/requirements/{env}.txt{clone}", f'OUT = "results/stage3/{name}"\n!mkdir -p {{OUT}}\n' + DEV_HASH)
+    if python311:
+        # Colab's Python (3.13 as of Oct 2026) cannot install this environment's pins, so the
+        # notebook builds its own Python 3.11 environment and runs every command with it.
+        install = ("!pip install -q uv\n!uv venv -q --python 3.11 /content/env\n"
+                   f"!uv pip install -q --python /content/env/bin/python torch==2.6.0 -r harness/diffusion/requirements/{env}.txt\n"
+                   'PY = "/content/env/bin/python"\n'
+                   '!{PY} -c "import sys, torch, transformers; print(sys.version.split()[0], torch.__version__, transformers.__version__, torch.cuda.is_available())"')
+    else:
+        install = f"!pip install -q -r harness/diffusion/requirements/{env}.txt"
+    cells = setup(title, install + clone, f'OUT = "results/stage3/{name}"\n!mkdir -p {{OUT}}\n' + DEV_HASH)
     if restart_note:
         cells.insert(2, ("markdown", restart_note))
     if model == "llada":
@@ -133,6 +142,8 @@ print("answer slots:", N, "| answer prefix:", PREFIX)'''),
 !python -m harness.llada_compare --parity {OUT}/sanity_T1_n1.jsonl | tee {OUT}/agreement_with_saved_run.json'''),
         ]
     cells.append(("markdown", "Each check prints PASS or FAIL and writes its report even when it fails; a FAIL is a result, not a crash. Keep going."))
+    if python311:
+        cells = [(kind, text.replace("!python -m ", "!{PY} -m ") if kind == "code" else text) for kind, text in cells]
     return nb(cells + finish(name))
 
 llada = diffusion("llada", '''
@@ -140,7 +151,9 @@ llada = diffusion("llada", '''
 
 Runtime: **A100** (the saved LLaDA run used an A100 with torch 2.6.0; matching it keeps BF16 scores comparable). One fresh runtime for this notebook only.
 
-LLaDA already has a saved sanity run (AUROC 0.885, fails the 0.90 bar). This notebook runs what is still missing: the parity test against the official code (test 2), batch invariance (test 3), the sanity check through the shared scorer, and agreement with the saved run.''', "llada", True)
+LLaDA already has a saved sanity run (AUROC 0.885, fails the 0.90 bar). This notebook runs what is still missing: the parity test against the official code (test 2), batch invariance (test 3), the sanity check through the shared scorer, and agreement with the saved run.
+
+**Its own Python.** Colab's Python 3.13 cannot install LLaDA's pinned packages (`sentencepiece 0.2.0` and `numpy<2` have no Python 3.13 builds). The first code cell therefore builds a separate Python 3.11 environment with `uv`, using torch 2.6.0 as the saved run did, and every command runs with it (`{PY}`). It prints its Python, torch and transformers versions: expect 3.11, 2.6.0 and 4.38.2.''', "llada", True, python311=True)
 
 illada = diffusion("illada", '''
 # Stage 3 · iLLaDA-8B-Instruct with thinking off: answer prefix, slots and scoring-code tests

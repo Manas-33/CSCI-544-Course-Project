@@ -1,5 +1,5 @@
 # Install/retain the platform's CUDA-compatible PyTorch separately.
 transformers==4.51.3
 accelerate==1.6.0
-sentencepiece==0.2.0
+sentencepiece==0.2.1  # 0.2.0 has no Python 3.13 build
 # Optional NF4 development runs: install bitsandbytes separately.

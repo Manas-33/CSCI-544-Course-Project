@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 NOTEBOOKS = sorted(Path("notebooks").glob("*.ipynb"))
-NAMESPACE = {"BRANCH": "main", "OUT": "results/stage3/x", "N": 1, "n": 8, "p": "think_nl", "PREFIX": "think_nl", "FILES": "a.jsonl b.jsonl",
+NAMESPACE = {"BRANCH": "main", "PY": "/content/env/bin/python", "OUT": "results/stage3/x", "N": 1, "n": 8, "p": "think_nl", "PREFIX": "think_nl", "FILES": "a.jsonl b.jsonl",
              "DEV_HASH": "d" * 64, "SANITY_HASH": "s" * 64}
 
 
@@ -49,7 +49,7 @@ class NotebookTests(unittest.TestCase):
 
     def test_every_flag_exists_in_the_module_it_calls(self):
         for name, line in shell_lines():
-            match = re.match(r"python -m (\S+)(.*)", line)
+            match = re.match(r"(?:python|\{PY\}) -m (\S+)(.*)", line)
             if not match or not match.group(1).startswith("harness."):
                 continue
             source = module_source(match.group(1))
