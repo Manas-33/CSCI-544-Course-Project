@@ -14,10 +14,12 @@ python -m harness.run --config configs/ar_pair_sanity.json --input bank/sanity/s
 python -m harness.evaluate --sanity --bank bank/sanity/sanity_set.jsonl --labels bank/sanity/sanity_set.jsonl --run-dir results/ar-sanity-nf4-fp32 --output-dir results/ar-sanity-analysis
 ```
 
-`metrics.json` also records AUROC per domain (`auroc_by_domain`; `auroc_math`/`auroc_code` in `summary.csv`). The verified SDPA run is `results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459` with its analysis next to it. The slide package in `results/ppt_ar_sanity/` (summary, CSV/JSON, PNG and SVG figures) is generated from that analysis, never typed by hand:
+The committed NF4 run (`results/fp32/ar-sanity-nf4-fp32`, a T4) also predates the SDPA switch and used eager attention, so like the eager BF16 run it is not evidence (both models failed there: Qwen 0.854, Mistral 0.720).
+
+Analyses made with the current evaluator also record AUROC per domain (`auroc_by_domain` in `metrics.json`; `auroc_math`/`auroc_code` in `summary.csv`); the older eager and NF4 analyses predate this. The verified SDPA run is `results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459` with its analysis next to it. The slide package in `results/ppt_ar_sanity/` (summary, CSV/JSON, PNG and SVG figures) is generated from that analysis and its run manifest; every number and setting in it is read from them:
 
 ```bash
-python -m harness.sanity_package --run-dir results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459 --analysis-dir results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459 --previous-analysis results/bf16/ar-sanity-analysis-bf16-20261020-015535 --output-dir results/ppt_ar_sanity
+python -m harness.sanity_package --run-dir results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459 --analysis-dir results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459 --previous-run results/bf16/ar-sanity-bf16-20261020-015535 --previous-analysis results/bf16/ar-sanity-analysis-bf16-20261020-015535 --output-dir results/ppt_ar_sanity
 ```
 
 The generation manifest records Phi-4-mini, temperature 0.7, top-p 0.95, 4 samples/question, 1024 new tokens, seed 544, vLLM and BF16. `generations_provenance.json` explicitly reconstructs the model revision, versions and L4 hardware afterwards; these are not contemporaneous run metadata. `bank.label/2+math_verify` compares correctness outcomes, not extracted answers. Label 1 means correct; 0 means wrong. Keep selected development questions excluded from pilot/final banks via `bank/dev/question_ids.txt`.
@@ -55,7 +57,7 @@ python -m harness.run --config configs/ar_pair_dev.json --input bank/dev/dev_ban
 
 Model/local paths and revisions are configured under `models`; pin both model/tokenizer revisions for research. Honor normal Hugging Face authentication and `HF_HOME`. Both thresholds must be explicitly provided via config or `--threshold-a` plus `--threshold-b`; otherwise saved decisions stay null. Diagnostic zero thresholds are exploratory, never matched-TAR or validation-selected. Review categories use diagnostic thresholds when requested, otherwise the run's explicit thresholds if any.
 
-Share `manifest.json`, `scores_A.jsonl`, `scores_B.jsonl`, `pairs.jsonl`, and analysis `metrics.json`, `summary.csv`, `review.csv`, `development.png`. Missing/failed scores produce coverage-only `metrics.json` and a nonzero exit, not subset metrics. Runtime excludes only explicitly cold forward calls; loading and peak allocated memory are separate. Figures show precision/quantization. Development evidence is not a test result, H1 test, strongest-pair selection, or proof of ensemble benefit. Final-answer correctness does not establish correct reasoning; Yes/No probabilities are uncalibrated token events. Real-bank tokenizer/GPU checks and figure rendering remain to be performed.
+Share `manifest.json`, `scores_A.jsonl`, `scores_B.jsonl`, `pairs.jsonl`, and analysis `metrics.json`, `summary.csv`, `review.csv`, `development.png`. Missing/failed scores produce coverage-only `metrics.json` and a nonzero exit, not subset metrics. Runtime excludes only explicitly cold forward calls; loading and peak allocated memory are separate. Figures show precision/quantization. Development evidence is not a test result, H1 test, strongest-pair selection, or proof of ensemble benefit. Final-answer correctness does not establish correct reasoning; Yes/No probabilities are uncalibrated token events. The development bank has not been scored by the AR models yet, so its exact token lengths on the real tokenizers are still unchecked.
 
 
 ## Diffusion verifiers (LLaDA, iLLaDA, Dream)

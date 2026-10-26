@@ -3,11 +3,13 @@
     python -m harness.sanity_package \\
         --run-dir results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459 \\
         --analysis-dir results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459 \\
+        --previous-run results/bf16/ar-sanity-bf16-20261020-015535 \\
         --previous-analysis results/bf16/ar-sanity-analysis-bf16-20261020-015535 \\
         --output-dir results/ppt_ar_sanity
 
-Every number comes from the analysis metrics.json written by harness.evaluate, which is checked
-against the run manifest. Files are UTF-8 with LF line endings.
+Every number and setting in the package is read from the analysis (written by harness.evaluate)
+and its run manifest, both checked against each other; the optional earlier run is checked to use
+the same models, revisions and prompts. Files are UTF-8 with LF line endings.
 """
 
 import argparse
@@ -21,7 +23,7 @@ REQUIRED = 0.90
 COLORS = ("#2563eb", "#f97316", "#16a34a", "#9333ea")
 
 
-def load(run_dir, analysis_dir):
+def load(run_dir, analysis_dir, need_domains=True):
     manifest_raw = (Path(run_dir) / "manifest.json").read_bytes()
     manifest = json.loads(manifest_raw)
     metrics = json.loads((Path(analysis_dir) / "metrics.json").read_text(encoding="utf-8"))
@@ -29,9 +31,49 @@ def load(run_dir, analysis_dir):
         raise ValueError("expected a completed sanity evaluation")
     if metrics["run_manifest_sha256"] != digest(manifest_raw):
         raise ValueError("analysis was not made from this run's manifest")
-    if any("auroc_by_domain" not in m for m in metrics["models"].values()):
+    if need_domains and any("auroc_by_domain" not in m for m in metrics["models"].values()):
         raise ValueError("re-run harness.evaluate: metrics.json has no per-domain AUROC")
     return manifest, metrics
+
+
+def attention_name(implementation):
+    return {"sdpa": "SDPA", "eager": "eager"}.get(implementation, implementation)
+
+
+def domain_counts(analysis_dir):
+    """Items per domain, from the analysis's review.csv."""
+    with (Path(analysis_dir) / "review.csv").open(encoding="utf-8", newline="") as f:
+        domains = [row["domain"] for row in csv.DictReader(f)]
+    return {d: domains.count(d) for d in sorted(set(domains))}
+
+
+def scores_of(run_dir, key):
+    with (Path(run_dir) / f"scores_{key}.jsonl").open(encoding="utf-8") as f:
+        return {row["candidate_id"]: row["score"] for row in map(json.loads, f) if row.get("status") == "completed"}
+
+
+def load_previous(run_dir, manifest, metrics, previous_run, previous_analysis):
+    """The earlier run of the same fixture: what changed, checked to differ only in its settings."""
+    old_manifest, old_metrics = load(previous_run, previous_analysis, need_domains=False)
+    for key in ("prompt_sha256", "template_sha256", "input_sha256"):
+        if old_manifest[key] != manifest[key]:
+            raise ValueError(f"earlier run differs in {key}; it is not the same prompts and fixture")
+    labels = {}
+    with (Path(previous_analysis) / "review.csv").open(encoding="utf-8", newline="") as f:
+        labels = {row["candidate_id"]: int(row["label"]) for row in csv.DictReader(f)}
+    changes = {}
+    for key, m in metrics["models"].items():
+        old = old_metrics["models"][key]
+        if (old["model_id"], old["model_revision"]) != (m["model_id"], m["model_revision"]):
+            raise ValueError(f"earlier run used a different model or revision for {key}")
+        before, after = scores_of(previous_run, key), scores_of(run_dir, key)
+        flipped = [c for c in after if (before[c] >= 0) != (after[c] >= 0)]
+        biggest = max(after, key=lambda c: abs(after[c] - before[c]))
+        changes[m["model_id"]] = {
+            "auroc": old["auroc"], "flipped": len(flipped),
+            "right_now_accepted": sum(labels[c] == 1 and after[c] >= 0 for c in flipped),
+            "biggest": (biggest, before[biggest], after[biggest])}
+    return {"attention": attention_name(old_manifest["attention_implementation"]), "changes": changes}
 
 
 def rows_from(manifest, metrics):
@@ -47,19 +89,19 @@ def rows_from(manifest, metrics):
             "peak_gpu_gib": round(m["peak_gpu_allocated_bytes"] / 2 ** 30, 2),
             "warm_mean_forward_seconds": round(m["warm_mean_forward_seconds"], 4),
             "precision": "BF16" if m["compute_dtype"] == "torch.bfloat16" else m["compute_dtype"],
-            "quantization": m["quantization_mode"], "attention": manifest["attention_implementation"].upper(),
+            "quantization": m["quantization_mode"], "attention": attention_name(manifest["attention_implementation"]),
         })
     return rows
 
 
-def figures(rows, counts, gpu, out):
+def figures(rows, counts, domains, gpu, out):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     plt.rcParams.update({"svg.fonttype": "none", "svg.hashsalt": "sanity", "font.size": 12})
     subtitle = (f"T1, {counts['candidates']} items ({counts['correct']} right, {counts['incorrect']} wrong; "
-                f"26 math, 24 code) | {rows[0]['precision']} + {rows[0]['attention']} | {gpu}")
+                f"{domain_text(domains)}) | {rows[0]['precision']} + {rows[0]['attention']} | {gpu}")
 
     def save(fig, name):
         fig.savefig(out / f"{name}.svg", metadata={"Date": None})
@@ -124,7 +166,11 @@ def figures(rows, counts, gpu, out):
     save(fig, "ar_sanity_table")
 
 
-def summary_md(rows, counts, gpu, run_dir, analysis_dir, previous):
+def domain_text(domains):
+    return ", ".join(f"{n} {d}" for d, n in sorted(domains.items(), key=lambda kv: kv[0] != "math"))
+
+
+def summary_md(rows, counts, domains, gpu, run_dir, analysis_dir, previous):
     lines = ["# AR verifier sanity check (slide package)", "",
              f"Generated by `python -m harness.sanity_package` from `{analysis_dir}` (run `{run_dir}`).", "",
              "## Result", "",
@@ -133,23 +179,31 @@ def summary_md(rows, counts, gpu, run_dir, analysis_dir, previous):
               for r in rows]
     lines += ["", "## Setup", "",
               f"- The official 50-item sanity fixture (`bank/sanity/sanity_set.jsonl`): {counts['correct']} right and "
-              f"{counts['incorrect']} wrong answers, 26 math and 24 code. Template T1, one forward pass, "
+              f"{counts['incorrect']} wrong answers; {domain_text(domains)}. Template T1, one forward pass, "
               "score = log P(Yes) − log P(No).",
-              f"- {rows[0]['precision']} weights and compute, no quantization, {rows[0]['attention']} attention, {gpu}, batch size 1.",
+              f"- {rows[0]['precision']} weights and compute, "
+              f"{'no quantization' if all(r['quantization'] == 'unquantized' for r in rows) else 'quantization: ' + ', '.join(sorted({r['quantization'] for r in rows}))}, "
+              f"{rows[0]['attention']} attention, {gpu}, batch size 1.",
               "- Full coverage: every model scored all 50 items, none failed or missing.",
               "- Cost: " + "; ".join(f"{r['model']} {r['peak_gpu_gib']} GiB peak, {r['warm_mean_forward_seconds']:.3f} s per item"
                                      for r in rows) + "."]
     if previous:
-        lines += ["", "## What changed from the first run", "",
-                  "The first BF16 run used eager attention. Its Qwen scores were wrong (it rejected answers like "
-                  "\"8 × 5 = 40\" with high confidence), and switching to SDPA fixed them. Same models, revisions and prompts:", ""]
-        lines += [f"- {r['model']}: overall {previous[r['model_id']]:.3f} (eager) → {r['overall_auroc']:.3f} (SDPA)"
-                  for r in rows if r["model_id"] in previous]
-        lines += ["", "The eager-attention run must not be used as evidence."]
+        old, new = previous["attention"], rows[0]["attention"]
+        lines += ["", "## What changed from the earlier run", "",
+                  f"The earlier run used {old} attention; this one uses {new}. Everything else is the same "
+                  "(models, revisions, prompts and fixture, checked from both manifests):", ""]
+        for r in rows:
+            c = previous["changes"][r["model_id"]]
+            item, before, after = c["biggest"]
+            changed = (f"{c['flipped']} verdicts at score 0 changed ({c['right_now_accepted']} were right answers it "
+                       f"had rejected)" if c["flipped"] else "no verdict at score 0 changed")
+            lines.append(f"- {r['model']}: overall AUROC {c['auroc']:.3f} ({old}) → {r['overall_auroc']:.3f} ({new}); "
+                         f"{changed}; largest score change {item}, {before:+.1f} → {after:+.1f}.")
+        lines += ["", f"The {old}-attention run must not be used as evidence."]
     lines += ["", "## Reading it", "",
               "- PLAN.md §4 test 1: every verifier must reach overall AUROC ≥ 0.90 on this fixture before its scores are used. "
-              "A model that still fails once its prompt is confirmed against the official chat template counts as a weak "
-              "verifier (a gate A failure), not an open bug.",
+              "A model that still fails after roles C and D sign off that its scoring code matches the official "
+              "reference (§4 test 2) counts as a weak verifier (a gate A failure), not an open bug.",
               "- This is a scoring check, not research evidence. 25 right and 25 wrong items give wide intervals, "
               "so do not rank models by these numbers."]
     return "\n".join(lines) + "\n"
@@ -159,15 +213,17 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--run-dir", required=True)
     p.add_argument("--analysis-dir", required=True)
-    p.add_argument("--previous-analysis", help="earlier analysis of the same fixture, for the before/after line")
+    p.add_argument("--previous-run", help="earlier run of the same fixture, for the before/after section")
+    p.add_argument("--previous-analysis", help="that earlier run's analysis (give both or neither)")
     p.add_argument("--output-dir", required=True)
     args = p.parse_args(argv)
     manifest, metrics = load(args.run_dir, args.analysis_dir)
     rows = rows_from(manifest, metrics)
-    previous = None
-    if args.previous_analysis:
-        old = json.loads((Path(args.previous_analysis) / "metrics.json").read_text(encoding="utf-8"))
-        previous = {m["model_id"]: m["auroc"] for m in old["models"].values()}
+    if bool(args.previous_run) != bool(args.previous_analysis):
+        p.error("--previous-run and --previous-analysis go together")
+    previous = (load_previous(args.run_dir, manifest, metrics, args.previous_run, args.previous_analysis)
+                if args.previous_run else None)
+    domains = domain_counts(args.analysis_dir)
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     gpu = metrics["gpu"]["name"]
@@ -181,8 +237,8 @@ def main(argv=None):
                "research_evidence": False}
     (out / "ar_sanity_results.json").write_text(json.dumps(package, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (out / "PPT_RESULTS_SUMMARY.md").write_text(
-        summary_md(rows, metrics["counts"], gpu, args.run_dir, args.analysis_dir, previous), encoding="utf-8")
-    figures(rows, metrics["counts"], gpu, out)
+        summary_md(rows, metrics["counts"], domains, gpu, args.run_dir, args.analysis_dir, previous), encoding="utf-8")
+    figures(rows, metrics["counts"], domains, gpu, out)
     print(f"Wrote the sanity package for {len(rows)} models to {out}")
     return 0
 

@@ -42,13 +42,13 @@ In a notebook cell, prefix each line with `!` (and use `%cd` instead of `cd`). T
 ```bash
 python -m pytest harness/diffusion/tests -q                                            # unit tests (CPU)
 python -m harness.diffusion.checks.check_tiny --model llada --llada-repo /content/LLaDA  # smoke test (CPU, no weights)
-python -m harness.diffusion.checks.check_parity --model llada --n-slots 8 --llada-repo /content/LLaDA --report reports/llada_parity_n8.json
-python -m harness.diffusion.checks.check_sanity --model llada --n-slots 8 --report reports/llada_sanity_n8.json
-python -m harness.diffusion.checks.check_invariance --model llada --n-slots 8 --save reports/llada_scores_n8.json
-python -m harness.diffusion.run_score --model llada --n-slots 8 --items dev_bank.jsonl --bank-hash <hash> --out results/llada_T1_n8.jsonl
+python -m harness.diffusion.checks.check_parity --model llada --n-slots 1 --llada-repo /content/LLaDA --report reports/llada_parity_n1.json
+python -m harness.diffusion.checks.check_sanity --model llada --n-slots 1 --report reports/llada_sanity_n1.json
+python -m harness.diffusion.checks.check_invariance --model llada --n-slots 1 --save reports/llada_scores_n1.json
+python -m harness.diffusion.run_score --model llada --n-slots 1 --items bank/dev/dev_bank.jsonl --bank-hash <sha256 of that file> --out results/llada_dev_T1_n1.jsonl
 ```
 
-Each check prints PASS or FAIL, exits non-zero unless it passes, and writes a JSON report with `--report`. Save reports and scores to Google Drive (`/content/drive/MyDrive/...`) so they survive the runtime. For the stronger repeat-run check, rerun `check_invariance` in a fresh runtime with `--previous reports/llada_scores_n8.json`.
+Each check prints PASS or FAIL, exits non-zero unless it passes, and writes a JSON report with `--report`. Save reports and scores to Google Drive (`/content/drive/MyDrive/...`) so they survive the runtime. For the stronger repeat-run check, rerun `check_invariance` in a fresh runtime with `--previous reports/llada_scores_n1.json`.
 
 ## Scoring-code tests (PLAN §4; all must pass before any score is used)
 

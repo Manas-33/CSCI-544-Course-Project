@@ -2,7 +2,7 @@
 
 Matched pairs for checking the scoring pipeline, as described in [PLAN.md](../PLAN.md) §2. Each pair is one correct and one wrong answer to the same GSM8K question, written by Phi-4-mini, a generator outside the verifier families, with automatic labels.
 
-These are **pipeline checks** (the midterm's "preliminary development results"), never evidence for H1. These questions are kept out of the pilot and the final bank.
+These are **pipeline checks** for the scorers, never results: PLAN.md §2 says development-bank numbers are never reported. These questions are kept out of the pilot and the final bank.
 
 ## Current bank (October 19, 2026)
 
@@ -79,10 +79,10 @@ The code half of the development bank. It covers 150 MBPP problems, chosen with 
 ## Next: scoring
 
 Score `dev/dev_bank.jsonl` with the same T1 prompt for every verifier:
-- **LLaDA, iLLaDA, Dream:** `harness/diffusion/` on the `feature/diffusion-scorers` branch.
-- **Qwen2.5-7B, Mistral-7B:** the AR scorer (role C).
+- **LLaDA, iLLaDA, Dream:** `harness/diffusion/run_score.py`.
+- **Qwen2.5-7B, Mistral-7B:** `harness/run.py` with `configs/ar_pair_dev.json`.
 
-Report AUROC per verifier with the number of pairs, and examples where one verifier catches an error another misses.
+Use the scores for what PLAN.md §4 assigns to the development bank (answer-slot length, Yes/No token sets, the usable-scores gate and the scoring-code checks), not as results. LLaDA's development-bank scores at 1, 8 and 32 answer slots are in `results/llada-comparison-20261019-213107/` (1 slot was chosen).
 
 ## Tests
 
