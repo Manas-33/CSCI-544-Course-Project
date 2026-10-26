@@ -1,0 +1,10 @@
+pair,domain,candidates,threshold_a,threshold_b,tp,tn,fp,fn,accuracy,tar,far,wrong_accepted_a_only,wrong_accepted_b_only,wrong_rejected_by_both
+Qwen+Mistral,all,50,0,0,24,18,7,1,0.84,0.96,0.28,0,9,9
+Qwen+LLaDA,all,50,0,0,25,18,7,0,0.86,1.0,0.28,0,7,11
+Mistral+LLaDA,all,50,0,0,24,12,13,1,0.72,0.96,0.52,3,1,8
+Qwen+Mistral,math,26,0,0,12,6,7,1,0.6923076923076923,0.9230769230769231,0.5384615384615384,0,5,1
+Qwen+LLaDA,math,26,0,0,13,6,7,0,0.7307692307692307,1.0,0.5384615384615384,0,3,3
+Mistral+LLaDA,math,26,0,0,12,3,10,1,0.5769230769230769,0.9230769230769231,0.7692307692307693,2,0,1
+Qwen+Mistral,code,24,0,0,12,12,0,0,1.0,1.0,0.0,0,4,8
+Qwen+LLaDA,code,24,0,0,12,12,0,0,1.0,1.0,0.0,0,4,8
+Mistral+LLaDA,code,24,0,0,12,9,3,0,0.875,1.0,0.25,1,1,7

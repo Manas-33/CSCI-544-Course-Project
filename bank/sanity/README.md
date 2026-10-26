@@ -27,4 +27,4 @@ python -m pytest bank/tests/test_sanity_set.py -q
 
 ## Using it
 
-Both scorers read `candidate_id`, `problem` and `candidate`. The sanity check reads `label` from this same file. Point the diffusion checks at it with `--items bank/sanity/sanity_set.jsonl`. When the `feature/diffusion-scorers` branch is merged, its own 4-item `harness/diffusion/sanity_set.jsonl` can be replaced by this file.
+Both scorers read `candidate_id`, `problem` and `candidate`. The sanity check reads `label` from this same file. The AR harness (`harness/run.py`, `harness/evaluate.py --sanity`) and the diffusion checks (`harness/diffusion/checks/`) both use it; the diffusion checks use it by default.

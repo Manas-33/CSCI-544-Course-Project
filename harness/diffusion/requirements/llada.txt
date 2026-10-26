@@ -1,0 +1,14 @@
+# LLaDA-8B-Instruct environment (PLAN.md §9). Install in its own runtime:
+#   pip install -r harness/diffusion/requirements/llada.txt
+# transformers==4.38.2 is the pin in the README of github.com/ML-GSAI/LLaDA.
+# LLaDA does not pin torch: keep the runtime's CUDA build. The saved LLaDA run
+# (results/llada-comparison-20261019-213107) recorded torch 2.6.0+cu124, transformers
+# 4.38.2, accelerate 0.27.2, tokenizers 0.15.2 and protobuf 4.25.3; it did not record
+# its sentencepiece or numpy versions.
+transformers==4.38.2
+tokenizers==0.15.2
+accelerate==0.27.2  # device_map loading straight to the GPU
+sentencepiece==0.2.0
+protobuf==4.25.3
+numpy<2  # transformers 4.38.2 predates NumPy 2; also imported by the official generate.py (parity check)
+torch

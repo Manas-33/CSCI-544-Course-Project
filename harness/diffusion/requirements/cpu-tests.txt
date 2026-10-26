@@ -1,0 +1,4 @@
+# CPU unit tests (no model downloads): any recent torch works.
+#   pip install -r harness/diffusion/requirements/cpu-tests.txt
+torch
+pytest

@@ -1,0 +1,144 @@
+candidate_id,domain,label,problem,candidate,score_Qwen,accept_Qwen_at_zero,score_Mistral,accept_Mistral_at_zero,score_LLaDA,accept_LLaDA_at_zero
+sanity-c001,code,1,"Write a Python function add(a, b) that returns the sum of the integers a and b.","def add(a, b):
+    return a + b",14.125004018155972,True,17.874118237285636,True,6.437314051758789,True
+sanity-c002,code,0,Write a Python function is_even(n) that returns True if the integer n is even and False otherwise.,"def is_even(n):
+    return n % 2 == 1",-29.24999030557999,False,-12.499965847726635,False,-4.748365267997991,False
+sanity-c003,code,1,Write a Python function max_of_list(nums) that returns the largest number in the non-empty list nums.,"def max_of_list(nums):
+    best = nums[0]
+    for n in nums[1:]:
+        if n > best:
+            best = n
+    return best",12.750001838946483,True,16.562301251215622,True,5.3124157044252645,True
+sanity-c004,code,0,Write a Python function min_of_list(nums) that returns the smallest number in the non-empty list nums.,"def min_of_list(nums):
+    best = nums[0]
+    for n in nums[1:]:
+        if n > best:
+            best = n
+    return best",-24.249997314896063,False,2.000042803589452,True,3.4377066634660873,True
+sanity-c005,code,0,Write a Python function square(n) that returns n squared.,"def square(n):
+    return n * 2",-29.062487452534622,False,-14.812466702276026,False,-5.6863994729651175,False
+sanity-c006,code,1,Write a Python function reverse_string(s) that returns the string s reversed.,"def reverse_string(s):
+    return s[::-1]",14.62500230913774,True,17.686369272817007,True,6.374844174829213,True
+sanity-c007,code,0,Write a Python function absolute_value(n) that returns the absolute value of the number n.,"def absolute_value(n):
+    return n if n < 0 else -n",-17.2499969565937,False,16.874463906512347,True,2.8127672030751287,True
+sanity-c008,code,1,"Write a Python function count_vowels(s) that returns how many of the letters a, e, i, o, u appear in the string s, ignoring case.","def count_vowels(s):
+    return sum(1 for ch in s.lower() if ch in ""aeiou"")",15.250001588812477,True,17.999082957220637,True,5.124874390943838,True
+sanity-c009,code,1,Write a Python function factorial(n) that returns n! for an integer n >= 0.,"def factorial(n):
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result",7.750002388581524,True,16.6244422968338,True,2.5003923070671847,True
+sanity-c010,code,0,Write a Python function count_positive(nums) that returns how many numbers in the list nums are greater than 0.,"def count_positive(nums):
+    return sum(1 for n in nums if n < 0)",-29.249985285369803,False,-8.874962099143628,False,-4.248323380786283,False
+sanity-c011,code,1,"Write a Python function is_palindrome(s) that returns True if the string s reads the same forwards and backwards, and False otherwise.","def is_palindrome(s):
+    return s == s[::-1]",11.625003348912953,True,13.812439690702755,True,5.687473229150709,True
+sanity-c012,code,0,Write a Python function last_element(items) that returns the last element of the non-empty list items.,"def last_element(items):
+    return items[0]",-29.81249306590167,False,-15.312474219749948,False,-4.748426232123813,False
+sanity-c013,code,0,"Write a Python function multiply(a, b) that returns the product of the numbers a and b.","def multiply(a, b):
+    return a + b",-28.81249239024844,False,-15.437467787994214,False,-6.373798969218841,False
+sanity-c014,code,1,Write a Python function celsius_to_fahrenheit(c) that converts a temperature from Celsius to Fahrenheit.,"def celsius_to_fahrenheit(c):
+    return c * 9 / 5 + 32",12.375004332115262,True,18.435543104689614,True,5.562732045215163,True
+sanity-c015,code,1,"Write a Python function fizzbuzz(n) that returns ""FizzBuzz"" if the integer n is divisible by both 3 and 5, ""Fizz"" if it is divisible only by 3, ""Buzz"" if it is divisible only by 5, and str(n) otherwise.","def fizzbuzz(n):
+    if n % 15 == 0:
+        return ""FizzBuzz""
+    if n % 3 == 0:
+        return ""Fizz""
+    if n % 5 == 0:
+        return ""Buzz""
+    return str(n)",13.875001839961962,True,10.375004565307727,True,3.6259796130031234,True
+sanity-c016,code,0,Write a Python function average(nums) that returns the mean of the numbers in the non-empty list nums.,"def average(nums):
+    total = 0
+    for n in nums:
+        total += n
+    return total * len(nums)",-27.812493993286992,False,-14.124962931555268,False,4.687695897094947,True
+sanity-c017,code,1,Write a Python function sum_of_evens(nums) that returns the sum of the even numbers in the list nums.,"def sum_of_evens(nums):
+    return sum(n for n in nums if n % 2 == 0)",14.250003213353374,True,18.123794535001288,True,5.624961381128469,True
+sanity-c018,code,0,"Write a Python function starts_with_a(s) that returns True if the string s starts with the lowercase letter 'a', and False otherwise.","def starts_with_a(s):
+    return s.endswith(""a"")",-30.499990521698834,False,-14.999973673444812,False,-4.561186825000679,False
+sanity-c019,code,0,"Write a Python function grade(score) that returns ""A"" for scores of 90 or above, ""B"" for 80 to 89, ""C"" for 70 to 79, and ""F"" for anything below 70.","def grade(score):
+    if score >= 90:
+        return ""A""
+    if score >= 80:
+        return ""B""
+    if score >= 70:
+        return ""C""
+    return ""A""",-27.874994864303783,False,-11.937467773096463,False,-1.8103890975332828,False
+sanity-c020,code,1,"Write a Python function count_words(text) that returns the number of words in text, where words are separated by whitespace.","def count_words(text):
+    return len(text.split())",4.250003298088134,True,17.99867580569273,True,6.124714592761062,True
+sanity-c021,code,1,Write a Python function is_prime(n) that returns True if the integer n is a prime number and False otherwise.,"def is_prime(n):
+    if n < 2:
+        return False
+    i = 2
+    while i * i <= n:
+        if n % i == 0:
+            return False
+        i += 1
+    return True",13.625002573726258,True,17.061837809998604,True,3.812617637112643,True
+sanity-c022,code,0,"Write a Python function countdown(n) that returns the list [n, n - 1, ..., 1] for an integer n >= 1.","def countdown(n):
+    return list(range(1, n + 1))",-14.374997672665526,False,16.874146528428316,True,2.250106985148507,True
+sanity-c023,code,1,"Write a Python function remove_duplicates(items) that returns a new list with the duplicates in items removed, keeping the first occurrence of each item in its original order.","def remove_duplicates(items):
+    seen = set()
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result",14.125002092238352,True,16.93704232767036,True,5.687313635231787,True
+sanity-c024,code,0,"Write a Python function is_divisible(a, b) that returns True if the integer a is divisible by the nonzero integer b, and False otherwise.","def is_divisible(a, b):
+    return a % b != 0",-26.999994415052438,False,1.1250492727950436,True,-2.1854356401760384,False
+sanity-m001,math,1,"A shop sells pencils at 3 for $1. How much do 12 pencils cost, in dollars?","12 pencils make 12 / 3 = 4 groups of 3 pencils. Each group costs $1, so 12 pencils cost 4 x $1 = $4.
+The final answer is \boxed{4}.",15.37500196597423,True,8.625041960074336,True,3.937411520965916,True
+sanity-m002,math,0,Tom has 5 apples and buys 7 more. How many apples does he have now?,"Tom starts with 5 apples and buys 7 more, so he has 5 + 7 = 13 apples.
+The final answer is \boxed{13}.",12.875004860276368,True,12.062456936027177,True,3.68798075384193,True
+sanity-m003,math,0,"A shirt costs $40 and is on sale for 25% off. What is the sale price, in dollars?","The discount is 25% of $40 = 0.25 x 40 = $10. The sale price is $40 + $10 = $50.
+The final answer is \boxed{50}.",-25.187496940375887,False,-8.93746082420328,False,-0.6232480163906311,False
+sanity-m004,math,1,"A rectangle is 8 cm long and 5 cm wide. What is its area, in square centimeters?","Area = length x width = 8 x 5 = 40 square centimeters.
+The final answer is \boxed{40}.",12.250006194321267,True,18.24692882838888,True,4.062848243905173,True
+sanity-m005,math,1,"A train travels at 60 miles per hour for 3 hours. How far does it travel, in miles?","Distance = speed x time = 60 x 3 = 180 miles.
+The final answer is \boxed{180}.",13.875003689610471,True,17.935985014697067,True,4.312802687257985,True
+sanity-m006,math,0,A car uses 5 liters of fuel per 100 km. How many liters does it use for 300 km?,"300 km is 3 times 100 km, so the car uses 3 x 5 = 20 liters.
+The final answer is \boxed{20}.",16.750003143973714,True,16.62472040435924,True,3.3129140565556394,True
+sanity-m007,math,1,Maria has 24 stickers. She gives 9 to a friend and then buys 5 more. How many stickers does she have now?,"After giving 9 away, Maria has 24 - 9 = 15 stickers. After buying 5 more, she has 15 + 5 = 20 stickers.
+The final answer is \boxed{20}.",16.12500533202925,True,17.748277481292625,True,3.9377513512889575,True
+sanity-m008,math,0,Lena reads 12 pages a day. How many pages does she read in a week?,"A week has 7 days, so she reads 12 x 7 = 74 pages.
+The final answer is \boxed{74}.",-16.374998230543948,False,18.06107731987609,True,3.3752437521415346,True
+sanity-m009,math,0,What is 9 squared?,"9 squared is 9 x 9 = 18.
+The final answer is \boxed{18}.",-27.06249597191985,False,6.624904721079921,True,-2.310776184810214,False
+sanity-m010,math,1,What is 15% of 200?,"15% of 200 is 0.15 x 200 = 30.
+The final answer is \boxed{30}.",9.750003441989637,True,16.99959979484034,True,4.250090469896047,True
+sanity-m011,math,0,A class has 18 girls and 14 boys. How many students are in the class?,"18 + 14 = 22 students.
+The final answer is \boxed{22}.",1.0000060313203711,True,17.811342111710513,True,4.9375685347670935,True
+sanity-m012,math,1,A box holds 6 eggs. How many boxes are needed to hold 42 eggs?,"42 / 6 = 7 boxes.
+The final answer is \boxed{7}.",15.000007007883422,True,0.625066727149215,True,5.250348585867911,True
+sanity-m013,math,1,"A bakery sells muffins for $2 each and cookies for $1 each. On Monday it sold 30 muffins and 45 cookies. On Tuesday it sold 25 muffins and 50 cookies. How much money did the bakery make over the two days, in dollars?","On Monday, muffins made 30 x $2 = $60 and cookies made 45 x $1 = $45, so Monday's total was $60 + $45 = $105.
+On Tuesday, muffins made 25 x $2 = $50 and cookies made 50 x $1 = $50, so Tuesday's total was $50 + $50 = $100.
+Over the two days, the bakery made $105 + $100 = $205.
+The final answer is \boxed{205}.",14.250004903835316,True,17.124475230763217,True,3.312674342656411,True
+sanity-m014,math,0,"A farmer has three fields. The first field has 120 apple trees, the second has twice as many as the first, and the third has 50 fewer than the second. How many apple trees are there in total?","The second field has 2 x 120 = 240 trees.
+The third field has 240 - 50 = 190 trees.
+In total there are 120 + 240 + 190 = 450 trees.
+The final answer is \boxed{450}.",14.125005660953898,True,17.74917661928261,True,3.000679007738079,True
+sanity-m015,math,0,Half of a number is 14. What is the number?,"The number is 14 / 2 = 7.
+The final answer is \boxed{7}.",-10.874998360079562,False,10.375038047486242,True,2.7504120612866463,True
+sanity-m016,math,1,"Sam is 3 times as old as his daughter, who is 12. How old is Sam?","Sam is 3 x 12 = 36 years old.
+The final answer is \boxed{36}.",14.12500837965435,True,-0.6249579137206593,False,3.68772214361733,True
+sanity-m017,math,1,"The temperature was -4 degrees in the morning and rose by 10 degrees by noon. What was the temperature at noon, in degrees?","The temperature at noon was -4 + 10 = 6 degrees.
+The final answer is \boxed{6}.",15.625003401147573,True,18.123585841998846,True,4.312793767040692,True
+sanity-m018,math,0,"A pack of 4 batteries costs $6. How much do 12 batteries cost, in dollars?","12 batteries are 12 / 4 = 3 packs, so they cost 3 x $6 = $21.
+The final answer is \boxed{21}.",9.250002939473593,True,14.124940071400486,True,3.0000762112868644,True
+sanity-m019,math,1,A pizza is cut into 8 equal slices. Ana eats 3 slices and Ben eats 2 slices. What fraction of the pizza is left?,"Ana and Ben eat 3 + 2 = 5 slices, so 8 - 5 = 3 slices are left. That is 3 out of 8 slices.
+The final answer is \boxed{\frac{3}{8}}.",11.375004747157277,True,18.623138892401027,True,4.187469838838648,True
+sanity-m020,math,0,Solve for x: x - 9 = 4.,"Subtract 9 from both sides: x = 4 - 9 = -5.
+The final answer is \boxed{-5}.",0.5000053655164739,True,18.247729746471602,True,4.562968888353853,True
+sanity-m021,math,0,"A square has a perimeter of 36 cm. What is the length of one side, in cm?","A square has 4 equal sides, so one side is 36 / 4 = 8 cm.
+The final answer is \boxed{8}.",4.2500054526406075,True,18.560335173798336,True,3.7503204140187707,True
+sanity-m022,math,1,Solve for x: 2x + 6 = 20.,"Subtract 6 from both sides: 2x = 14. Divide both sides by 2: x = 7.
+The final answer is \boxed{7}.",13.625003480918497,True,18.1853225917661,True,3.938080607275298,True
+sanity-m023,math,0,"Tom saves $15 every week. How much has he saved after 10 weeks, in dollars?","He saves $15 a week for 10 weeks, so he has saved 15 + 10 = $25.
+The final answer is \boxed{25}.",-26.624994806933582,False,17.8734081405773,True,-3.8733362171763672,False
+sanity-m024,math,1,An empty water tank holds 500 liters and is filled at 25 liters per minute. How many minutes does it take to fill?,"It takes 500 / 25 = 20 minutes.
+The final answer is \boxed{20}.",17.500005409609713,True,18.310658144887174,True,3.937719290499264,True
+sanity-m025,math,1,"Two angles of a triangle are 50 degrees and 60 degrees. What is the third angle, in degrees?","The angles of a triangle add up to 180 degrees, so the third angle is 180 - 50 - 60 = 70 degrees.
+The final answer is \boxed{70}.",13.625004302717763,True,19.43416649754862,True,4.875181276743638,True
+sanity-m026,math,0,What is 1/2 + 1/4?,"1/2 + 1/4 = (1 + 1)/(2 + 4) = 2/6 = 1/3.
+The final answer is \boxed{\frac{1}{3}}.",-26.99999668504061,False,17.997065024334074,True,4.249982194622018,True

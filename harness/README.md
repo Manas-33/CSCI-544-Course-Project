@@ -56,3 +56,28 @@ python -m harness.run --config configs/ar_pair_dev.json --input bank/dev/dev_ban
 Model/local paths and revisions are configured under `models`; pin both model/tokenizer revisions for research. Honor normal Hugging Face authentication and `HF_HOME`. Both thresholds must be explicitly provided via config or `--threshold-a` plus `--threshold-b`; otherwise saved decisions stay null. Diagnostic zero thresholds are exploratory, never matched-TAR or validation-selected. Review categories use diagnostic thresholds when requested, otherwise the run's explicit thresholds if any.
 
 Share `manifest.json`, `scores_A.jsonl`, `scores_B.jsonl`, `pairs.jsonl`, and analysis `metrics.json`, `summary.csv`, `review.csv`, `development.png`. Missing/failed scores produce coverage-only `metrics.json` and a nonzero exit, not subset metrics. Runtime excludes only explicitly cold forward calls; loading and peak allocated memory are separate. Figures show precision/quantization. Development evidence is not a test result, H1 test, strongest-pair selection, or proof of ensemble benefit. Final-answer correctness does not establish correct reasoning; Yes/No probabilities are uncalibrated token events. Real-bank tokenizer/GPU checks and figure rendering remain to be performed.
+
+
+## Diffusion verifiers (LLaDA, iLLaDA, Dream)
+
+Scoring goes through **`harness/diffusion/`** for all three models: see its README for the environments, the scoring-code checks and `run_score`. The same T1 wording and the same six Yes and six No spellings are used as for the AR models (a test checks that the T1 text matches `harness/prompts.py`).
+
+**The saved LLaDA run** is `results/llada-comparison-20261019-213107/`: LLaDA-8B-Instruct at revision `08b83a6`, BF16, 1 answer slot (chosen on the development bank by median Yes+No mass, which was 0.978), T1, all 50 sanity items, on an A100. It was scored by an earlier version of `harness/llada_compare.py` (commit `030a84a`), and `llada_manifest.json` records how. That run's "reference check" ran the same forward pass twice; it is a repeat check, not the PLAN.md §4 parity test.
+
+`harness/llada_compare.py` no longer runs any model. It compares the saved LLaDA scores with the BF16 + SDPA Qwen/Mistral run (single and AND-pair metrics at the exploratory zero threshold) and refuses the eager-attention AR run:
+
+```bash
+python -m harness.llada_compare --validate-only   # check the saved inputs
+python -m harness.llada_compare                    # rewrite the comparison files in the LLaDA run folder
+```
+
+Pair metrics at a fixed zero threshold are not matched-TAR results: each pair ends up at a different TAR, so their FARs cannot be compared, and they establish nothing about H1.
+
+**Parity between the two LLaDA scorers.** Before relying on the saved run, score the same 50 items with `harness/diffusion` (unbatched, 1 slot, the same pinned revision) and compare. It passes when every score is within 0.05 of the saved one and the Spearman correlation is above 0.999 (PLAN.md §4 test 3's batched-vs-unbatched and repeat-run bounds). Use the saved run's environment where possible: an A100 with torch 2.6.0, transformers 4.38.2 and tokenizers 0.15.2. Different GPUs or torch builds change BF16 kernels and can move scores slightly without any bug, so record any difference:
+
+```bash
+python -m harness.diffusion.run_score --model llada --n-slots 1 --batch-size 1 --items bank/sanity/sanity_set.jsonl --bank-hash f431f8d60448eb9324f1fa6afb9a5d121003da0d2ef1f5e4b52d76813d841ecf --out results/llada_sanity_T1_n1.jsonl
+python -m harness.llada_compare --parity results/llada_sanity_T1_n1.jsonl
+```
+
+Offline tests: `python -m pytest harness -q` (no models, no GPU).

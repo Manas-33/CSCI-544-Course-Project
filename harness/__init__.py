@@ -1,1 +1,1 @@
-"""Sequential AR+AR token-event verification baseline; no model imports here."""
+"""Shared AR and diffusion verifier harness (PLAN.md §9, §11)."""

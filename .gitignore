@@ -56,3 +56,11 @@
 /results/bf16/sdpa/*
 !/results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459/
 !/results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459/
+
+# Diffusion adapters and LLaDA comparison assets
+!/harness/diffusion/
+!/results/llada-comparison-20261019-213107/
+
+__pycache__/
+*.pyc
+.pytest_cache/
