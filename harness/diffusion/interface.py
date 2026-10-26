@@ -11,6 +11,7 @@ Score row (PLAN.md §9), one JSON object per line:
     revision      Hugging Face commit of the weights and remote code
     template      prompt template name: T1 | T2 | T3
     n_slots       number of masked answer slots (1, 8 or 32)
+    answer_prefix name of the text after the generation prompt (scorer.ANSWER_PREFIXES; "none" by default)
     score         log P(Yes) - log P(No) at the first answer slot (null unless ok)
     p_yes         P(Yes), summed over the single-token Yes spellings (null unless ok)
     p_no          P(No), likewise (null unless ok)
@@ -29,7 +30,7 @@ from typing import Iterable, Iterator, Optional
 
 SCORE_ROW_FIELDS = (
     "bank_hash", "candidate_id", "model", "revision", "template", "n_slots",
-    "score", "p_yes", "p_no", "yes_no_mass", "status", "runtime_s", "peak_mem_gb",
+    "answer_prefix", "score", "p_yes", "p_no", "yes_no_mass", "status", "runtime_s", "peak_mem_gb",
 )
 STATUSES = ("ok", "too_long", "error")
 
@@ -47,6 +48,7 @@ TEMPLATES = {"T1": t1_message}
 
 def score_row(*, bank_hash: str, candidate_id: str, model: str, revision: str,
               template: str, n_slots: int, verdict=None, status: str = "ok",
+              answer_prefix: str = "none",
               runtime_s: Optional[float] = None,
               peak_mem_gb: Optional[float] = None) -> dict:
     """Build one score row; ``verdict`` is a scorer.Verdict (None unless ok)."""
@@ -61,6 +63,7 @@ def score_row(*, bank_hash: str, candidate_id: str, model: str, revision: str,
         "revision": revision,
         "template": template,
         "n_slots": n_slots,
+        "answer_prefix": answer_prefix,
         "score": verdict.score if verdict else None,
         "p_yes": verdict.p_yes if verdict else None,
         "p_no": verdict.p_no if verdict else None,

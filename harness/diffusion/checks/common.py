@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from ..interface import TEMPLATES, read_jsonl
-from ..scorer import SPECS, load_scorer
+from ..scorer import ANSWER_PREFIXES, SPECS, load_scorer
 
 # The official 50-item sanity set (bank/sanity/README.md), shared with the AR harness.
 SANITY_SET = Path(__file__).resolve().parents[3] / "bank" / "sanity" / "sanity_set.jsonl"
@@ -22,6 +22,8 @@ def model_args(description: str) -> argparse.ArgumentParser:
                     help="JSONL with candidate_id, problem, candidate (default: the sanity set)")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--revision", default=None, help="override the pinned HF revision")
+    ap.add_argument("--answer-prefix", default="none", choices=sorted(ANSWER_PREFIXES),
+                    help="text after the generation prompt (scorer.ANSWER_PREFIXES)")
     ap.add_argument("--allow-env-mismatch", action="store_true")
     ap.add_argument("--report", default=None, help="write the JSON report here")
     return ap
@@ -29,7 +31,8 @@ def model_args(description: str) -> argparse.ArgumentParser:
 
 def scorer_from_args(args):
     return load_scorer(args.model, args.n_slots, device=args.device,
-                       revision=args.revision, strict_env=not args.allow_env_mismatch)
+                       revision=args.revision, strict_env=not args.allow_env_mismatch,
+                       answer_prefix=args.answer_prefix)
 
 
 def load_items(path) -> list:

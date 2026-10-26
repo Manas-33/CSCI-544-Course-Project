@@ -66,6 +66,8 @@ class ParityTests(unittest.TestCase):
             parity(self.rows()[1:], self.lm, self.llada, self.bank_hash)
         with self.assertRaisesRegex(ValueError, 'bank_hash'):
             parity(self.rows(), self.lm, self.llada, 'another-bank')
+        with self.assertRaisesRegex(ValueError, 'answer_prefix'):
+            parity(self.rows(answer_prefix='think_nl'), self.lm, self.llada, self.bank_hash)
 
     def test_saved_scores_match_their_manifest(self):
         raw = open(f'{DEFAULT_LLADA}/scores_llada.jsonl', 'rb').read()

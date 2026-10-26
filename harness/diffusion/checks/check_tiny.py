@@ -22,7 +22,7 @@ import sys
 
 import torch
 
-from ..scorer import SCORERS, SPECS, check_environment, verdict_from_logits
+from ..scorer import ANSWER_PREFIXES, SCORERS, SPECS, check_environment, verdict_from_logits
 from .check_parity import SCORE_TOL, official_prompt_ids, official_slot_logits
 from .common import SANITY_SET, finish, load_items, message, verdicts_for
 
@@ -63,6 +63,7 @@ def main(argv=None):
     ap.add_argument("--llada-repo", default=None, help="clone of github.com/ML-GSAI/LLaDA")
     ap.add_argument("--items", default=str(SANITY_SET))
     ap.add_argument("--revision", default=None)
+    ap.add_argument("--answer-prefix", default="none", choices=sorted(ANSWER_PREFIXES))
     ap.add_argument("--allow-env-mismatch", action="store_true")
     ap.add_argument("--report", default=None)
     args = ap.parse_args(argv)
@@ -90,14 +91,15 @@ def main(argv=None):
 
     report = {"model": args.model, "revision": revision, "mask_token": mask_token, "n_slots": {}}
     for n_slots in (1, 8, 32):
-        scorer = SCORERS[args.model](model, tokenizer, spec, n_slots, device="cpu", revision=revision)
+        scorer = SCORERS[args.model](model, tokenizer, spec, n_slots, device="cpu", revision=revision,
+                                     answer_prefix=args.answer_prefix)
         prompts = []
         worst = 0.0
         for it in items:
             user_message = message(it)
             ids = scorer.prompt_ids(user_message)
             prompts.append(ids)
-            if ids != official_prompt_ids(args.model, tokenizer, user_message):
+            if ids != official_prompt_ids(args.model, tokenizer, user_message, args.answer_prefix):
                 problems.append(f"{it['candidate_id']}: prompt ids differ from the official ones")
             if len(ids) > 1 and ids[0] == ids[1] == tokenizer.bos_token_id:
                 problems.append(f"{it['candidate_id']}: doubled BOS")
@@ -120,7 +122,7 @@ def main(argv=None):
     report["yes"] = [tokenizer.decode([i]) for i in tokens.yes_ids]
     report["no"] = [tokenizer.decode([i]) for i in tokens.no_ids]
     report["dropped"] = list(tokens.dropped)
-    report["rendered_prompt_example"] = scorer.render(message(items[0]))
+    report["rendered_prompt_example"] = scorer.render(message(items[0])) + ANSWER_PREFIXES[scorer.answer_prefix]
     print(f"Yes set {report['yes']}  No set {report['no']}  dropped {report['dropped']}")
     print(f"rendered prompt:\n{report['rendered_prompt_example']!r}")
     for p in problems:

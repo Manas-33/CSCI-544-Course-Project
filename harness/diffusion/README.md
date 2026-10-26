@@ -67,6 +67,10 @@ The sanity set is `bank/sanity/sanity_set.jsonl`: 50 items (25 right, 25 wrong; 
 
 LLaDA has already been scored once on it, by an earlier scorer: 1 answer slot, AUROC 0.885 (fails the 0.90 bar). Before relying on that run, check that this scorer gives the same scores; the commands are in `harness/README.md` under "Parity between the two LLaDA scorers".
 
+## Answer prefixes (iLLaDA: thinking off)
+
+`--answer-prefix` (on `run_score` and every check) appends a fixed text after the chat template's generation prompt and before the answer slots; the choices are in `scorer.ANSWER_PREFIXES` (`none`, `think_nl`, `think_nlnl`; each puts a newline before `</think>`, so the closing tag tokenizes like the official end-of-thinking text), and every score row and report records the one used. The user message is never changed. iLLaDA opens every answer with a `<think>` block, so without a prefix its first slot holds `<` and almost no Yes/No mass; `decisions/2026-10-25-illada-thinking-off.md` turns its thinking off and chooses the prefix together with the slot count on the development bank (`choose_slots.py` takes every file and picks the highest median Yes+No mass, ties to fewer slots, then the simpler prefix). LLaDA and Dream use `none`. `checks/check_parity.py` gives the official prompt the same prefix, so test 2 still compares like with like.
+
 ## Notes for role C and the team
 
 - **T1 matches the AR harness.** `interface.t1_message()` produces the same text as `harness/prompts.py`'s T1. T2 and T3 are not here yet; when they are added, take them from `harness/prompts.py` and rerun tests 1–3.

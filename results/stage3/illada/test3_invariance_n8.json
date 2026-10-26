@@ -1,0 +1,15 @@
+{
+  "check": "test 3 invariance",
+  "status": "PASS",
+  "model": "illada",
+  "revision": "5769f049224b2cff61106ebce0429ede5deeb434",
+  "n_slots": 8,
+  "n_items": 50,
+  "spearman_min": 0.999,
+  "batch_tol": 0.05,
+  "repeat_spearman": 1.0,
+  "repeat_max_abs_diff": 0.0,
+  "checks": {
+    "repeat": true
+  }
+}

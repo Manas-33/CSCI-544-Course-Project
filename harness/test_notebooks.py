@@ -8,7 +8,8 @@ import unittest
 from pathlib import Path
 
 NOTEBOOKS = sorted(Path("notebooks").glob("*.ipynb"))
-NAMESPACE = {"BRANCH": "main", "OUT": "results/stage3/x", "N": 1, "n": 8, "DEV_HASH": "d" * 64, "SANITY_HASH": "s" * 64}
+NAMESPACE = {"BRANCH": "main", "OUT": "results/stage3/x", "N": 1, "n": 8, "p": "think_nl", "PREFIX": "think_nl", "FILES": "a.jsonl b.jsonl",
+             "DEV_HASH": "d" * 64, "SANITY_HASH": "s" * 64}
 
 
 def shell_lines():

@@ -1,0 +1,19 @@
+{
+  "model": "illada",
+  "template": "T1",
+  "bank_hash": "6d9f2d56923b525693d18074f2167462e9a7c08342d8c590523cac6a05bbbfa9",
+  "revision": "5769f049224b2cff61106ebce0429ede5deeb434",
+  "items": 142,
+  "median_yes_no_mass": {
+    "1": 0.00019075796535616973,
+    "8": 0.00041377448360435665,
+    "32": 8.826344856061041e-05
+  },
+  "chosen_n_slots": 8,
+  "rule": "highest median Yes+No mass; ties go to fewer slots",
+  "usable_scores_gate": {
+    "threshold": 0.5,
+    "median": 0.00041377448360435665,
+    "passed": false
+  }
+}
