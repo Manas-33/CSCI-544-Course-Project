@@ -1,0 +1,51 @@
+{
+  "title": "AR verifier sanity check",
+  "fixture": "bank/sanity/sanity_set.jsonl",
+  "counts": {
+    "candidates": 50,
+    "correct": 25,
+    "incorrect": 25,
+    "matched_pairs": 0,
+    "problems": 50
+  },
+  "required_overall_auroc": 0.9,
+  "run_dir": "results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459",
+  "analysis_dir": "results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459",
+  "run_manifest_sha256": "eb3bb63cdd66b42ea86fa3b0ffca6302b5a6d788ffba9725f114aa5cd9031c6b",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "models": [
+    {
+      "model": "Qwen2.5-7B-Instruct",
+      "model_id": "Qwen/Qwen2.5-7B-Instruct",
+      "model_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "overall_auroc": 0.92,
+      "math_auroc": 0.8757,
+      "code_auroc": 1.0,
+      "sanity_gate": "PASS",
+      "required_auroc": 0.9,
+      "median_yes_no_mass": 1.0,
+      "peak_gpu_gib": 14.26,
+      "warm_mean_forward_seconds": 0.0324,
+      "precision": "BF16",
+      "quantization": "unquantized",
+      "attention": "SDPA"
+    },
+    {
+      "model": "Mistral-7B-Instruct-v0.3",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "model_revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+      "overall_auroc": 0.752,
+      "math_auroc": 0.6036,
+      "code_auroc": 0.9444,
+      "sanity_gate": "FAIL",
+      "required_auroc": 0.9,
+      "median_yes_no_mass": 0.9999,
+      "peak_gpu_gib": 13.54,
+      "warm_mean_forward_seconds": 0.036,
+      "precision": "BF16",
+      "quantization": "unquantized",
+      "attention": "SDPA"
+    }
+  ],
+  "research_evidence": false
+}

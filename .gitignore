@@ -37,6 +37,10 @@
 !/results/fp32/ar-sanity-analysis/
 !/results/fp32/ar-sanity-nf4-fp32/
 
+# PPT-ready result package
+!/results/ppt_ar_sanity/
+!/results/ppt_ar_sanity/*
+
 # When code starts, allow its folders here, for example:
 # !/bank/
 # !/harness/
@@ -46,6 +50,12 @@
 # Never track these, even inside allowed folders
 .DS_Store
 .Rhistory
+
+# Verified unquantized BF16 runs using SDPA attention.
+!/results/bf16/sdpa/
+/results/bf16/sdpa/*
+!/results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459/
+!/results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459/
 
 # Diffusion adapters and LLaDA comparison assets
 !/harness/diffusion/

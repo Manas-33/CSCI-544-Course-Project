@@ -82,6 +82,17 @@ def roc_curve(labels, scores):
     return xs, ys, area
 
 
+def domain_aurocs(records, labels, scores):
+    """AUROC per domain (math/code) for records that carry one; domains lacking either class are skipped."""
+    result = {}
+    for domain in sorted({r["domain"] for r in records if "domain" in r}):
+        positions = [i for i, r in enumerate(records) if r.get("domain") == domain]
+        ys = [labels[i] for i in positions]
+        if 0 < sum(ys) < len(ys):
+            result[domain] = roc_curve(ys, [scores[i] for i in positions])[2]
+    return result
+
+
 def pair_ranking(pairs, scores):
     if not pairs:
         raise ValueError("within-pair ranking requires matched pairs")
@@ -189,7 +200,8 @@ def write_csv(path, rows):
     rows = iter(rows)
     first = next(rows)
     with path.open("x", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(first))
+        # LF rows, so the file matches what git stores (.gitattributes eol=lf).
+        writer = csv.DictWriter(handle, fieldnames=list(first), lineterminator="\n")
         writer.writeheader()
         writer.writerow(first)
         writer.writerows(rows)
@@ -285,6 +297,7 @@ def evaluate(args):
         model_metrics = {
             "model_id": meta["requested"]["model_id"], "model_revision": meta.get("resolved_model_revision"),
             "auroc": roc_curve(ordered_labels, values[name])[2],
+            "auroc_by_domain": domain_aurocs(records, ordered_labels, values[name]),
             "within_pair_ranking_accuracy": pair_ranking(pairs, {cid: row["score"] for cid, row in scores[name].items()}) if pairs else None,
             "warm_forward_seconds": math.fsum(warm), "warm_calls": len(warm),
             "warm_mean_forward_seconds": statistics.mean(warm) if warm else None,
@@ -295,7 +308,9 @@ def evaluate(args):
             "quantization_mode": meta.get("actual_quantization") or "unquantized", "quantization": meta["quantization"],
         }
         metrics["models"][name] = model_metrics
-        summary.append({"model": name, **counts, **{k: v for k, v in model_metrics.items() if k != "quantization"}})
+        summary.append({"model": name, **counts,
+                        **{k: v for k, v in model_metrics.items() if k not in ("quantization", "auroc_by_domain")},
+                        **{f"auroc_{domain}": v for domain, v in model_metrics["auroc_by_domain"].items()}})
     thresholds = manifest["effective_config"]["thresholds"]
     threshold_source = "explicit_scoring_run_thresholds"
     if args.diagnostic_threshold_zero:
