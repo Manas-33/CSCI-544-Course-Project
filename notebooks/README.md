@@ -5,7 +5,7 @@ Each notebook runs in its **own fresh Colab runtime** (the model environments co
 | Notebook | Environment | What it settles |
 |---|---|---|
 | `01_ar_verifiers.ipynb` | `requirements.txt` (transformers 4.51.3) | Sanity check for Llama-3.1-8B, Gemma-2-9B, Llama-3.2-3B and Qwen2.5-1.5B; the AR reference check for every AR model (the sign-off behind Mistral's failure); Qwen and Mistral on the 71 development pairs. Llama, Gemma and Mistral are gated: accept their licenses, and add a Hugging Face token as the Colab secret `HF_TOKEN`. |
-| `02_llada.ipynb` | `harness/diffusion/requirements/llada.txt` | LLaDA's test 2 (parity with the official code) and test 3 (invariance), its sanity check through the shared scorer, and agreement with the saved LLaDA run. |
+| `02_llada.ipynb` | `harness/diffusion/requirements/llada.txt`, in its own Python 3.11 environment with torch 2.6.0 (Colab's Python 3.13 cannot install these pins) | LLaDA's test 2 (parity with the official code) and test 3 (invariance), its sanity check through the shared scorer, and agreement with the saved LLaDA run. |
 | `03_illada.ipynb` | `.../illada.txt` (transformers 4.57.1) | iLLaDA's answer-slot count on the development bank, the usable-scores gate, and tests 1–3. |
 | `04_dream.ipynb` | `.../dream.txt` (transformers 4.46.2, torch 2.5.1; restart the session after installing) | Dream's answer-slot count, the usable-scores gate, and tests 1–3 (test 2 is also its shift check). |
 
