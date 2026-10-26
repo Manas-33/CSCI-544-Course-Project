@@ -1,0 +1,19 @@
+{
+  "model": "dream",
+  "template": "T1",
+  "bank_hash": "6d9f2d56923b525693d18074f2167462e9a7c08342d8c590523cac6a05bbbfa9",
+  "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+  "items": 142,
+  "median_yes_no_mass": {
+    "1": 0.9411935657262802,
+    "8": 0.7135425880551338,
+    "32": 0.8022906333208084
+  },
+  "chosen_n_slots": 1,
+  "rule": "highest median Yes+No mass; ties go to fewer slots",
+  "usable_scores_gate": {
+    "threshold": 0.5,
+    "median": 0.9411935657262802,
+    "passed": true
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "check": "tiny-model smoke test",
+  "status": "PASS",
+  "model": "dream",
+  "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+  "mask_token": "<|mask|>",
+  "n_slots": {
+    "1": {
+      "parity_max_abs_diff": 0.0,
+      "batch_max_abs_diff": 9.5367431640625e-07
+    },
+    "8": {
+      "parity_max_abs_diff": 0.0,
+      "batch_max_abs_diff": 1.9073486328125e-06
+    },
+    "32": {
+      "parity_max_abs_diff": 0.0,
+      "batch_max_abs_diff": 9.5367431640625e-07
+    }
+  },
+  "yes": [
+    "Yes",
+    " Yes",
+    "yes",
+    " yes",
+    "YES",
+    " YES"
+  ],
+  "no": [
+    "No",
+    " No",
+    "no",
+    " no",
+    "NO",
+    " NO"
+  ],
+  "dropped": [],
+  "rendered_prompt_example": "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nProblem:\nWrite a Python function add(a, b) that returns the sum of the integers a and b.\n\nCandidate solution:\ndef add(a, b):\n    return a + b\n\nIs the final answer correct? Answer Yes or No.<|im_end|>\n<|im_start|>assistant\n",
+  "problems": []
+}
