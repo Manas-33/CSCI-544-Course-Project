@@ -51,8 +51,8 @@
 .DS_Store
 .Rhistory
 
-# Local result collection; publish only the verified SDPA sanity run below.
-!/test_results/
-/test_results/*
-!/test_results/ar-sanity-bf16-sdpa-20261026-000459/
-!/test_results/ar-sanity-analysis-bf16-sdpa-20261026-000459/
+# Verified unquantized BF16 runs using SDPA attention.
+!/results/bf16/sdpa/
+/results/bf16/sdpa/*
+!/results/bf16/sdpa/ar-sanity-bf16-sdpa-20261026-000459/
+!/results/bf16/sdpa/ar-sanity-analysis-bf16-sdpa-20261026-000459/
