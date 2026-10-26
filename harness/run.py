@@ -28,6 +28,21 @@ def finite_number(value):
     return type(value) in (int, float) and math.isfinite(value)
 
 
+# SDPA by default: eager attention gave wrong BF16 scores for Qwen2.5. Gemma-2 needs eager, because
+# SDPA silently skips its attention-logit soft-capping (ar.py refuses that combination).
+ATTENTION = ("sdpa", "eager")
+
+
+def attention_of(spec):
+    return spec.get("attn_implementation", "sdpa")
+
+
+def attention_summary(config):
+    """One value when both models use the same attention, else "per_model" (see models.X)."""
+    values = {attention_of(spec) for spec in config["models"].values()}
+    return values.pop() if len(values) == 1 else "per_model"
+
+
 def validate_config(config):
     keys = {"models", "field_mapping", "template", "max_prompt_tokens", "device",
             "dtype", "load_in_4bit", "thresholds"}
@@ -61,10 +76,12 @@ def validate_config(config):
         raise ValueError("models must contain exactly A and B")
     for name, spec in models.items():
         if (not isinstance(spec, dict) or not {"model_id", "revision"} <= spec.keys()
-                or spec.keys() - {"model_id", "revision", "tokenizer_revision"}):
-            raise ValueError(f"model {name} requires model_id/revision; tokenizer_revision is optional")
+                or spec.keys() - {"model_id", "revision", "tokenizer_revision", "attn_implementation"}):
+            raise ValueError(f"model {name} requires model_id/revision; tokenizer_revision and attn_implementation are optional")
         if any(not isinstance(v, str) or not v.strip() for v in spec.values()):
             raise ValueError(f"model {name} IDs/paths and revisions must be nonempty strings")
+        if spec.get("attn_implementation", "sdpa") not in ATTENTION:
+            raise ValueError(f"model {name}: attn_implementation must be one of {', '.join(ATTENTION)}")
     thresholds = config["thresholds"]
     if thresholds is not None and (not isinstance(thresholds, dict)
             or set(thresholds) != {"A", "B"}
@@ -148,7 +165,7 @@ def execute(config, records, all_records, input_hash, config_raw, args):
         "probability_semantics": "raw token events; not calibrated correctness probabilities",
         "run_kind": "development_4bit" if config["load_in_4bit"] else "unquantized_baseline",
         "planned_research_precision": "bf16", "batch_size": 1, "use_cache": False,
-        "shared_token_budget": 2048, "reserved_tokens": 288, "attention_implementation": "sdpa",
+        "shared_token_budget": 2048, "reserved_tokens": 288, "attention_implementation": attention_summary(config),
         "python": platform.python_version(), "platform": platform.platform(), "packages": {},
         "source_sha256": {p.name: digest(p.read_bytes()) for p in Path(__file__).parent.glob("*.py")},
         "models": {name: {"requested": spec, "quantization": None, "actual_dtype": None,

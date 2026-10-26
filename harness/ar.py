@@ -110,6 +110,10 @@ def run_model(spec, tokenizer, records, config, device, dtype, metadata, emit):
         metadata["resolved_model_revision"] = getattr(model_config, "_commit_hash", None)
         if getattr(model_config, "quantization_config", None):
             raise ValueError("prequantized checkpoints are unsupported; use explicit NF4 mode")
+        attention = spec.get("attn_implementation", "sdpa")
+        if getattr(model_config, "attn_logit_softcapping", None) and attention != "eager":
+            raise ValueError("this model soft-caps attention logits (Gemma-2); SDPA skips that, "
+                             "so set attn_implementation to eager")
         kwargs = {}
         if config["load_in_4bit"]:
             import bitsandbytes  # noqa: F401 -- optional, only in explicitly selected mode
@@ -124,12 +128,15 @@ def run_model(spec, tokenizer, records, config, device, dtype, metadata, emit):
         model = AutoModelForCausalLM.from_pretrained(
             spec["model_id"], revision=metadata["resolved_model_revision"] or spec["revision"],
             config=model_config, torch_dtype=dtype, device_map={"": str(device)},
-            low_cpu_mem_usage=True, trust_remote_code=False, attn_implementation="sdpa", **kwargs,
+            low_cpu_mem_usage=True, trust_remote_code=False, attn_implementation=attention, **kwargs,
         )
         model.eval()
         if is_cuda:
             torch.cuda.synchronize(device)
         metadata["loading_seconds"] = time.perf_counter() - start
+        metadata["attention_implementation"] = getattr(model.config, "_attn_implementation", None)
+        if metadata["attention_implementation"] != attention:
+            raise ValueError(f"loaded {metadata['attention_implementation']} attention, not the requested {attention}")
         metadata["actual_dtype"] = str(model.dtype)
         metadata["actual_quantization"] = "nf4" if getattr(model, "is_loaded_in_4bit", False) else None
         if bool(metadata["actual_quantization"]) != config["load_in_4bit"]:
