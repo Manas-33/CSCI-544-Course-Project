@@ -7,7 +7,7 @@ The bug detector for scoring-code test 1 (PLAN.md §4): every verifier, AR and d
   - math: a wrong sum or product, or an added discount;
   - code: a flipped condition or a wrong operator.
 - **Outside the bank:** new problems, not copied or paraphrased from GSM8K, MATH, HumanEval or MBPP.
-- **Format:** one JSON object per line with `candidate_id`, `domain`, `problem`, `candidate`, `label` and `note` (why the item is right or wrong). It follows the spec in `harness/diffusion/README.md` and keeps its four examples (`sanity-m001`, `sanity-m002`, `sanity-c001`, `sanity-c002`) unchanged.
+- **Format:** one JSON object per line with `candidate_id`, `domain`, `problem`, `candidate`, `label` and `note` (why the item is right or wrong). Its first four items (`sanity-m001`, `sanity-m002`, `sanity-c001`, `sanity-c002`) are the examples first written for the diffusion checks, unchanged.
   - Math answers end with `The final answer is \boxed{...}`.
   - Code answers are a single Python function.
   - Lengths range from one line to a paragraph, so batching adds padding.
