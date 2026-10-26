@@ -59,7 +59,6 @@
 
 # Diffusion adapters and LLaDA comparison assets
 !/harness/diffusion/
-!/harness/requirements-llada.txt
 !/results/llada-comparison-20261019-213107/
 
 __pycache__/

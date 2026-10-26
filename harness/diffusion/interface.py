@@ -33,8 +33,8 @@ SCORE_ROW_FIELDS = (
 )
 STATUSES = ("ok", "too_long", "error")
 
-# PLACEHOLDER until role C fixes the shared T1-T3 wording (PLAN.md §4). The
-# question line is PLAN.md's T1; the layout around it is not agreed yet.
+# T1, the same text as harness/prompts.py (harness/test_llada_compare.py checks this).
+# T2 and T3 are added from that file when the diffusion models need them.
 T1_QUESTION = "Is the final answer correct? Answer Yes or No."
 
 

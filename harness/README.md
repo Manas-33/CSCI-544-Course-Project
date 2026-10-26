@@ -58,70 +58,26 @@ Model/local paths and revisions are configured under `models`; pin both model/to
 Share `manifest.json`, `scores_A.jsonl`, `scores_B.jsonl`, `pairs.jsonl`, and analysis `metrics.json`, `summary.csv`, `review.csv`, `development.png`. Missing/failed scores produce coverage-only `metrics.json` and a nonzero exit, not subset metrics. Runtime excludes only explicitly cold forward calls; loading and peak allocated memory are separate. Figures show precision/quantization. Development evidence is not a test result, H1 test, strongest-pair selection, or proof of ensemble benefit. Final-answer correctness does not establish correct reasoning; Yes/No probabilities are uncalibrated token events. Real-bank tokenizer/GPU checks and figure rendering remain to be performed.
 
 
-## LLaDA comparison using the existing AR results
+## Diffusion verifiers (LLaDA, iLLaDA, Dream)
 
-This runs only LLaDA-8B-Instruct. It reuses the saved unquantized BF16 Qwen/Mistral
-scores in `results/bf16/ar-sanity-bf16-20261020-015535/`, scoring the exact same 50
-candidates in `bank/sanity/sanity_set.jsonl` (checked by hash and candidate ID).
+Scoring goes through **`harness/diffusion/`** for all three models: see its README for the environments, the scoring-code checks and `run_score`. The same T1 wording and the same six Yes and six No spellings are used as for the AR models (a test checks that the T1 text matches `harness/prompts.py`).
 
-After uploading the whole folder, run inside your CARC interactive A100 allocation:
+**The saved LLaDA run** is `results/llada-comparison-20261019-213107/`: LLaDA-8B-Instruct at revision `08b83a6`, BF16, 1 answer slot (chosen on the development bank by median Yes+No mass, which was 0.978), T1, all 50 sanity items, on an A100. It was scored by an earlier version of `harness/llada_compare.py` (commit `030a84a`), and `llada_manifest.json` records how. That run's "reference check" ran the same forward pass twice; it is a repeat check, not the PLAN.md §4 parity test.
 
-```bash
-bash run_llada_carc.sh
-```
-
-Or submit from the uploaded repository root on the login node:
+`harness/llada_compare.py` no longer runs any model. It compares the saved LLaDA scores with the BF16 + SDPA Qwen/Mistral run (single and AND-pair metrics at the exploratory zero threshold) and refuses the eager-attention AR run:
 
 ```bash
-sbatch --account=YOUR_CARC_PROJECT run_llada_carc.sh
+python -m harness.llada_compare --validate-only   # check the saved inputs
+python -m harness.llada_compare                    # rewrite the comparison files in the LLaDA run folder
 ```
 
-The launcher creates a separate environment in `/scratch1/$USER/llada-comparison/`
-with Transformers 4.38.2, CUDA PyTorch, SentencePiece and protobuf. It leaves the AR
-environment unchanged. Conda packages, model weights, pip caches, remote model
-code, temporary files and outputs use scratch to avoid home-directory quota errors.
-Initial setup/downloads require network access. The official LLaDA implementation
-is loaded with `trust_remote_code=True`, pinned to the resolved model commit.
+Pair metrics at a fixed zero threshold are not matched-TAR results: each pair ends up at a different TAR, so their FARs cannot be compared, and they establish nothing about H1.
 
-The shared T1 wording is rendered with LLaDA's own chat template. A single
-bidirectional forward pass reads the first masked answer position (mask ID 126336),
-with no Dream-style shift. Slots 1, 8 and 32 are compared on the existing 142-row
-development bank, without using its labels; highest median Yes+No mass wins, ties
-favor fewer slots. LLaDA then scores the 50 original AR candidates. Twenty repeat
-reference forwards check top tokens and an independent probability reduction.
-Full project gates, including batch invariance, remain pending.
-
-The launcher prints its output directory, normally
-`/scratch1/$USER/llada-comparison/run-TIMESTAMP/`. Outputs are:
-
-- `scores_llada.jsonl`: 50 label-free LLaDA score rows.
-- `llada_manifest.json`: revision, settings, hashes, environment and checks.
-- `dev_slots1.jsonl`, `dev_slots8.jsonl`, `dev_slots32.jsonl`: slot-selection scores.
-- `reference_checks.jsonl`: 20 reference/repeat comparisons.
-- `single_metrics.csv`: AUROC for all three models, overall and by domain.
-- `pair_metrics.csv`: Qwen+Mistral, Qwen+LLaDA and Mistral+LLaDA AND-rule counts.
-- `comparison_review.csv`: aligned candidates, labels and scores for all three.
-- `comparison_metrics.json`, `REPORT.md`: the comparison and its limitations.
-
-Pair metrics use a fixed zero threshold for exploratory integration checks. They
-are not matched-TAR results, do not establish H1, and do not select thresholds on
-the sanity fixture. The existing AR models fail the overall 0.90 sanity target.
-Saved AR runs and new LLaDA runs use different environments, so there is no matched
-cost claim. The later pilot/validation gates and matched-TAR analysis are still
-needed for the scientific comparison. No LLaDA results exist until the GPU job runs.
-
-Offline validation and tests (optional CPU Torch for the numerical adapter test):
+**Parity between the two LLaDA scorers.** Before relying on the saved run, score the same 50 items with `harness/diffusion` (unbatched, 1 slot, the same pinned revision) and compare. It passes when every score is within 0.05 of the saved one and the Spearman correlation is above 0.999 (PLAN.md §4 test 3's batched-vs-unbatched and repeat-run bounds). Use the saved run's environment where possible: an A100 with torch 2.6.0, transformers 4.38.2 and tokenizers 0.15.2. Different GPUs or torch builds change BF16 kernels and can move scores slightly without any bug, so record any difference:
 
 ```bash
-python -B -m harness.llada_compare --validate-only
-python -B -m unittest harness.test_llada_compare -v
+python -m harness.diffusion.run_score --model llada --n-slots 1 --batch-size 1 --items bank/sanity/sanity_set.jsonl --bank-hash f431f8d60448eb9324f1fa6afb9a5d121003da0d2ef1f5e4b52d76813d841ecf --out results/llada_sanity_T1_n1.jsonl
+python -m harness.llada_compare --parity results/llada_sanity_T1_n1.jsonl
 ```
 
-To regenerate tables after downloading a completed run:
-
-```bash
-python -B -m harness.llada_compare --analyze-only --output-dir results/YOUR_DOWNLOADED_RUN
-```
-
-Official references: [LLaDA repository](https://github.com/ML-GSAI/LLaDA),
-[masked forward/generation](https://github.com/ML-GSAI/LLaDA/blob/main/generate.py).
+Offline tests: `python -m pytest harness -q` (no models, no GPU).

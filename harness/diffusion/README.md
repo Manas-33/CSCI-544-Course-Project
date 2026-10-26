@@ -5,10 +5,9 @@ Scores a candidate with LLaDA-8B-Instruct, iLLaDA-8B-Instruct or Dream-v0-Instru
 | File | What it is |
 |---|---|
 | `scorer.py` | Model specs, Yes/No token sets, the scorer classes, `load_scorer()` |
-| `interface.py` | Score row (PLAN §9) and a **placeholder** T1 prompt. Role C owns both and will align them |
+| `interface.py` | Score row (PLAN §9) and the T1 prompt, the same text as `harness/prompts.py` (a test checks this) |
 | `run_score.py` | Scores a JSONL of candidates into score rows; resumes by skipping ids already written |
 | `checks/` | Scoring-code tests 1–3 (GPU) and a CPU smoke test on the real model code |
-| `sanity_set.jsonl` | 4 example items; the team writes the full 50 (see below) |
 | `requirements/` | One file per model environment, plus `cpu-tests.txt` |
 | `tests/` | CPU unit tests with tiny mocks; no downloads |
 
@@ -31,7 +30,7 @@ Sources: the model cards and `config.json` / `tokenizer_config.json` on Hugging 
 Use **one fresh runtime per model**: the three environments conflict. Each model needs about 16 GB of GPU memory in bf16, and Dream needs at least 20 GB, so use an L4 (24 GB) or an A100, not a T4.
 
 ```bash
-git clone -b feature/diffusion-scorers https://github.com/Manas-33/CSCI-544-Course-Project.git /content/project
+git clone https://github.com/Manas-33/CSCI-544-Course-Project.git /content/project
 cd /content/project
 pip install -q -r harness/diffusion/requirements/llada.txt   # or illada.txt / dream.txt
 # Dream only: restart the runtime now (its pin replaces Colab's torch), then cd back
@@ -60,23 +59,17 @@ Each check prints PASS or FAIL, exits non-zero unless it passes, and writes a JS
 | 3. Invariance | `check_invariance.py` | Repeat runs: Spearman > 0.999. Batched vs unbatched: \|Δs\| < 0.05 (skipped for iLLaDA) |
 | Smoke test | `check_tiny.py` | The same parity and batching checks on a 2-layer random-weight model built from the official code. Already passes locally for all three models in their pinned environments; it does not replace tests 1–3 |
 
-Tests 2 and 3 run on the sanity set by default (`--items` takes any JSONL with `candidate_id`, `problem`, `candidate`), so they report INCOMPLETE until it has 20+ items. Run the tests for each answer-slot length you use.
+All checks run on the official 50-item sanity set, `bank/sanity/sanity_set.jsonl`, by default (`--items` takes any JSONL with `candidate_id`, `problem`, `candidate`). Run the tests for each answer-slot length you use.
 
-## The sanity set (team task: write 50 items)
+## The sanity set and the saved LLaDA run
 
-`sanity_set.jsonl` holds 4 examples. Extend it to **50 items: 25 obviously right (`label: 1`) and 25 obviously wrong (`label: 0`)**, one JSON object per line with `candidate_id`, `domain`, `problem`, `candidate`, `label` and `note`.
+The sanity set is `bank/sanity/sanity_set.jsonl`: 50 items (25 right, 25 wrong; 26 math, 24 code), shared with the AR harness. See `bank/sanity/README.md`. It is a bug detector: never tune anything on it.
 
-- **Outside the bank.** Write new problems; do not copy or paraphrase GSM8K, MATH, HumanEval or MBPP.
-- **Both domains, balanced.** About 13 math and 12 code items per label, so neither domain is all-correct.
-- **Obvious.** Someone can judge it at a glance. A wrong item has one clear error that changes the final answer (math: a wrong sum in the last step; code: a flipped condition or wrong operator), not a subtle edge case.
-- **Bank format.** Math candidates show short working and end with `The final answer is \boxed{...}`; code candidates are a single Python function.
-- **Varied lengths**, from one line to a paragraph, so batching adds padding in test 3.
-- **Ids** `sanity-m001…`, `sanity-c001…`; say in `note` why the item is right or wrong.
-- **A second person checks every label.** Commit the set before any model is run on it, and never tune anything on it: it is a bug detector, and the AR adapters (role C) use the same 50 items.
+LLaDA has already been scored once on it, by an earlier scorer: 1 answer slot, AUROC 0.885 (fails the 0.90 bar). Before relying on that run, check that this scorer gives the same scores; the commands are in `harness/README.md` under "Parity between the two LLaDA scorers".
 
 ## Notes for role C and the team
 
-- **T1 is a placeholder.** `interface.t1_message()` uses PLAN's question line inside a layout that is not agreed. When C fixes T1–T3, replace `TEMPLATES` and rerun tests 1–3.
+- **T1 matches the AR harness.** `interface.t1_message()` produces the same text as `harness/prompts.py`'s T1. T2 and T3 are not here yet; when they are added, take them from `harness/prompts.py` and rerun tests 1–3.
 - **Score rows** use the PLAN §9 fields listed in `interface.py`. The score is never sign-flipped there; T3's flip belongs to the analysis. Each `run_score` run also appends a small manifest line to `<out>.manifest.jsonl`.
 - **iLLaDA may want to think first.** Its official evaluations of reasoning tasks close a `<think>…</think>` block (`end_think_logit_boost`), so its first answer slot may favour `<` over Yes/No. Test 1 prints the top token, and the usable-scores gate (median Yes+No mass ≥ 0.5) will show it. Any fix (such as a pre-filled empty think block) changes the prompt for one verifier, so it is a team decision for `decisions/`, not a scorer change.
 - **Dream's template adds** "You are a helpful assistant." as a system message when none is given. This is the official template, kept as is.

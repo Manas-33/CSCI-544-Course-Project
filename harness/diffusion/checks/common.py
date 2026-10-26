@@ -10,7 +10,8 @@ from pathlib import Path
 from ..interface import TEMPLATES, read_jsonl
 from ..scorer import SPECS, load_scorer
 
-SANITY_SET = Path(__file__).resolve().parent.parent / "sanity_set.jsonl"
+# The official 50-item sanity set (bank/sanity/README.md), shared with the AR harness.
+SANITY_SET = Path(__file__).resolve().parents[3] / "bank" / "sanity" / "sanity_set.jsonl"
 
 
 def model_args(description: str) -> argparse.ArgumentParser:

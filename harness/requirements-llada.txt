@@ -1,8 +1,0 @@
-# Separate environment; keep the existing AR environment unchanged.
-transformers==4.38.2
-accelerate==0.27.2
-sentencepiece==0.2.0
-protobuf==4.25.3
-numpy<2
-jinja2>=3.1,<4
-# CUDA PyTorch is installed by run_llada_carc.sh.
