@@ -1,0 +1,20 @@
+{
+  "check": "test 3 invariance",
+  "status": "FAIL",
+  "model": "llada",
+  "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+  "n_slots": 1,
+  "answer_prefix": "none",
+  "n_items": 50,
+  "spearman_min": 0.999,
+  "batch_tol": 0.05,
+  "repeat_spearman": 1.0,
+  "repeat_max_abs_diff": 0.0,
+  "batch_size": 8,
+  "batch_max_abs_diff": 0.2499089241027832,
+  "batch_worst_item": "sanity-m004",
+  "checks": {
+    "repeat": true,
+    "batched": false
+  }
+}

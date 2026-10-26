@@ -1,0 +1,10 @@
+{
+  "items": 50,
+  "max_abs_score_delta": 0.18747143863338955,
+  "worst_item": "sanity-m009",
+  "spearman": 0.9990396158463385,
+  "same_verdict_at_zero": 50,
+  "max_allowed_delta": 0.05,
+  "min_spearman": 0.999,
+  "passed": false
+}

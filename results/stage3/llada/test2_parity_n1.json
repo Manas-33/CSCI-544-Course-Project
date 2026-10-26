@@ -1,0 +1,364 @@
+{
+  "check": "test 2 parity",
+  "status": "PASS",
+  "model": "llada",
+  "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+  "n_slots": 1,
+  "answer_prefix": "none",
+  "llada_repo_commit": "9182493720ed723ef8031210d85959364e51cbe0",
+  "score_tol": 0.001,
+  "n_prompts": 20,
+  "failures": 0,
+  "rendered_prompt_example": "<|startoftext|><|start_header_id|>user<|end_header_id|>\n\nProblem:\nWrite a Python function add(a, b) that returns the sum of the integers a and b.\n\nCandidate solution:\ndef add(a, b):\n    return a + b\n\nIs the final answer correct? Answer Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+  "prompt_ids_example": [
+    126080,
+    126346,
+    3840,
+    126347,
+    198,
+    198,
+    38649,
+    25,
+    198,
+    11823,
+    259,
+    8908,
+    1399,
+    1088,
+    5948,
+    11,
+    285,
+    8,
+    378,
+    7564,
+    268,
+    4405,
+    300,
+    268,
+    27057,
+    259,
+    301,
+    285,
+    13,
+    198,
+    198,
+    67483,
+    4819,
+    25,
+    198,
+    1413,
+    1088,
+    5948,
+    11,
+    285,
+    3535,
+    198,
+    305,
+    944,
+    259,
+    781,
+    285,
+    198,
+    198,
+    3517,
+    268,
+    2753,
+    3766,
+    4828,
+    30,
+    22968,
+    9228,
+    453,
+    2968,
+    13,
+    126348,
+    126346,
+    598,
+    10450,
+    126347,
+    198,
+    198
+  ],
+  "results": [
+    {
+      "candidate_id": "sanity-c001",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        6.374820709228516,
+        6.374820709228516
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c002",
+      "same_prompt_ids": true,
+      "top_token": [
+        4127,
+        4127
+      ],
+      "score": [
+        -4.685962200164795,
+        -4.685962200164795
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c003",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        5.312292575836182,
+        5.312292575836182
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c004",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        3.500246524810791,
+        3.500246524810791
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c005",
+      "same_prompt_ids": true,
+      "top_token": [
+        4127,
+        4127
+      ],
+      "score": [
+        -5.686385154724121,
+        -5.686385154724121
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c006",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        6.374792575836182,
+        6.374792575836182
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c007",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        2.7502336502075195,
+        2.7502336502075195
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c008",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        5.124966621398926,
+        5.124966621398926
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c009",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        2.375485897064209,
+        2.375485897064209
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-c010",
+      "same_prompt_ids": true,
+      "top_token": [
+        4127,
+        4127
+      ],
+      "score": [
+        -4.31083345413208,
+        -4.31083345413208
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m001",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        3.937368869781494,
+        3.937368869781494
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m002",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        3.7504611015319824,
+        3.7504611015319824
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m003",
+      "same_prompt_ids": true,
+      "top_token": [
+        4127,
+        4127
+      ],
+      "score": [
+        -0.43584978580474854,
+        -0.43584978580474854
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m004",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        4.187772274017334,
+        4.187772274017334
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m005",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        4.312799453735352,
+        4.312799453735352
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m006",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        3.375263214111328,
+        3.375263214111328
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m007",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        4.00022029876709,
+        4.00022029876709
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m008",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        3.375185012817383,
+        3.375185012817383
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m009",
+      "same_prompt_ids": true,
+      "top_token": [
+        4127,
+        4127
+      ],
+      "score": [
+        -2.4982476234436035,
+        -2.4982476234436035
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    },
+    {
+      "candidate_id": "sanity-m010",
+      "same_prompt_ids": true,
+      "top_token": [
+        8647,
+        8647
+      ],
+      "score": [
+        4.312562942504883,
+        4.312562942504883
+      ],
+      "score_diff": 0.0,
+      "ok": true
+    }
+  ]
+}
