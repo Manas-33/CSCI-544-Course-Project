@@ -50,3 +50,9 @@
 # Never track these, even inside allowed folders
 .DS_Store
 .Rhistory
+
+# Local result collection; publish only the verified SDPA sanity run below.
+!/test_results/
+/test_results/*
+!/test_results/ar-sanity-bf16-sdpa-20261026-000459/
+!/test_results/ar-sanity-analysis-bf16-sdpa-20261026-000459/
