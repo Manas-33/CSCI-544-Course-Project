@@ -65,16 +65,16 @@ The code half of the development bank. It covers 150 MBPP problems, chosen with 
 | 4. Build pairs | `python -m bank.make_pairs --questions bank/dev_code/questions.jsonl --generations bank/dev_code/generations.jsonl --labeled bank/dev_code/labeled.jsonl --out bank/dev_code` | — |
 
 - **Generation** uses the EvalPlus chat prompt. The reply is pre-filled up to an opening ` ```python ` fence, so the model writes the program directly. Settings follow PLAN.md §2: temperature 0.8, top-p 0.95, 8 answers per problem, at most 768 new tokens. These are picked automatically when the questions are code.
-- **What verifiers see:** the tested program. Imports, definitions and the constants they use are kept; example calls, prints, asserts and `__main__` blocks are dropped, as EvalPlus's sanitizer does. An answer that doesn't parse or doesn't define the entry point is dropped as "no answer", not labeled wrong.
+- **What verifiers see:** the tested program. Imports, definitions and the module-level constants they need (read in their bodies or in their decorators, defaults, annotations and class bases, following chains such as `BASE` → `POW`) are kept; example calls, prints, asserts, `input()` lines and `__main__` blocks are dropped, as EvalPlus's sanitizer does. An answer counts as cut off only if the program itself is (no closing fence), not when only the explanation after it ran out of tokens. An answer that doesn't parse or doesn't define the entry point is dropped as "no answer", not labeled wrong.
 - **Labels:**
-  - Every usable program runs against the tests **twice**, each run in a fresh process, inside a Docker container with no network, a 2 GB memory cap and a read-only filesystem. The timeout is 10 s per program per run.
+  - Every usable program runs against the tests **twice**, each run in a fresh process, inside a Docker container with no network, a 2 GB memory cap and a read-only filesystem. The timeout is 10 s per program per run. The two runs use fixed, different hash seeds (0 and 1), so rebuilds give the same labels; a program whose result depends on string-set order is caught as flaky when the two seeds give different outcomes.
   - A program that passes one run and fails the other is **flaky** and dropped.
   - Each failure gets an error type: `wrong_output`, `exception` or `timeout`.
   - Each problem's reference solution is run too, and a problem whose reference fails is dropped as broken.
-  - `--sandbox none` runs the same jobs as plain subprocesses (on Colab, or in tests). The choice is recorded in every label's `checker_version`.
+  - `--sandbox none` runs the same jobs as plain subprocesses, **for tests only**: it has no network isolation. The choice is recorded in every label's `checker_version`, and `bank.make_pairs` refuses such code labels unless given `--allow-unsandboxed-labels`.
 - **Where to run labeling:** on a machine with Docker running (`docker pull python:3.11-slim` first). Copy `generations.jsonl` back from Colab.
 
-**Not tested yet:** the GPU generation step and the Docker sandbox. The CPU tests cover extraction, the runner, labels and pairs.
+**Not tested yet:** the GPU generation step, and the sandbox in the `python:3.11-slim` image itself. The Docker path was checked with another local Python 3.11 image (no network, the 2 GB memory cap, the 16 MB file limit, labels as expected). The CPU tests cover extraction, the runner, labels and pairs.
 
 ## Next: scoring
 
