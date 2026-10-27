@@ -280,6 +280,7 @@ def main(argv=None):
     parser.add_argument("--dtype", choices=("auto", "bf16", "fp16", "fp32"))
     parser.add_argument("--load-in-4bit", action=argparse.BooleanOptionalAction, default=None,
                         help="explicit NF4 development mode (requires bitsandbytes)")
+    parser.add_argument("--template", choices=sorted(TEMPLATES), help="override the config's template")
     parser.add_argument("--threshold-a", type=float)
     parser.add_argument("--threshold-b", type=float)
     args = parser.parse_args(argv)
@@ -291,7 +292,7 @@ def main(argv=None):
         raw = Path(args.config).read_bytes()
         config = parse_json(raw.decode("utf-8"))
         validate_config(config)
-        for key in ("device", "dtype", "load_in_4bit"):
+        for key in ("device", "dtype", "load_in_4bit", "template"):
             if getattr(args, key) is not None:
                 config[key] = getattr(args, key)
         if (args.threshold_a is None) != (args.threshold_b is None):

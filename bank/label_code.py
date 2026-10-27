@@ -39,11 +39,14 @@ def prepare(gen: dict, question: dict) -> tuple[str, str | None]:
     """(status, program shown to verifiers) before any code runs."""
     # Cut off only if the program itself is: the reply is pre-filled up to an opening fence, so a
     # closing fence means the program ended and only the explanation after it ran out of tokens.
-    if gen.get("finish_reason") == "length" and code_exec.FENCE not in gen["text"]:
+    # API answers are not pre-filled (bank.generate_api), so they need both fences.
+    prefilled = gen.get("prefilled", True)
+    fences_needed = 1 if prefilled else 2
+    if gen.get("finish_reason") == "length" and gen["text"].count(code_exec.FENCE) < fences_needed:
         return "truncated", None
     if has_identity_string(gen["text"]):
         return "identity_string", None
-    program = code_exec.sanitize(code_exec.extract_program(gen["text"]), question["entry_point"])
+    program = code_exec.sanitize(code_exec.extract_program(gen["text"], prefilled), question["entry_point"])
     return ("ok", program) if program is not None else ("no_answer", None)
 
 

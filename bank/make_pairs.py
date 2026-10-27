@@ -192,10 +192,10 @@ def main(argv: list[str] | None = None) -> None:
     labels = {r["candidate_id"]: r for r in labeled_rows}
     unsandboxed = sorted({r.get("checker_version") for r in labeled_rows
                           if questions.get(r.get("problem_id"), {}).get("domain") == "code"
-                          and "+docker:" not in (r.get("checker_version") or "")})
+                          and not any(m in (r.get("checker_version") or "") for m in ("+docker:", "+evalplus=="))})
     if unsandboxed and not args.allow_unsandboxed_labels:
-        raise SystemExit(f"Code labels were not made in the Docker sandbox ({unsandboxed}); "
-                         "relabel with bank.label_code --sandbox docker (PLAN.md §2).")
+        raise SystemExit(f"Code labels were not made in a sandbox ({unsandboxed}); relabel with "
+                         "bank.label_code --sandbox docker or bank.label_evalplus (PLAN.md §2).")
     generations = [shown_answer(g, labels.get(g["candidate_id"], {})) for g in generations]
     exclusions = load_exclusions(exclude_path)
     unknown = sorted(set(exclusions) - set(questions))

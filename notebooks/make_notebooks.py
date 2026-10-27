@@ -178,7 +178,136 @@ for i, c in enumerate(dream["cells"]):
         dream["cells"].insert(i + 1, reentry)
         break
 
+# ---------------------------------------------------------------- pilot (PLAN.md §2, §7, §10)
+
+PILOT_BRANCH = "feature/pilot-bank"
+GENERATORS = [("microsoft/Phi-4-mini-instruct", "phi4mini"),
+              ("ibm-granite/granite-3.3-8b-instruct", "granite33"),
+              ("allenai/OLMo-2-1124-7B-Instruct", "olmo2")]
+
+def pilot_setup(title, install, extra=""):
+    return [
+        ("markdown", title),
+        ("code", f'''
+BRANCH = "{PILOT_BRANCH}"
+!nvidia-smi --query-gpu=name,memory.total --format=csv
+!git clone -q -b {{BRANCH}} {REPO} /content/project
+%cd /content/project
+!git log --oneline -1
+{install}
+{extra}'''),
+    ]
+
+def pilot_finish(folder, zipname):
+    return [("markdown", f"## Download the results\nZips `{folder}/`. Send the zip back, or unzip it into the repo at the same path."),
+            ("code", f'''
+!cd /content/project && zip -qr /content/{zipname}.zip {folder}
+from google.colab import files
+files.download("/content/{zipname}.zip")''')]
+
+HF_LOGIN = '''from google.colab import userdata
+from huggingface_hub import login
+login(token=userdata.get("HF_TOKEN"))'''
+
+gen_loop = "\n".join(
+    f'!python -m bank.generate --questions bank/pilot/questions_{{d}}.jsonl --out bank/pilot/gen/{tag}_{{d}}/generations.jsonl --model {model} --tag {tag}'
+    for model, tag in GENERATORS)
+
+pilot_bank = nb(pilot_setup('''
+# Pilot · build the 500-answer bank (250 math + 250 code)
+
+Runtime: **A100**. One fresh runtime. Needs two Colab secrets (key icon on the left):
+- `HF_TOKEN`, with access to Llama and Gemma (their tokenizers are used for the length filter);
+- `OPENROUTER_API_KEY`, for GPT-4.1-mini. The script stops at a **$5** total and retries 429s with backoff.
+
+Steps: generate with Phi-4-mini, Granite-3.3-8B, OLMo-2-7B (vLLM) and GPT-4.1-mini (OpenRouter) → label math (boxed answer + Math-Verify) and code (EvalPlus base+plus tests, run twice) → matched pairs per (problem, generator) → drop answers too long for any verifier → draw 125 pairs per domain under the PLAN.md §2 caps. About an hour.''',
+'!pip install -q -r bank/requirements.txt evalplus pyarrow',
+HF_LOGIN + '\nimport os\nos.environ["OPENROUTER_API_KEY"] = userdata.get("OPENROUTER_API_KEY")') + [
+ ("markdown", "## 1. Open generators (vLLM): math then code for each\nEach call is its own process, so GPU memory is freed between models."),
+ ("code", f'for d in ("math", "code"):\n' + "\n".join("    " + line for line in gen_loop.splitlines())),
+ ("markdown", "## 2. GPT-4.1-mini through OpenRouter\nResumable: if it stops on rate limits, rerun the cell and it continues where it left off. The spend so far is in `bank/pilot/api_spend.json`."),
+ ("code", '''for d in ("math", "code"):
+    !python -m bank.generate_api --questions bank/pilot/questions_{d}.jsonl --out bank/pilot/gen/gpt41mini_{d}/generations.jsonl
+!cat bank/pilot/api_spend.json | head -5'''),
+ ("markdown", "## 3. Merge each domain's answers"),
+ ("code", '''import json, glob, os
+for d in ("math", "code"):
+    rows = []
+    for path in sorted(glob.glob(f"bank/pilot/gen/*_{d}/generations.jsonl")):
+        rows += [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
+        print(path, sum(1 for _ in open(path, encoding="utf-8")))
+    os.makedirs(f"bank/pilot/{d}", exist_ok=True)
+    with open(f"bank/pilot/{d}/generations.jsonl", "w", encoding="utf-8", newline="\\n") as f:
+        for r in sorted(rows, key=lambda r: r["candidate_id"]):
+            f.write(json.dumps(r, ensure_ascii=False) + "\\n")
+    print(d, len(rows), "answers")'''),
+ ("markdown", "## 4. Labels\nMath: the boxed answer and Math-Verify must agree. Code: EvalPlus's base and plus tests, each program twice (about 20 minutes)."),
+ ("code", '''!python -m bank.label --questions bank/pilot/questions_math.jsonl --generations bank/pilot/math/generations.jsonl --out bank/pilot/math/labeled.jsonl
+!python -m bank.label_evalplus --questions bank/pilot/questions_code.jsonl --generations bank/pilot/code/generations.jsonl --out bank/pilot/code/labeled.jsonl'''),
+ ("markdown", "## 5. Matched pairs, length filter and the pilot draw"),
+ ("code", '''for d in ("math", "code"):
+    !python -m bank.make_pairs --split pilot --questions bank/pilot/questions_{d}.jsonl --generations bank/pilot/{d}/generations.jsonl --labeled bank/pilot/{d}/labeled.jsonl --out bank/pilot/{d}
+!python -m bank.token_lengths bank/pilot/math/pilot_bank.jsonl bank/pilot/code/pilot_bank.jsonl --out bank/pilot/too_long.json
+!python -m bank.sample_pilot --math bank/pilot/math --code bank/pilot/code --too-long bank/pilot/too_long.json --out bank/pilot'''),
+ ("markdown", "## 6. Generator accuracy (for the report)"),
+ ("code", '''import collections
+for d in ("math", "code"):
+    lab = {r["candidate_id"]: r for r in map(json.loads, open(f"bank/pilot/{d}/labeled.jsonl", encoding="utf-8"))}
+    gens = list(map(json.loads, open(f"bank/pilot/{d}/generations.jsonl", encoding="utf-8")))
+    tally = collections.defaultdict(collections.Counter)
+    for g in gens:
+        l = lab[g["candidate_id"]]
+        tally[g["generator"]]["usable" if l["status"] == "ok" else l["status"]] += 1
+        tally[g["generator"]]["correct"] += l["label"] == 1
+    for gen, c in tally.items():
+        print(d, gen, dict(c), "accuracy among usable:", round(c["correct"] / max(1, c["usable"]), 3))'''),
+] + pilot_finish("bank/pilot", "pilot_bank"))
+
+PILOT_HASH = '''import hashlib
+PILOT_HASH = hashlib.sha256(open("bank/pilot/pilot_bank.jsonl", "rb").read()).hexdigest()
+print("pilot bank", PILOT_HASH)'''
+
+pilot_ar = nb(pilot_setup('''
+# Pilot · AR verifiers on the pilot bank (T1, T2, T3)
+
+Runtime: **A100**. One fresh runtime. Colab secret `HF_TOKEN` with access to Llama, Gemma and Mistral.
+
+Scores the 500 pilot answers with Qwen2.5-7B, Mistral-7B, Llama-3.1-8B, Gemma-2-9B, Llama-3.2-3B and Qwen2.5-1.5B under all three templates (gate B needs T1–T3). Labels are not read here. About 30–40 minutes, mostly model loading.''',
+'!pip install -q -r requirements.txt -r requirements-analysis.txt',
+HF_LOGIN + '\nOUT = "results/pilot/ar"\n!mkdir -p {OUT}\n' + PILOT_HASH) + [
+ ("code", '''for cfg in ("pilot_qwen_mistral", "pilot_llama_gemma", "pilot_small"):
+    for t in ("T1", "T2", "T3"):
+        !python -m harness.run --config configs/{cfg}.json --input bank/pilot/pilot_bank.jsonl --template {t} --output-dir {OUT}/{cfg}_{t} --device cuda:0 --dtype bf16 --no-load-in-4bit'''),
+] + pilot_finish("results/pilot/ar", "pilot_ar"))
+
+def pilot_diffusion(model, title, install, python311=False, restart_note=""):
+    run = "!{PY} -m" if python311 else "!python -m"
+    cells = pilot_setup(title, install, f'OUT = "results/pilot/{model}"\n!mkdir -p {{OUT}}\n' + PILOT_HASH)
+    if restart_note:
+        cells.insert(2, ("markdown", restart_note))
+        cells.insert(3, ("code", f'%cd /content/project\nOUT = "results/pilot/{model}"\n' + PILOT_HASH))
+    cells += [("code", f'''for t in ("T1", "T2", "T3"):
+    {run} harness.diffusion.run_score --model {model} --n-slots 1 --batch-size 1 --template {{t}} --items bank/pilot/pilot_bank.jsonl --bank-hash {{PILOT_HASH}} --out {{OUT}}/pilot_{{t}}_n1.jsonl''')]
+    return nb(cells + pilot_finish(f"results/pilot/{model}", f"pilot_{model}"))
+
+LLADA_ENV = ("!pip install -q uv\n!uv venv -q --python 3.11 /content/env\n"
+             "!uv pip install -q --python /content/env/bin/python torch==2.6.0 -r harness/diffusion/requirements/llada.txt\n"
+             'PY = "/content/env/bin/python"')
+pilot_llada = pilot_diffusion("llada", '''
+# Pilot · LLaDA-8B-Instruct on the pilot bank (T1, T2, T3)
+
+Runtime: **A100**. One fresh runtime. Unbatched, 1 answer slot (chosen on the development bank). Runs in its own Python 3.11 environment, as notebook 02 does. About 25 minutes.''', LLADA_ENV, python311=True)
+
+pilot_dream = pilot_diffusion("dream", '''
+# Pilot · Dream-v0-Instruct-7B on the pilot bank (T1, T2, T3)
+
+Runtime: **A100**. One fresh runtime. Unbatched, 1 answer slot (chosen on the development bank). About 25 minutes.''',
+"!pip uninstall -q -y torchvision torchaudio\n!pip install -q -r harness/diffusion/requirements/dream.txt",
+restart_note="**After the install cell finishes:** open *Runtime → Restart session*, then continue with the next cell.")
+
 out = Path(sys.argv[1])
-for name, book in (("01_ar_verifiers", ar), ("02_llada", llada), ("03_illada", illada), ("04_dream", dream)):
-    (out / f"{name}.ipynb").write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+for name, book in (("01_ar_verifiers", ar), ("02_llada", llada), ("03_illada", illada), ("04_dream", dream),
+                   ("05_pilot_bank", pilot_bank), ("06_pilot_ar", pilot_ar), ("07_pilot_llada", pilot_llada),
+                   ("08_pilot_dream", pilot_dream)):
+    (out / f"{name}.ipynb").write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print("wrote", name)

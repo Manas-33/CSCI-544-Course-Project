@@ -1,0 +1,36 @@
+{
+  "step": "select_pilot",
+  "seed": 544,
+  "sources": {
+    "gsm8k_platinum_test.parquet": {
+      "url": "https://huggingface.co/datasets/madrylab/gsm8k-platinum/resolve/main/main/test-00000-of-00001.parquet",
+      "sha256": "0c466762794c61ef364b7f72c3cb7e8bf9e5d8feca2c62e1bfce81eae7c7a1ea"
+    },
+    "math500_test.jsonl": {
+      "url": "https://huggingface.co/datasets/HuggingFaceH4/MATH-500/resolve/main/test.jsonl",
+      "sha256": "35dc41080a3680858b27fa7e0533d2d547825316fc5dafe5d316f4ccc5a06132"
+    },
+    "HumanEvalPlus.jsonl": {
+      "url": "https://github.com/evalplus/humanevalplus_release/releases/download/v0.1.10/HumanEvalPlus.jsonl.gz",
+      "sha256": "42526ec0e7d5f3ee0b06d6ced98f8c8bae3d76519151bfb3d36f79010645bd7f"
+    },
+    "MbppPlus.jsonl": {
+      "url": "https://github.com/evalplus/mbppplus_release/releases/download/v0.2.0/MbppPlus.jsonl.gz",
+      "sha256": "b54e762755248ca411b523c917fa9f93c07b5ff2966bf60b3917b853926a3dad"
+    }
+  },
+  "pool_sizes": {
+    "gsm8k": 1209,
+    "math": 389,
+    "humaneval": 164,
+    "mbpp": 378
+  },
+  "selected": {
+    "gsm8k": 150,
+    "math": 150,
+    "humaneval": 50,
+    "mbpp": 100
+  },
+  "math500_rule": "reference answer parses as a rational number (bank.common.parse_rational)",
+  "created_utc": "2026-10-27T06:34:31+00:00"
+}
