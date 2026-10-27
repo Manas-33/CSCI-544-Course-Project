@@ -31,6 +31,17 @@ TOKENIZERS = {
 }
 
 
+def n_tokens(tok, msgs) -> int:
+    """Prompt length in tokens. Newer transformers return a BatchEncoding (a dict) here, whose
+    len() is its number of keys, so read input_ids explicitly."""
+    ids = tok.apply_chat_template(msgs, tokenize=True, add_generation_prompt=True)
+    if hasattr(ids, "keys"):
+        ids = ids["input_ids"]
+    if ids and isinstance(ids[0], list):
+        ids = ids[0]
+    return len(ids)
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("banks", nargs="+")
@@ -52,8 +63,7 @@ def main(argv: list[str] | None = None) -> None:
         loaded.append(model_id)
         for r in rows:
             record = {"problem": r["problem"], "candidate_answer": r["candidate"]}
-            n = max(len(tok.apply_chat_template(messages(record, t), tokenize=True, add_generation_prompt=True))
-                    for t in TEMPLATES)
+            n = max(n_tokens(tok, messages(record, t)) for t in TEMPLATES)
             longest[r["candidate_id"]][model_id] = n
         print(f"{model_id}: longest prompt {max(v[model_id] for v in longest.values())} tokens")
     too_long = sorted(c for c, by_model in longest.items() if any(n > args.max_tokens for n in by_model.values()))

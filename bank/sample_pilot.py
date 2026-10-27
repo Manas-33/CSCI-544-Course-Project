@@ -5,7 +5,8 @@ Output: bank/pilot/pilot_bank.jsonl and pilot_labels.jsonl with --pairs-per-doma
 in each domain, drawn in a seeded random order under the caps of PLAN.md §2:
 - at most 2 pairs per math problem and 3 per code problem, each from a different generator
   (make_pairs gives one pair per (problem, generator) cell, so that holds by construction);
-- no generator supplies more than 30% of a domain's pairs (40% with three generators);
+- no generator supplies more than 30% of a domain's pairs (40% with three generators, counting
+  only generators that can supply at least 10% of the target);
 - math is split evenly between GSM8K-Platinum and MATH-500.
 Pairs with a candidate on the too-long list (bank.token_lengths) are dropped first. If the
 caps leave the target unmet, the shortfall is reported, not filled by relaxing them.
@@ -37,7 +38,11 @@ def draw(pairs: dict[str, list[dict]], domain: str, target: int, seed: int) -> t
     """Pair ids chosen for one domain, and a summary of what limited the draw."""
     order = sorted(pairs)
     random.Random(f"{seed}:{domain}").shuffle(order)
-    generators = {pairs[p][0]["generator"] for p in order}
+    # A generator counts as available only if it can supply at least 10% of the target; one that
+    # is almost always right (GPT-4.1-mini on math) yields too few pairs to share the load, and the
+    # 30% cap would then leave the domain short. PLAN.md §2 sets 40% for three generators.
+    supply = Counter(pairs[p][0]["generator"] for p in order)
+    generators = {g for g, n in supply.items() if n >= 0.10 * target}
     gen_cap = generator_cap(len(generators), target)
     sources = sorted({pairs[p][0]["source"] for p in order})
     source_cap = target // len(sources) + (target % len(sources) > 0) if domain == "math" else target
@@ -61,6 +66,7 @@ def draw(pairs: dict[str, list[dict]], domain: str, target: int, seed: int) -> t
     return chosen, {
         "available_pairs": len(order), "target": target, "chosen": len(chosen),
         "shortfall": target - len(chosen), "generator_cap": gen_cap, "source_cap": source_cap,
+        "available_by_generator": dict(supply), "generators_counted_for_cap": sorted(generators),
         "by_generator": dict(per_gen), "by_source": dict(per_source), "skipped": dict(skipped),
     }
 

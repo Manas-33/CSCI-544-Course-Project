@@ -1,0 +1,25 @@
+{
+  "cells_with_usable_answers": 577,
+  "cells_excluded": 0,
+  "cells_all_correct": 251,
+  "cells_all_wrong": 159,
+  "pairs": 167,
+  "questions": 150,
+  "generations": 4800,
+  "candidates": 334,
+  "excluded_questions": {},
+  "exclusions_file": null,
+  "exclusions_sha256": null,
+  "generator_revisions_from_provenance": null,
+  "inputs": {
+    "questions_code.jsonl": "13413564e630bc909f5287197faa09117d3324a08792368b506d5e8770aa44e4",
+    "generations.jsonl": "10a183929fc47b37bf8855b6a3b89d8cc9b3d8b041b92f0906b153d7832a79b2",
+    "labeled.jsonl": "0b195be05c2dca3bbfff19e6bd1e4ff208d19672b991cf02a5ce79230c3cda73"
+  },
+  "outputs": {
+    "pilot_bank.jsonl": "5ba6534c7e59270fc41465023732f1d41bce2d9b45f8345e3d1c31ed1e7cb311",
+    "pilot_labels.jsonl": "7cce2132d1b9d9df5423f80a93acc5e0a7565d6db3f86a0ef034e5fd909ffb91"
+  },
+  "seed": 544,
+  "python": "3.13.16"
+}

@@ -1,0 +1,27 @@
+{
+  "step": "generate_api",
+  "questions": "bank/pilot/questions_code.jsonl",
+  "n_questions": 150,
+  "n_generations": 1200,
+  "generator": "openai/gpt-4.1-mini",
+  "domain": "code",
+  "prompt": "Please provide a self-contained Python script that solves the following problem in a markdown code block:\n```\n{question}\n```\n",
+  "prefilled": false,
+  "settings": {
+    "model": "openai/gpt-4.1-mini",
+    "tag": "gpt41mini",
+    "n_samples": 8,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 768,
+    "seed": 544,
+    "workers": 6,
+    "budget_usd": 5.0,
+    "price_in": 0.4,
+    "price_out": 1.6,
+    "ledger": "bank/pilot/api_spend.json"
+  },
+  "started_utc": "2026-10-27T07:55:57+00:00",
+  "finished_utc": "2026-10-27T08:02:37+00:00",
+  "spent_usd_total": 1.1862
+}

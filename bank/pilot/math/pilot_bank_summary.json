@@ -1,0 +1,25 @@
+{
+  "cells_with_usable_answers": 1160,
+  "cells_excluded": 0,
+  "cells_all_correct": 836,
+  "cells_all_wrong": 109,
+  "pairs": 215,
+  "questions": 300,
+  "generations": 4800,
+  "candidates": 430,
+  "excluded_questions": {},
+  "exclusions_file": null,
+  "exclusions_sha256": null,
+  "generator_revisions_from_provenance": null,
+  "inputs": {
+    "questions_math.jsonl": "65fce5855f7c8135d6ba5badb94fd2aa5217bb732c4dbc4156b2248469e54624",
+    "generations.jsonl": "aa2b0034c8ee8ead29b0020f9bfed2308129599b266e6c40417d1381bc2d64c4",
+    "labeled.jsonl": "684a41c0ffc16f4bdcdaff6b67e9cbb7155e28ad38c9f6a9755e12e4fba27a60"
+  },
+  "outputs": {
+    "pilot_bank.jsonl": "75fc33dcb4109820aab6e634892f9ad61707cd82250a7cb8a8e3c43dcb10e650",
+    "pilot_labels.jsonl": "c74c5961f9000f4c6fcedf7943fae19936cacbcdc781faa8083e40c266856b10"
+  },
+  "seed": 544,
+  "python": "3.13.16"
+}
