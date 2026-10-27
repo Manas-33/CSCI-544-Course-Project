@@ -259,22 +259,54 @@ def gates(rows, bank, labels, scores, shortcuts) -> dict:
     diff_code = [v for v, d in out["gate_a"].items() if meta(v)[1] == "diffusion" and d.get("code", {}).get("passes")]
     out["code_rule"] = {"ar_passing_code": ar_code, "diffusion_passing_code": diff_code,
                         "code_in_primary": len(ar_code) >= 2 and len(diff_code) >= 1}
-    eligible = {}
-    domains = ["math"] + (["code"] if out["code_rule"]["code_in_primary"] else [])
-    for v, by_domain in out["gate_a"].items():
-        if meta(v)[2] != "primary":
-            continue
-        a_ok = all(by_domain.get(d, {}).get("passes") for d in domains)
-        b = out["gate_b"].get(v)
-        b_ok = None if b is None else all(b.get(d, {}).get("passes", False) for d in domains)
-        u_ok = out["usable_scores"].get(v, {}).get("passes", False)
-        eligible[v] = {"usable": u_ok, "gate_a": a_ok, "gate_b": b_ok,
-                       "eligible": bool(u_ok and a_ok and b_ok is not False)}
-    out["eligibility"] = {"primary_domains": domains, "verifiers": eligible}
-    diffusion_ok = [v for v, e in eligible.items() if meta(v)[1] == "diffusion" and e["eligible"]]
-    out["decision"] = ("continue: a diffusion verifier passes the gates" if diffusion_ok
-                       else "repair: no diffusion verifier passes; try the reconstruction score (PLAN.md §7)")
+    # Gate B over T1-T2 only, reported beside the T1-T3 rule: on the pilot the inverted T3 question
+    # lowers every verifier's AUROC, so the T1-T3 spread mostly measures T3, not prompt sensitivity.
+    for v, by_domain in out["gate_b"].items():
+        for d, e in by_domain.items():
+            e["spread_t1_t2"] = abs(e["aurocs"]["T1"] - e["aurocs"]["T2"])
+            e["passes_t1_t2"] = e["spread_t1_t2"] <= GATE_B_SPREAD
+    full = ["math"] + (["code"] if out["code_rule"]["code_in_primary"] else [])
+    out["eligibility"] = {"gate_b_t1_t3": eligibility(out, full, "passes"),
+                          "gate_b_t1_t2": eligibility(out, full, "passes_t1_t2")}
+    out["decision"] = out["eligibility"]["gate_b_t1_t3"]["decision"]
     return out
+
+
+def eligibility(gate: dict, full_domains: list[str], b_key: str) -> dict:
+    """Which primary verifiers pass usable scores, gate A and gate B in the given domains, and the
+    PLAN.md §3/§7 outcome: the primary result covers every domain where a diffusion model is
+    eligible, narrowing to math (else code) when none is eligible in all of them."""
+    def check(domains):
+        out = {}
+        for v, by_domain in gate["gate_a"].items():
+            if meta(v)[2] != "primary":
+                continue
+            a_ok = all(by_domain.get(d, {}).get("passes") for d in domains)
+            b = gate["gate_b"].get(v)
+            b_ok = None if b is None else all(b.get(d, {}).get(b_key, False) for d in domains)
+            u_ok = gate["usable_scores"].get(v, {}).get("passes", False)
+            out[v] = {"usable": u_ok, "gate_a": a_ok, "gate_b": b_ok,
+                      "eligible": bool(u_ok and a_ok and b_ok is not False)}
+        return out
+
+    candidates = [full_domains] + [[d] for d in ("math", "code") if [d] != full_domains and d in full_domains]
+    for domains in candidates:
+        verifiers = check(domains)
+        diffusion = sorted(v for v, e in verifiers.items() if meta(v)[1] == "diffusion" and e["eligible"])
+        ar = sorted(v for v, e in verifiers.items() if meta(v)[1] == "AR" and e["eligible"])
+        if diffusion:
+            narrowed = domains != full_domains
+            return {"primary_domains": domains, "narrowed": narrowed, "verifiers": verifiers,
+                    "eligible_ar": ar, "eligible_diffusion": diffusion,
+                    "decision": f"continue on {' + '.join(domains)}"
+                                + (" (narrowed: no diffusion model is eligible in every domain)" if narrowed else "")
+                                + f"; diffusion: {', '.join(diffusion)}; AR: {', '.join(ar) or 'none'}"
+                                + ("" if len(ar) >= 3 else " (fewer than 3 AR verifiers: add Qwen3-8B, PLAN.md §3)")}
+    verifiers = check(full_domains)
+    return {"primary_domains": full_domains, "narrowed": False, "verifiers": verifiers,
+            "eligible_ar": sorted(v for v, e in verifiers.items() if meta(v)[1] == "AR" and e["eligible"]),
+            "eligible_diffusion": [],
+            "decision": "repair: no diffusion verifier passes in any domain; try the reconstruction score (PLAN.md §7)"}
 
 
 # ---------------------------------------------------------------- pairs
@@ -356,7 +388,7 @@ def figures(rows, pair_rows, gate, out: Path) -> list[str]:
     domains = [d for d in ("math", "code") if any(r["domain"] == d for r in rows)]
 
     # 1. AUROC by verifier (T1), per domain, with problem-bootstrap intervals
-    fig, axes = plt.subplots(1, len(domains), figsize=(5.2 * len(domains), 3.6), sharey=True, squeeze=False)
+    fig, axes = plt.subplots(1, len(domains), figsize=(5.2 * len(domains), 3.6), squeeze=False)
     for ax, domain in zip(axes[0], domains):
         rs = sorted((r for r in rows if r["template"] == "T1" and r["domain"] == domain), key=lambda r: r["auroc"])
         y = np.arange(len(rs))
@@ -366,7 +398,7 @@ def figures(rows, pair_rows, gate, out: Path) -> list[str]:
             ax.plot(r["auroc"], yi, "o", color=c, markersize=8, markeredgecolor="white", markeredgewidth=2)
             ax.text(r["auroc_hi"] + 0.012, yi, f"{r['auroc']:.2f}", va="center", fontsize=8, color=MUTED)
         ax.axvline(GATE_A_MIN, color=MUTED, linestyle="--", linewidth=1)
-        ax.text(GATE_A_MIN + 0.005, -0.6, "gate A 0.60", fontsize=8, color=MUTED, va="bottom")
+        ax.set_xlabel("AUROC (dashed line: gate A, 0.60)", fontsize=9, color=INK)
         ax.set_yticks(y, [r["verifier"] for r in rs])
         ax.set_xlim(0.4, 1.05)
         ax.set_title(f"{domain.capitalize()}: AUROC (T1), 95% CI", fontsize=10, color=INK, loc="left")
@@ -379,7 +411,7 @@ def figures(rows, pair_rows, gate, out: Path) -> list[str]:
 
     # 2. Template stability (gate B): T1-T3 range per verifier
     if gate["gate_b"]:
-        fig, axes = plt.subplots(1, len(domains), figsize=(5.2 * len(domains), 3.6), sharey=True, squeeze=False)
+        fig, axes = plt.subplots(1, len(domains), figsize=(5.2 * len(domains), 3.6), squeeze=False)
         for ax, domain in zip(axes[0], domains):
             items = sorted(((v, d[domain]) for v, d in gate["gate_b"].items() if domain in d), key=lambda x: x[1]["spread"])
             for yi, (v, e) in enumerate(items):
@@ -462,24 +494,35 @@ def markdown(rows, pair_rows, gate, bank_info) -> str:
         L.append(f"| {r['verifier']} | {r['class']} | {r['domain']} | {fmt(r['auroc'])} [{fmt(r['auroc_lo'])}, {fmt(r['auroc_hi'])}] "
                  f"| {fmt(r['ece'])} | {fmt(r['median_yes_no_mass'])} | {fmt(r['pair_ranking_accuracy'])} | {fmt(r['seconds_per_candidate'])} |")
     L += ["", "## Gates (PLAN.md §7)", ""]
-    L.append("| Verifier | Usable scores | Gate A math | Gate A code | Gate B math | Gate B code | Eligible |")
+    L.append("| Verifier | Usable scores | Gate A math | Gate A code | Gate B math (T1–T3 / T1–T2) "
+             "| Gate B code (T1–T3 / T1–T2) | Eligible (T1–T3 / T1–T2) |")
     L.append("|---|---|---|---|---|---|---|")
     yes = lambda b: "–" if b is None else ("pass" if b else "**fail**")
     star = lambda e: "*" if e and e.get("class") == "diffusion" and e.get("small_reference") is None else ""
+    elig = gate["eligibility"]
     for v in sorted(gate["gate_a"]):
         ga, gb = gate["gate_a"][v], gate["gate_b"].get(v, {})
-        e = gate["eligibility"]["verifiers"].get(v, {})
+        b = lambda d: (f"{yes(gb[d]['passes'])} / {yes(gb[d]['passes_t1_t2'])} ({gb[d]['spread']:.3f} / "
+                       f"{gb[d]['spread_t1_t2']:.3f})") if d in gb else "–"
+        e = "reference only" if meta(v)[2] != "primary" else " / ".join(
+            yes(elig[k]["verifiers"].get(v, {}).get("eligible")) for k in ("gate_b_t1_t3", "gate_b_t1_t2"))
         L.append(f"| {v} | {yes(gate['usable_scores'].get(v, {}).get('passes'))} "
                  f"| {yes(ga.get('math', {}).get('passes'))}{star(ga.get('math'))} | {yes(ga.get('code', {}).get('passes'))}{star(ga.get('code'))} "
-                 f"| {yes(gb.get('math', {}).get('passes'))} | {yes(gb.get('code', {}).get('passes'))} "
-                 f"| {'reference only' if meta(v)[2] != 'primary' else yes(e.get('eligible'))} |")
-    L += ["", f"\* {SMALL_REFERENCE} not scored on this bank, so the diffusion 'within 0.10 of the small AR verifier' part of gate A is unchecked.",
+                 f"| {b('math')} | {b('code')} | {e} |")
+    L.append("")
+    if any(star(d.get(dom)) for d in gate["gate_a"].values() for dom in ("math", "code")):
+        L.append(f"\* {SMALL_REFERENCE} not scored on this bank, so the diffusion 'within 0.10 of the small AR verifier' "
+                 "part of gate A is unchecked.")
+    small = {d: gate["gate_a"].get(SMALL_REFERENCE, {}).get(d, {}).get("auroc") for d in ("math", "code")}
+    L += [f"- **Gate A small-AR reference ({SMALL_REFERENCE}):** math {fmt(small['math'])}, code {fmt(small['code'])}",
+          f"- **Eligibility, gate B over T1–T3 (as written):** {elig['gate_b_t1_t3']['decision']}",
+          f"- **Eligibility, gate B over T1–T2:** {elig['gate_b_t1_t2']['decision']}",
           f"- **Code rule:** {gate['code_rule']}",
           f"- **Dynamic range:** " + "; ".join(f"{d}: {e['verifier']} FAR {fmt(e['far_at_90_tar'])} at 90% TAR "
                                               f"({'pass' if e['passes'] else 'fail'})" for d, e in gate['dynamic_range'].items()),
           f"- **No shortcuts:** " + "; ".join(f"{d}: length AUROC {fmt(e['length_auroc'])}, surface AUROC {fmt(e['surface_auroc'])} "
                                              f"({'pass' if e['passes'] else 'fail'})" for d, e in gate['no_shortcuts'].items()),
-          f"- **Decision:** {gate['decision']}", "",
+          "",
           "## Pairs at 90% pair TAR (AND rule, T1)", "",
           "| Pair | Kind | Domain | FAR [95% CI] | Pair TAR | κ false accepts | Spearman (wrong) |", "|---|---|---|---|---|---|---|"]
     for p in sorted(pair_rows, key=lambda p: (p["domain"], p["far"])):
@@ -499,7 +542,8 @@ def write_csv(path: Path, rows: list[dict]) -> None:
     if not rows:
         return
     with open(path, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="
+")
         w.writeheader()
         w.writerows(rows)
 
