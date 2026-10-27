@@ -1,0 +1,38 @@
+{
+  "step": "generate",
+  "questions": "bank/pilot/questions_code.jsonl",
+  "n_questions": 150,
+  "n_generations": 1200,
+  "generator": "ibm-granite/granite-3.3-8b-instruct",
+  "generator_revision": "51dd4bc2ade4059a6bd87649d68aa11e4fb2529b",
+  "prompt": "Please provide a self-contained Python script that solves the following problem in a markdown code block:\n```\n{question}\n```\n",
+  "response_prefix": "Below is a Python script with a self-contained function that solves the problem and passes corresponding tests:\n```python\n",
+  "settings": {
+    "model": "ibm-granite/granite-3.3-8b-instruct",
+    "revision": "51dd4bc2ade4059a6bd87649d68aa11e4fb2529b",
+    "tag": "granite33",
+    "n_samples": 8,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 768,
+    "seed": 544,
+    "backend": "vllm",
+    "dtype": "bfloat16",
+    "max_model_len": 4096,
+    "domain": "code"
+  },
+  "seconds": 137.7,
+  "started_utc": "2026-10-27T07:40:09+00:00",
+  "finished_utc": "2026-10-27T07:42:26+00:00",
+  "environment": {
+    "code_revision": "39aa05eddf82c30055299de4c96c4dc0531d44b8",
+    "python": "3.13.16",
+    "versions": {
+      "torch": "2.13.0",
+      "transformers": "5.19.0",
+      "vllm": "0.32.0",
+      "huggingface-hub": "1.33.0"
+    },
+    "gpu": "NVIDIA A100-SXM4-40GB"
+  }
+}

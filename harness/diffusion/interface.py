@@ -43,7 +43,16 @@ def t1_message(problem: str, candidate: str) -> str:
     return f"Problem:\n{problem}\n\nCandidate solution:\n{candidate}\n\n{T1_QUESTION}"
 
 
-TEMPLATES = {"T1": t1_message}
+def _shared(name: str):
+    """T2 and T3 with the exact wording of harness/prompts.py, so every verifier sees the same text."""
+    from harness.prompts import TEMPLATES as SHARED
+
+    def render(problem: str, candidate: str) -> str:
+        return SHARED[name].format(problem=problem, candidate_answer=candidate)
+    return render
+
+
+TEMPLATES = {"T1": t1_message, "T2": _shared("T2"), "T3": _shared("T3")}
 
 
 def score_row(*, bank_hash: str, candidate_id: str, model: str, revision: str,

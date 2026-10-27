@@ -1,0 +1,27 @@
+{
+  "step": "generate_api",
+  "questions": "bank/pilot/questions_math.jsonl",
+  "n_questions": 300,
+  "n_generations": 1200,
+  "generator": "openai/gpt-4.1-mini",
+  "domain": "math",
+  "prompt": "Solve the following math problem step by step. Put your final answer in \\boxed{{}}.\n\n{question}",
+  "prefilled": false,
+  "settings": {
+    "model": "openai/gpt-4.1-mini",
+    "tag": "gpt41mini",
+    "n_samples": 4,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "max_new_tokens": 1024,
+    "seed": 544,
+    "workers": 6,
+    "budget_usd": 5.0,
+    "price_in": 0.4,
+    "price_out": 1.6,
+    "ledger": "bank/pilot/api_spend.json"
+  },
+  "started_utc": "2026-10-27T07:45:03+00:00",
+  "finished_utc": "2026-10-27T07:55:57+00:00",
+  "spent_usd_total": 0.7736
+}

@@ -95,8 +95,8 @@ def bank_records(sources):
     pairs, problems, cells, errors = {}, {}, {}, []
     for number, (source, record) in enumerate(zip(sources, records), 1):
         try:
-            if source.get("split") != "dev":
-                raise ValueError("this adapter accepts only split='dev'")
+            if source.get("split") not in ("dev", "pilot"):
+                raise ValueError("this adapter accepts only split='dev' or 'pilot'")
             if source.get("domain") not in ("math", "code"):
                 raise ValueError("expected math/code domain")
             record["domain"] = source["domain"]  # for per-domain AUROC (PLAN.md §5)

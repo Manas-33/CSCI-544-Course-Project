@@ -1,0 +1,651 @@
+{
+ "usable_scores": {
+  "Dream-7B": {
+   "median_yes_no_mass": 0.8706769570708275,
+   "passes": true
+  },
+  "Gemma-2-9B": {
+   "median_yes_no_mass": 0.9978508298269421,
+   "passes": true
+  },
+  "LLaDA-8B": {
+   "median_yes_no_mass": 0.9408245328813791,
+   "passes": true
+  },
+  "Llama-3.1-8B": {
+   "median_yes_no_mass": 0.9998889537038305,
+   "passes": true
+  },
+  "Llama-3.2-3B": {
+   "median_yes_no_mass": 0.9999327847472086,
+   "passes": true
+  },
+  "Mistral-7B": {
+   "median_yes_no_mass": 0.9996569277828129,
+   "passes": true
+  },
+  "Qwen2.5-1.5B": {
+   "median_yes_no_mass": 0.9947839103656588,
+   "passes": true
+  },
+  "Qwen2.5-7B": {
+   "median_yes_no_mass": 0.9999988222160326,
+   "passes": true
+  }
+ },
+ "gate_a": {
+  "Dream-7B": {
+   "math": {
+    "auroc": 0.591808,
+    "ci": [
+     0.5433134322586348,
+     0.6402928707905725
+    ],
+    "class": "diffusion",
+    "role": "primary",
+    "small_reference": 0.487488,
+    "passes": false
+   },
+   "code": {
+    "auroc": 0.616672,
+    "ci": [
+     0.5518625261330523,
+     0.6724258386736085
+    ],
+    "class": "diffusion",
+    "role": "primary",
+    "small_reference": 0.553984,
+    "passes": true
+   }
+  },
+  "Gemma-2-9B": {
+   "math": {
+    "auroc": 0.702016,
+    "ci": [
+     0.6503707917397206,
+     0.753729474556213
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": true
+   },
+   "code": {
+    "auroc": 0.654848,
+    "ci": [
+     0.5979418982779399,
+     0.7110561721123441
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": true
+   }
+  },
+  "LLaDA-8B": {
+   "math": {
+    "auroc": 0.607232,
+    "ci": [
+     0.5453035664805904,
+     0.6675423154210198
+    ],
+    "class": "diffusion",
+    "role": "primary",
+    "small_reference": 0.487488,
+    "passes": true
+   },
+   "code": {
+    "auroc": 0.594176,
+    "ci": [
+     0.5447443856318206,
+     0.6416886089648827
+    ],
+    "class": "diffusion",
+    "role": "primary",
+    "small_reference": 0.553984,
+    "passes": false
+   }
+  },
+  "Llama-3.1-8B": {
+   "math": {
+    "auroc": 0.65888,
+    "ci": [
+     0.6040427883599516,
+     0.7156104398272919
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": true
+   },
+   "code": {
+    "auroc": 0.611904,
+    "ci": [
+     0.5593870510396975,
+     0.6616805148760331
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": true
+   }
+  },
+  "Llama-3.2-3B": {
+   "math": {
+    "auroc": 0.487488,
+    "ci": [
+     0.42371695416708455,
+     0.5515812630415582
+    ],
+    "class": "AR",
+    "role": "small",
+    "passes": false
+   },
+   "code": {
+    "auroc": 0.553984,
+    "ci": [
+     0.5000906751813503,
+     0.6085086583738958
+    ],
+    "class": "AR",
+    "role": "small",
+    "passes": false
+   }
+  },
+  "Mistral-7B": {
+   "math": {
+    "auroc": 0.573504,
+    "ci": [
+     0.5233715842759795,
+     0.6259738861957526
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": false
+   },
+   "code": {
+    "auroc": 0.577152,
+    "ci": [
+     0.525321721907803,
+     0.6252844966388923
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": false
+   }
+  },
+  "Qwen2.5-1.5B": {
+   "math": {
+    "auroc": 0.651584,
+    "ci": [
+     0.5935237648103995,
+     0.7099908644489742
+    ],
+    "class": "AR",
+    "role": "small",
+    "passes": true
+   },
+   "code": {
+    "auroc": 0.503232,
+    "ci": [
+     0.46020566661604706,
+     0.5412237245366224
+    ],
+    "class": "AR",
+    "role": "small",
+    "passes": false
+   }
+  },
+  "Qwen2.5-7B": {
+   "math": {
+    "auroc": 0.695488,
+    "ci": [
+     0.6450598165776242,
+     0.7447492374064659
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": true
+   },
+   "code": {
+    "auroc": 0.70432,
+    "ci": [
+     0.6471552489584045,
+     0.75625
+    ],
+    "class": "AR",
+    "role": "primary",
+    "passes": true
+   }
+  }
+ },
+ "gate_b": {
+  "Dream-7B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.591808,
+     "T2": 0.623488,
+     "T3": 0.584064
+    },
+    "spread": 0.039424000000000015,
+    "passes": true,
+    "spread_t1_t2": 0.03168000000000004,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.616672,
+     "T2": 0.654496,
+     "T3": 0.514688
+    },
+    "spread": 0.13980799999999993,
+    "passes": false,
+    "spread_t1_t2": 0.03782399999999997,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.571864,
+     "T2": 0.606344,
+     "T3": 0.558752
+    },
+    "spread": 0.04759199999999997,
+    "passes": true,
+    "spread_t1_t2": 0.034479999999999955,
+    "passes_t1_t2": true
+   }
+  },
+  "Gemma-2-9B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.702016,
+     "T2": 0.716288,
+     "T3": 0.686528
+    },
+    "spread": 0.02976000000000001,
+    "passes": true,
+    "spread_t1_t2": 0.014272000000000062,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.654848,
+     "T2": 0.652288,
+     "T3": 0.628032
+    },
+    "spread": 0.02681599999999995,
+    "passes": true,
+    "spread_t1_t2": 0.0025600000000000067,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.66184,
+     "T2": 0.680288,
+     "T3": 0.650512
+    },
+    "spread": 0.029776000000000025,
+    "passes": true,
+    "spread_t1_t2": 0.01844800000000002,
+    "passes_t1_t2": true
+   }
+  },
+  "LLaDA-8B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.607232,
+     "T2": 0.615808,
+     "T3": 0.517632
+    },
+    "spread": 0.09817600000000004,
+    "passes": false,
+    "spread_t1_t2": 0.008576000000000028,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.594176,
+     "T2": 0.588096,
+     "T3": 0.52752
+    },
+    "spread": 0.06665600000000005,
+    "passes": false,
+    "spread_t1_t2": 0.006080000000000085,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.594736,
+     "T2": 0.580688,
+     "T3": 0.523928
+    },
+    "spread": 0.0708080000000001,
+    "passes": false,
+    "spread_t1_t2": 0.01404800000000006,
+    "passes_t1_t2": true
+   }
+  },
+  "Llama-3.1-8B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.65888,
+     "T2": 0.642688,
+     "T3": 0.555392
+    },
+    "spread": 0.10348800000000002,
+    "passes": false,
+    "spread_t1_t2": 0.016191999999999984,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.611904,
+     "T2": 0.594304,
+     "T3": 0.553472
+    },
+    "spread": 0.05843200000000004,
+    "passes": false,
+    "spread_t1_t2": 0.01759999999999995,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.589792,
+     "T2": 0.59024,
+     "T3": 0.549936
+    },
+    "spread": 0.040304000000000006,
+    "passes": true,
+    "spread_t1_t2": 0.00044800000000000395,
+    "passes_t1_t2": true
+   }
+  },
+  "Llama-3.2-3B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.487488,
+     "T2": 0.453056,
+     "T3": 0.545216
+    },
+    "spread": 0.09216000000000002,
+    "passes": false,
+    "spread_t1_t2": 0.03443199999999996,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.553984,
+     "T2": 0.564096,
+     "T3": 0.535552
+    },
+    "spread": 0.028544000000000014,
+    "passes": true,
+    "spread_t1_t2": 0.01011200000000001,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.522816,
+     "T2": 0.508816,
+     "T3": 0.520112
+    },
+    "spread": 0.013999999999999901,
+    "passes": true,
+    "spread_t1_t2": 0.013999999999999901,
+    "passes_t1_t2": true
+   }
+  },
+  "Mistral-7B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.573504,
+     "T2": 0.593664,
+     "T3": 0.530944
+    },
+    "spread": 0.06272,
+    "passes": false,
+    "spread_t1_t2": 0.020159999999999956,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.577152,
+     "T2": 0.597376,
+     "T3": 0.55072
+    },
+    "spread": 0.04665600000000003,
+    "passes": true,
+    "spread_t1_t2": 0.02022400000000002,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.571968,
+     "T2": 0.597152,
+     "T3": 0.543664
+    },
+    "spread": 0.05348799999999998,
+    "passes": false,
+    "spread_t1_t2": 0.025183999999999984,
+    "passes_t1_t2": true
+   }
+  },
+  "Qwen2.5-1.5B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.651584,
+     "T2": 0.64608,
+     "T3": 0.539968
+    },
+    "spread": 0.11161600000000005,
+    "passes": false,
+    "spread_t1_t2": 0.005504000000000064,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.503232,
+     "T2": 0.536576,
+     "T3": 0.491264
+    },
+    "spread": 0.045312000000000074,
+    "passes": true,
+    "spread_t1_t2": 0.03334400000000004,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.561136,
+     "T2": 0.588336,
+     "T3": 0.507696
+    },
+    "spread": 0.08063999999999993,
+    "passes": false,
+    "spread_t1_t2": 0.027200000000000002,
+    "passes_t1_t2": true
+   }
+  },
+  "Qwen2.5-7B": {
+   "math": {
+    "aurocs": {
+     "T1": 0.695488,
+     "T2": 0.741184,
+     "T3": 0.571648
+    },
+    "spread": 0.1695359999999999,
+    "passes": false,
+    "spread_t1_t2": 0.04569599999999996,
+    "passes_t1_t2": true
+   },
+   "code": {
+    "aurocs": {
+     "T1": 0.70432,
+     "T2": 0.700032,
+     "T3": 0.558144
+    },
+    "spread": 0.14617599999999997,
+    "passes": false,
+    "spread_t1_t2": 0.0042879999999999585,
+    "passes_t1_t2": true
+   },
+   "pooled": {
+    "aurocs": {
+     "T1": 0.699424,
+     "T2": 0.714672,
+     "T3": 0.563936
+    },
+    "spread": 0.15073599999999998,
+    "passes": false,
+    "spread_t1_t2": 0.015247999999999928,
+    "passes_t1_t2": true
+   }
+  }
+ },
+ "dynamic_range": {
+  "math": {
+   "verifier": "Gemma-2-9B",
+   "far_at_90_tar": 0.744,
+   "passes": false,
+   "target_band": [
+    0.15,
+    0.6
+   ]
+  },
+  "code": {
+   "verifier": "Qwen2.5-7B",
+   "far_at_90_tar": 0.616,
+   "passes": true,
+   "target_band": [
+    0.15,
+    0.6
+   ]
+  }
+ },
+ "no_shortcuts": {
+  "math": {
+   "length_auroc": 0.5797760000000001,
+   "surface_auroc": 0.547904,
+   "surface_fit_on": "development bank (142 math answers)",
+   "passes": true
+  },
+  "code": {
+   "length_auroc": 0.55408,
+   "surface_auroc": null,
+   "surface_fit_on": "no code development answers yet",
+   "passes": true
+  }
+ },
+ "code_rule": {
+  "ar_passing_code": [
+   "Gemma-2-9B",
+   "Llama-3.1-8B",
+   "Qwen2.5-7B"
+  ],
+  "diffusion_passing_code": [
+   "Dream-7B"
+  ],
+  "code_in_primary": true
+ },
+ "eligibility": {
+  "gate_b_t1_t3": {
+   "primary_domains": [
+    "math",
+    "code"
+   ],
+   "narrowed": false,
+   "verifiers": {
+    "Dream-7B": {
+     "usable": true,
+     "gate_a": false,
+     "gate_b": false,
+     "eligible": false
+    },
+    "Gemma-2-9B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": true,
+     "eligible": true
+    },
+    "LLaDA-8B": {
+     "usable": true,
+     "gate_a": false,
+     "gate_b": false,
+     "eligible": false
+    },
+    "Llama-3.1-8B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": false,
+     "eligible": false
+    },
+    "Mistral-7B": {
+     "usable": true,
+     "gate_a": false,
+     "gate_b": false,
+     "eligible": false
+    },
+    "Qwen2.5-7B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": false,
+     "eligible": false
+    }
+   },
+   "eligible_ar": [
+    "Gemma-2-9B"
+   ],
+   "eligible_diffusion": [],
+   "decision": "repair: no diffusion verifier passes in any domain; try the reconstruction score (PLAN.md \u00a77)"
+  },
+  "gate_b_t1_t2": {
+   "primary_domains": [
+    "math"
+   ],
+   "narrowed": true,
+   "verifiers": {
+    "Dream-7B": {
+     "usable": true,
+     "gate_a": false,
+     "gate_b": true,
+     "eligible": false
+    },
+    "Gemma-2-9B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": true,
+     "eligible": true
+    },
+    "LLaDA-8B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": true,
+     "eligible": true
+    },
+    "Llama-3.1-8B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": true,
+     "eligible": true
+    },
+    "Mistral-7B": {
+     "usable": true,
+     "gate_a": false,
+     "gate_b": true,
+     "eligible": false
+    },
+    "Qwen2.5-7B": {
+     "usable": true,
+     "gate_a": true,
+     "gate_b": true,
+     "eligible": true
+    }
+   },
+   "eligible_ar": [
+    "Gemma-2-9B",
+    "Llama-3.1-8B",
+    "Qwen2.5-7B"
+   ],
+   "eligible_diffusion": [
+    "LLaDA-8B"
+   ],
+   "decision": "continue on math (narrowed: no diffusion model is eligible in every domain); diffusion: LLaDA-8B; AR: Gemma-2-9B, Llama-3.1-8B, Qwen2.5-7B"
+  }
+ },
+ "decision": "repair: no diffusion verifier passes in any domain; try the reconstruction score (PLAN.md \u00a77)"
+}

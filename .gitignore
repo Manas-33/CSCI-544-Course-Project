@@ -63,3 +63,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Pilot: scores from the pilot notebooks, the pilot analysis code and its outputs
+!/results/pilot/
+!/analysis/

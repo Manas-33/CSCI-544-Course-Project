@@ -125,6 +125,53 @@ def parse_boxed_number(content: Optional[str]) -> Optional[str]:
     return normalize_number(numbers[0]) if len(numbers) == 1 else None
 
 
+_FRAC_RE = re.compile(r"^(-?)\\[dt]?frac\{(-?\d+)\}\{(-?\d+)\}$")
+_SLASH_RE = re.compile(r"^(-?\d+)/(\d+)$")
+_THOUSANDS_RE = re.compile(r"^-?\d{1,3}(,\d{3})+(\.\d+)?$")
+
+
+def parse_rational(raw: Optional[str]) -> Optional[str]:
+    """A MATH-style answer as a canonical rational ("7", "-14/3"), or None if it is not one.
+
+    Accepts integers, decimals, \\frac{a}{b} (also \\dfrac, \\tfrac, with a leading minus) and a/b,
+    after stripping $, \\text{}, \\left/\\right, degree marks and "x =" prefixes. Anything else
+    (radicals, intervals, tuples, expressions) is None, so only answers the checker reads
+    reliably are used (PLAN.md §2).
+    """
+    from fractions import Fraction
+
+    if raw is None:
+        return None
+    s = raw.strip().rstrip(".")
+    s = re.sub(r"\\text\{\s*([^}]*)\}", r"\1", s)
+    s = re.sub(r"\^\{?\\circ\}?", "", s)
+    for token in ("\\left", "\\right", "\\!", "\\,", "\\;", "\\$", "$", "\\%", "%", " "):
+        s = s.replace(token, "")
+    if "=" in s:  # only "x = 5"; an equation such as "5x - 7y + 4 = 0" is not a number
+        left, s = s.rsplit("=", 1)
+        if not re.fullmatch(r"[A-Za-z]", left):
+            return None
+    if s.startswith("(") and s.endswith(")"):
+        s = s[1:-1]
+    if _THOUSANDS_RE.match(s):
+        s = s.replace(",", "")
+    if "_" in s:  # a base subscript ("52_8"); Decimal would read it as 528
+        return None
+    m = _FRAC_RE.match(s)
+    try:
+        if m:
+            value = Fraction(int(m.group(2)), int(m.group(3)))
+            value = -value if m.group(1) else value
+        elif _SLASH_RE.match(s):
+            a, b = s.split("/")
+            value = Fraction(int(a), int(b))
+        else:
+            value = Fraction(Decimal(s))
+    except (InvalidOperation, ValueError, ZeroDivisionError):
+        return None
+    return str(value.numerator) if value.denominator == 1 else f"{value.numerator}/{value.denominator}"
+
+
 # Model self-references that PLAN.md §2 filters out of the bank ("As an AI...").
 _IDENTITY_RE = re.compile(
     r"\bas an ai\b|\bi am an ai\b|\bi'm an ai\b|\bas a language model\b|\bai language model\b",

@@ -20,6 +20,7 @@ from bank.common import (
     has_identity_string,
     normalize_number,
     parse_boxed_number,
+    parse_rational,
     read_jsonl,
     write_jsonl,
 )
@@ -28,9 +29,12 @@ from bank.common import (
 LABELER_VERSION = "bank.label/2"
 
 
-def checker_boxed(text: str, reference: str) -> tuple[bool | None, str | None]:
-    """(correct?, extracted answer). None means no usable \\boxed{} answer."""
-    extracted = parse_boxed_number(extract_boxed(text))
+def checker_boxed(text: str, reference: str, kind: str = "number") -> tuple[bool | None, str | None]:
+    """(correct?, extracted answer). None means no usable \\boxed{} answer.
+
+    kind "number" is GSM8K's decimal reading; "rational" is MATH's (fractions allowed)."""
+    boxed = extract_boxed(text)
+    extracted = parse_rational(boxed) if kind == "rational" else parse_boxed_number(boxed)
     if extracted is None:
         return None, None
     return extracted == reference, extracted
@@ -57,12 +61,13 @@ def _math_verify():
         return None
 
 
-def checker_second(text: str, reference: str, use_math_verify: bool = True) -> tuple[bool | None, str]:
+def checker_second(text: str, reference: str, use_math_verify: bool = True,
+                   gold_latex: str | None = None) -> tuple[bool | None, str]:
     """(correct?, checker name). Independent of checker 1's extraction logic."""
     mv = _math_verify() if use_math_verify else None
     if mv is not None:
         parse, verify = mv
-        gold = parse(f"${reference}$")
+        gold = parse(f"${gold_latex or reference}$")
         pred = parse(text)
         if not pred:
             return None, "math_verify"
@@ -73,9 +78,10 @@ def checker_second(text: str, reference: str, use_math_verify: bool = True) -> t
     return extracted == reference, "last_number"
 
 
-def label_row(gen: dict, reference: str, use_math_verify: bool = True) -> dict:
-    c1, extracted = checker_boxed(gen["text"], reference)
-    c2, c2_name = checker_second(gen["text"], reference, use_math_verify)
+def label_row(gen: dict, reference: str, use_math_verify: bool = True,
+              kind: str = "number", gold_latex: str | None = None) -> dict:
+    c1, extracted = checker_boxed(gen["text"], reference, kind)
+    c2, c2_name = checker_second(gen["text"], reference, use_math_verify, gold_latex)
     if gen.get("finish_reason") == "length":
         status = "truncated"
     elif has_identity_string(gen["text"]):
@@ -108,9 +114,13 @@ def main() -> None:
     ap.add_argument("--no-math-verify", action="store_true", help="Use the last-number checker instead")
     args = ap.parse_args()
 
-    refs = {q["problem_id"]: q["reference"] for q in read_jsonl(args.questions)}
+    questions = {q["problem_id"]: q for q in read_jsonl(args.questions)}
     gens = read_jsonl(args.generations)
-    labeled = [label_row(g, refs[g["problem_id"]], not args.no_math_verify) for g in gens]
+    labeled = []
+    for g in gens:
+        q = questions[g["problem_id"]]
+        labeled.append(label_row(g, q["reference"], not args.no_math_verify,
+                                 q.get("answer_kind", "number"), q.get("reference_latex")))
     write_jsonl(args.out, labeled)
 
     counts = Counter(r["status"] for r in labeled)

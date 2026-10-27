@@ -1,0 +1,38 @@
+{
+  "step": "generate",
+  "questions": "bank/pilot/questions_math.jsonl",
+  "n_questions": 300,
+  "n_generations": 1200,
+  "generator": "microsoft/Phi-4-mini-instruct",
+  "generator_revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+  "prompt": "Solve the following math problem step by step. Put your final answer in \\boxed{{}}.\n\n{question}",
+  "response_prefix": null,
+  "settings": {
+    "model": "microsoft/Phi-4-mini-instruct",
+    "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+    "tag": "phi4mini",
+    "n_samples": 4,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "max_new_tokens": 1024,
+    "seed": 544,
+    "backend": "vllm",
+    "dtype": "bfloat16",
+    "max_model_len": 4096,
+    "domain": "math"
+  },
+  "seconds": 322.8,
+  "started_utc": "2026-10-27T07:22:12+00:00",
+  "finished_utc": "2026-10-27T07:27:35+00:00",
+  "environment": {
+    "code_revision": "39aa05eddf82c30055299de4c96c4dc0531d44b8",
+    "python": "3.13.16",
+    "versions": {
+      "torch": "2.13.0",
+      "transformers": "5.19.0",
+      "vllm": "0.32.0",
+      "huggingface-hub": "1.33.0"
+    },
+    "gpu": "NVIDIA A100-SXM4-40GB"
+  }
+}

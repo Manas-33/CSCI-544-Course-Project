@@ -1,0 +1,27 @@
+{
+  "spent_usd": 1.1861632000000006,
+  "runs": [
+    {
+      "questions": "bank/pilot/questions_math.jsonl",
+      "out": "bank/pilot/gen/gpt41mini_math/generations.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-10-27T07:45:03+00:00",
+      "counts": {
+        "ok": 1200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "bank/pilot/questions_code.jsonl",
+      "out": "bank/pilot/gen/gpt41mini_code/generations.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-10-27T07:55:57+00:00",
+      "counts": {
+        "ok": 1200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    }
+  ]
+}
