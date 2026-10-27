@@ -19,9 +19,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import multiprocessing
 import os
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from importlib import metadata
 from pathlib import Path
 
@@ -62,6 +63,12 @@ def run_once(dataset: str, problem: dict, program: str, expected: dict) -> dict:
     return {"status": status, "detail": f"base={statuses[0]} plus={statuses[1]}"}
 
 
+def check_job(job: tuple) -> list[dict]:
+    """All runs of one program, inside a single-threaded worker process (see main)."""
+    dataset, problem, program, expected = job
+    return [run_once(dataset, problem, program, expected) for _ in range(N_RUNS)]
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--questions", required=True)
@@ -77,14 +84,21 @@ def main(argv: list[str] | None = None) -> None:
     version = f"{LABELER_VERSION}+evalplus=={metadata.version('evalplus')}+colab-guard"
     prepared = {g["candidate_id"]: prepare(g, questions[g["problem_id"]]) for g in generations}
 
-    def check(g: dict) -> list[dict]:
-        _, program = prepared[g["candidate_id"]]
-        dataset, problem, expected = problems[questions[g["problem_id"]]["task_id"]]
-        return [run_once(dataset, problem, program, expected) for _ in range(N_RUNS)]
-
     usable = [g for g in generations if prepared[g["candidate_id"]][0] == "ok"]
-    with ThreadPoolExecutor(args.workers) as pool:
-        runs = dict(zip((g["candidate_id"] for g in usable), pool.map(check, usable)))
+    jobs = []
+    for g in usable:
+        dataset, problem, expected = problems[questions[g["problem_id"]]["task_id"]]
+        jobs.append((dataset, problem, prepared[g["candidate_id"]][1], expected))
+    # EvalPlus forks a process per check. Forking from a threaded process is refused by recent
+    # filelock versions (and is unsafe anyway), so each worker is a spawned, single-threaded process.
+    ctx = multiprocessing.get_context("spawn")
+    with ProcessPoolExecutor(args.workers, mp_context=ctx) as pool:
+        results = []
+        for n, r in enumerate(pool.map(check_job, jobs, chunksize=8), 1):
+            results.append(r)
+            if n % 500 == 0:
+                print(f"checked {n}/{len(jobs)} programs", flush=True)
+    runs = dict(zip((g["candidate_id"] for g in usable), results))
 
     rows = []
     for g in generations:
