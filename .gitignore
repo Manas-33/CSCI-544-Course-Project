@@ -1,5 +1,5 @@
 # Allow-list: ignore everything at the top level, then track only the files below.
-# The proposal, instructor feedback and review/working files stay local on purpose.
+# Unlisted instructor feedback and review/working files stay local on purpose.
 /*
 !/bank/
 !/.gitignore
@@ -67,3 +67,12 @@ __pycache__/
 # Pilot: scores from the pilot notebooks, the pilot analysis code and its outputs
 !/results/pilot/
 !/analysis/
+
+# Selected project reports and research references.
+!/docs/
+/docs/*
+!/docs/references/
+/docs/references/*
+!/docs/references/midterm_report.pdf
+!/docs/references/ProjectProposal_revised.pdf
+!/docs/references/CSCI_544_PAPER_REPORT.pdf
