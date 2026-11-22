@@ -76,6 +76,41 @@ The code half of the development bank. It covers 150 MBPP problems, chosen with 
 
 **Not tested yet:** the GPU generation step, and the sandbox in the `python:3.11-slim` image itself. The Docker path was checked with another local Python 3.11 image (no network, the 2 GB memory cap, the 16 MB file limit, labels as expected). The CPU tests cover extraction, the runner, labels and pairs.
 
+## Full bank (`full/`, not built yet)
+
+About 2,100 math and 850 code answers for the final comparison (PLAN.md §2). Math and code are separate banks and can be built one at a time. Every step stops if its inputs are incomplete or not the expected ones.
+
+| Step | Command | Needs |
+|---|---|---|
+| 1. Pick problems | `python -m bank.select_full --sources <folder>` → `full/questions_*.jsonl` | the five source files |
+| 2. Generate | notebook `10_full_generate.ipynb` (`bank.generate_full`) | A100; GPT-4.1-mini needs only an API key |
+| 3. Label, pair, draw, split | notebook `11_full_label_split.ipynb` | CPU; **label keeper only** |
+
+Step 3 runs `bank.generate_full merge`, `bank.label` or `bank.label_evalplus`, `bank.make_pairs --split full`, `bank.token_lengths`, `bank.draw_full` and `bank.split_full`, per domain. The rules are in their docstrings: the draw rule and the order of its caps in `draw_full`, the split in `split_full`, what counts as a near-duplicate problem in `select_full`.
+
+**Files per domain** (`full/math/`, `full/code/`):
+- `bank.jsonl`: the pilot bank's fields, `split` is `validation` or `test`, no label. The bank is identified by its SHA-256.
+- `labels_validation.jsonl`, and `labels_test.jsonl` in the label keeper's private folder: the pilot label file's fields, plus `error_type` for the tagged math answers. Code answers have one of EvalPlus's two error types: `wrong_output` (a crash counts here too) or `timeout`.
+- `manifest.json`: SHA-256 of every file (`files`), counts per split, shortfalls, seeds, and the share of (problem, generator) cells that qualified.
+
+Selected so far (`full/questions_manifest.json`): 1,059 GSM8K-Platinum, 239 MATH-500, 500 new MATH and 390 code problems. Two of the 392 unused code problems are near-duplicates of development problems and were left out.
+
+**Sources and licences**, as found on November 21, 2026 (read on the linked pages; `licenses` in `full/questions_manifest.json` keeps PRM800K's text, the start of EvalPlus's, and notes on the two dataset cards):
+
+| `source` | From | Licence found |
+|---|---|---|
+| `gsm8k-platinum/test` | [GSM8K-Platinum](https://huggingface.co/datasets/madrylab/gsm8k-platinum) (Vendrow et al.), built on [GSM8K](https://github.com/openai/grade-school-math) (Cobbe et al.) | GSM8K: MIT, as GSM8K-Platinum's card says. GSM8K-Platinum's added annotations: CC BY-SA 4.0 |
+| `math-500/test` | [MATH-500](https://huggingface.co/datasets/HuggingFaceH4/MATH-500), from [MATH](https://github.com/hendrycks/math) (Hendrycks et al.) | MATH's repository: MIT. MATH-500's own card states none and points to PRM800K |
+| `math-rest/test` (the new problems) | [PRM800K](https://github.com/openai/prm800k)'s `math_splits/train.jsonl` (Lightman et al.), from MATH | PRM800K's repository: MIT |
+| `evalplus/humaneval+` | [HumanEval+](https://github.com/evalplus/humanevalplus_release) v0.1.10 (EvalPlus, Liu et al.) | Apache-2.0 |
+| `evalplus/mbpp+` | [MBPP+](https://github.com/evalplus/mbppplus_release) v0.2.0 (EvalPlus, Liu et al.) | Apache-2.0 |
+
+This records what the repositories and cards said; it is not a full review of the terms. All terms, including GPT-4.1-mini's for its answers, are checked again before the release.
+
+**Label custody.** `bank/.gitignore` ignores everything in `full/` except the files listed in it, so labeled answers, test labels, execution logs and error tags in `full/` are not committed by accident (a test checks this). Labeling files never belong anywhere else in the repository. `bank.split_full` refuses to write test labels near the bank or inside a git checkout, or to write over a different bank or other test labels: a corrected bank is a new version, with new public and private folders (`VERSION` in notebook 11). The label keeper is the person who holds the test labels until the one join; nobody else keeps a copy. Labeling never runs on a machine or account used for scoring, selection or thresholds.
+
+**Error tags.** `python -m bank.split_full error-sheet` draws 200 wrong math test answers into the private folder; `apply-tags` adds the filled-in tags (`arithmetic_slip`, `misread_problem`, `wrong_method`, `formatting`) to `labels_test.jsonl` before the bank freeze.
+
 ## Next: scoring
 
 Score `dev/dev_bank.jsonl` with the same T1 prompt for every verifier:

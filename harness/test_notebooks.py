@@ -12,6 +12,7 @@ NAMESPACE = {"BRANCH": "main", "PY": "/content/env/bin/python", "OUT": "results/
              "DEV_HASH": "d" * 64, "SANITY_HASH": "s" * 64, "PILOT_HASH": "h" * 64,
              "d": "math", "t": "T1", "cfg": "pilot_small",
              "COMMIT": "c" * 40, "SWAP": "bank/pilot/swap/swap_items.jsonl", "PILOT": "bank/pilot/pilot_bank.jsonl", "SWAP_HASH": "e" * 64, "step": "swap/pilot_small",
+             "g": "phi4mini", "DOMAINS_ARG": "math code", "DRIVE": "/d", "SHARED": "/s", "PRIVATE": "/p", "WORK": "/w", "BOX": "/b", "CHECKS": "/b/c.jsonl",
              }
 
 

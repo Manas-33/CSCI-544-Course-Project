@@ -315,3 +315,9 @@ for name, book in (("01_ar_verifiers", ar), ("02_llada", llada), ("03_illada", i
                    ):
     (out / f"{name}.ipynb").write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print("wrote", name)
+
+# Full bank (notebooks 10 and 11): cells in nb_full_bank.py
+from nb_full_bank import notebooks as full_bank_notebooks
+for name, book in full_bank_notebooks(nb, REPO):
+    (out / f"{name}.ipynb").write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    print("wrote", name)

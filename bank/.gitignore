@@ -1,3 +1,37 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Full bank: labeled answers, test labels, execution logs and error tags stay out of git until the test join
+# (PLAN.md §2). In bank/full (and any later version, bank/full_v2, ...) everything is ignored except the
+# files listed here, so none of those, and no working folder, goes in by accident.
+/full*/*
+!/full*/questions_math.jsonl
+!/full*/questions_code.jsonl
+!/full*/question_ids.txt
+!/full*/questions_manifest.json
+!/full*/excluded_questions.txt
+!/full*/api_spend.json
+!/full*/math/
+!/full*/code/
+/full*/math/*
+/full*/code/*
+!/full*/math/bank.jsonl
+!/full*/math/labels_validation.jsonl
+!/full*/math/manifest.json
+!/full*/code/bank.jsonl
+!/full*/code/labels_validation.jsonl
+!/full*/code/manifest.json
+!/full*/gen/
+/full*/gen/*
+!/full*/gen/*/
+/full*/gen/*/*
+!/full*/gen/*/generations_manifest.json
+
+# The same files under their usual names anywhere else in bank/, and a working folder.
+labels_test*
+error_tags*
+evalplus_checks*
+full_labels*
+drawn_labels*
+/work*/

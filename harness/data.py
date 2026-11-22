@@ -8,6 +8,8 @@ from pathlib import Path
 SANITY_MAPPING = {"id": "candidate_id", "problem": "problem", "candidate_answer": "candidate"}
 BANK_MAPPING = {"id": "candidate_id", "problem": "problem", "candidate_answer": "candidate",
                 "problem_id": "problem_id", "pair_id": "pair_id"}
+# "validation" and "test" are the full bank's two splits (PLAN.md §2); one file holds both.
+BANK_SPLITS = ("dev", "pilot", "validation", "test")
 
 
 def _object(pairs):
@@ -90,13 +92,13 @@ def map_records(sources, mapping):
 
 
 def bank_records(sources):
-    """Validate make_pairs.py's dev schema without reading any separate labels."""
+    """Validate make_pairs.py's bank schema without reading any separate labels."""
     records = map_records(sources, BANK_MAPPING)
-    pairs, problems, cells, errors = {}, {}, {}, []
+    pairs, problems, cells, splits, errors = {}, {}, {}, {}, []
     for number, (source, record) in enumerate(zip(sources, records), 1):
         try:
-            if source.get("split") not in ("dev", "pilot"):
-                raise ValueError("this adapter accepts only split='dev' or 'pilot'")
+            if source.get("split") not in BANK_SPLITS:
+                raise ValueError(f"this adapter accepts only split in {BANK_SPLITS}")
             if source.get("domain") not in ("math", "code"):
                 raise ValueError("expected math/code domain")
             record["domain"] = source["domain"]  # for per-domain AUROC (PLAN.md §5)
@@ -109,6 +111,8 @@ def bank_records(sources):
             pid, pair_id = record["problem_id"], record["pair_id"]
             if problems.setdefault(pid, record["problem"]) != record["problem"]:
                 raise ValueError("inconsistent question text for problem_id")
+            if splits.setdefault(pid, source["split"]) != source["split"]:
+                raise ValueError("one problem_id in two splits")
             cell = (pid, generator)
             if cells.setdefault(cell, pair_id) != pair_id:
                 raise ValueError("multiple pair IDs for one (problem, generator) cell")

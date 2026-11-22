@@ -8,11 +8,17 @@ cases, under its per-test time limits and its reliability guard. A program is co
 only if it passes both test sets; it runs twice, and one that passes once and fails once
 is flaky and dropped.
 
+A wrong program has one of two error types, the two EvalPlus tells apart: "timeout" (a time limit was hit,
+in either test set or either run) or "wrong_output" (it failed otherwise; a crash counts here too).
+
 EvalPlus's guard is Linux-only, so this runs on Colab (a throwaway VM) rather than in the
 Docker sandbox bank.label_code uses; the checker version records that.
 
     python -m bank.label_evalplus --questions bank/pilot/questions_code.jsonl \\
         --generations bank/pilot/generations_code.jsonl --out bank/pilot/labeled_code.jsonl
+
+--progress <file> saves the finished checks every 200 programs and skips them on a rerun
+(the full bank takes hours on a small CPU runtime). That file is an execution log: keep it private.
 """
 
 from __future__ import annotations
@@ -26,11 +32,13 @@ from concurrent.futures import ProcessPoolExecutor
 from importlib import metadata
 from pathlib import Path
 
-from bank.common import read_jsonl, write_jsonl
+from bank.common import read_jsonl, sha256_text, write_jsonl
 from bank.label_code import combine, prepare
 
+# Bump when the checks change: --progress reuses saved checks only from the same version.
 LABELER_VERSION = "bank.label_evalplus/1"
 N_RUNS = 2
+SAVE_EVERY = 200
 
 
 def load_problems(datasets: set[str]):
@@ -69,11 +77,60 @@ def check_job(job: tuple) -> list[dict]:
     return [run_once(dataset, problem, program, expected) for _ in range(N_RUNS)]
 
 
+def read_progress(path: Path, version: str) -> dict[tuple[str, str], list[dict]]:
+    """(candidate id, program hash) -> runs already done by this checker. A half-written last line is ignored."""
+    if not path.is_file():
+        return {}
+    done = {}
+    for line in path.read_text(encoding="utf-8").split("\n"):
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if row["checker_version"] == version:
+            done[(row["candidate_id"], row["program_sha256"])] = row["runs"]
+    return done
+
+
+def check_all(usable: list[dict], programs: dict[str, str], jobs: list[tuple], version: str,
+              progress: Path | None, workers: int) -> dict[str, list[dict]]:
+    """candidate id -> runs for every usable program, resuming from the progress file if there is one."""
+    ids = [(g["candidate_id"], sha256_text(programs[g["candidate_id"]])) for g in usable]
+    done = read_progress(progress, version) if progress else {}
+    todo = [(key, job) for key, job in zip(ids, jobs) if key not in done]
+    if progress:
+        print(f"{len(ids) - len(todo)} of {len(ids)} programs already checked", flush=True)
+        progress.parent.mkdir(parents=True, exist_ok=True)
+    # EvalPlus forks a process per check. Forking from a threaded process is refused by recent
+    # filelock versions (and is unsafe anyway), so each worker is a spawned, single-threaded process.
+    ctx = multiprocessing.get_context("spawn")
+    unsaved = []
+
+    def save() -> None:
+        if progress and unsaved:
+            with open(progress, "a", encoding="utf-8", newline="\n") as f:
+                f.write("\n" + "".join(json.dumps(r) + "\n" for r in unsaved))  # "\n" ends a half-written line
+            unsaved.clear()
+
+    with ProcessPoolExecutor(workers, mp_context=ctx) as pool:
+        results = pool.map(check_job, [job for _, job in todo], chunksize=8)
+        for n, ((key, _), runs) in enumerate(zip(todo, results), 1):
+            done[key] = runs
+            unsaved.append({"candidate_id": key[0], "program_sha256": key[1], "runs": runs, "checker_version": version})
+            if n % SAVE_EVERY == 0:
+                save()
+            if n % 500 == 0:
+                print(f"checked {n}/{len(todo)} programs", flush=True)
+    save()
+    return {cid: done[(cid, sha)] for cid, sha in ids}
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--questions", required=True)
     ap.add_argument("--generations", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--progress", default=None, help="save finished checks here and resume from them")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) // 2),
                     help="parallel checks; kept below the core count so time limits stay stable")
     args = ap.parse_args(argv)
@@ -89,16 +146,8 @@ def main(argv: list[str] | None = None) -> None:
     for g in usable:
         dataset, problem, expected = problems[questions[g["problem_id"]]["task_id"]]
         jobs.append((dataset, problem, prepared[g["candidate_id"]][1], expected))
-    # EvalPlus forks a process per check. Forking from a threaded process is refused by recent
-    # filelock versions (and is unsafe anyway), so each worker is a spawned, single-threaded process.
-    ctx = multiprocessing.get_context("spawn")
-    with ProcessPoolExecutor(args.workers, mp_context=ctx) as pool:
-        results = []
-        for n, r in enumerate(pool.map(check_job, jobs, chunksize=8), 1):
-            results.append(r)
-            if n % 500 == 0:
-                print(f"checked {n}/{len(jobs)} programs", flush=True)
-    runs = dict(zip((g["candidate_id"] for g in usable), results))
+    runs = check_all(usable, {c: p for c, (_, p) in prepared.items()}, jobs, version,
+                     Path(args.progress) if args.progress else None, args.workers)
 
     rows = []
     for g in generations:
@@ -108,6 +157,8 @@ def main(argv: list[str] | None = None) -> None:
         these = runs.get(cid, [])
         if status == "ok":
             status, label, error_type = combine(these)
+            if error_type == "mixed_failure":  # one run failed, the other hit a time limit
+                error_type = "timeout"
         rows.append({
             "candidate_id": cid, "problem_id": g["problem_id"], "status": status, "label": label,
             "error_type": error_type, "run_statuses": [r["status"] for r in these],
