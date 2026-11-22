@@ -39,7 +39,8 @@ python -m analysis.precision --out results/final/precision
 | No cross-family AR+AR pair left | `pivot` | those left | `null` | `reason` |
 | Second audit fails | `stopped` | | `null` | `reason`; nothing is analyzed |
 
-**2. Validation step**, when scores for every verifier, T1 and T2, both splits of both banks are in. Reads validation
+**2. Validation step**, when scores for every verifier, T1 and T2, both splits of both banks are in (notebook 13;
+`python -m harness.full_run check` says what is missing). Reads validation
 labels only, and writes `results/final/analysis_manifest.json` and `validation.md`:
 
 ```bash

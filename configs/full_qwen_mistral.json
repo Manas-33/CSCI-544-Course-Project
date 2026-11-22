@@ -1,0 +1,28 @@
+{
+  "models": {
+    "A": {
+      "model_id": "Qwen/Qwen2.5-7B-Instruct",
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "tokenizer_revision": "a09a35458c702b33eeacc393d103063234e8bc28"
+    },
+    "B": {
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+      "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+      "tokenizer_revision": "c170c708c41dac9275d15a8fff4eca08d52bab71"
+    }
+  },
+  "input_format": "dev_bank",
+  "field_mapping": {
+    "id": "candidate_id",
+    "problem": "problem",
+    "candidate_answer": "candidate",
+    "problem_id": "problem_id",
+    "pair_id": "pair_id"
+  },
+  "template": "T1",
+  "max_prompt_tokens": 1760,
+  "device": "cuda:0",
+  "dtype": "bf16",
+  "load_in_4bit": false,
+  "thresholds": null
+}

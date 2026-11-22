@@ -7,7 +7,7 @@ Runtime: **A100 or L4** (an L4 is roughly three times slower per pass). One fres
 
 **Sections 1 and 2 are the only part the repair needs** (PLAN.md §7): LLaDA's reconstruction score on the pilot's 250 math answers, 128 Monte Carlo samples, seeds 544 and 545, then the pass/fail report. About 70 minutes on an A100 at one sample per forward pass (estimated from the pilot's 0.063 s per pass), so roughly 3.5 hours on an L4. Everything else is off until you set its switch in the first code cell.
 
-Results go to Google Drive (`MyDrive/cs544/reconstruction`) as each answer is scored. If the runtime stops, run the notebook again: finished answers are skipped. **Stay on one GPU type:** both seeds must come from the same one, so the first run's type is kept in `gpu.txt` there, and on another type the pilot and development sections are skipped. Full-bank answers are scored on an A100 only. The last cell disconnects the runtime. No test label is read here; the only labels read are the pilot's, in the report.'''
+Results go to Google Drive (`MyDrive/cs544/reconstruction`) as each answer is scored. If the runtime stops, run the notebook again: finished answers are skipped. **Stay on one GPU type:** both seeds must come from the same one, so the first run's type is kept in `gpu.txt` there, and on another type the pilot and development sections are skipped. Full-bank answers are scored on one GPU type too, A100 or L4: the type of notebook 13's scores and of the first answers scored here (`math/gpu.txt`; `decisions/2026-11-22-scoring-one-gpu-type.md`), and on another type they are skipped. The last cell disconnects the runtime. No test label is read here; the only labels read are the pilot's, in the report.'''
 
 PARAMETERS = '''
 BRANCH = "main"
@@ -15,7 +15,7 @@ RUN_PILOT_CODE = False   # LLaDA on the pilot's code answers (descriptive), abou
 RUN_DEV = False          # LLaDA on the 142 development answers, two seeds, for the sample count; about 30 minutes (A100)
 RUN_DREAM = False        # Dream: the same sections (information only)
 RUN_AR = False           # exact log-probability with the four AR models (information only), a few minutes each
-# Full-bank answers are scored only after the final model record is merged (PLAN.md section 7), on an A100.
+# Full-bank answers are scored only after the final model record is merged (PLAN.md section 7), on one GPU type.
 BANK = ""                # "bank/full/math/bank.jsonl" to score full-bank answers; "" = none
 WHOLE_BANK = False       # False: 500 validation + 500 test answers of the math bank (the side experiment)
                          # True: every answer of the math bank, only if LLaDA's score is used as the repair
@@ -78,9 +78,23 @@ if OK and SAME_GPU and RUN_DEV:
 
 BANK_SETUP = '''
 NAME = os.path.basename(os.path.dirname(BANK)) if BANK else ""
-if BANK and (NAME != "math" or GPU != "A100"):
-    print("full-bank answers are scored for math only (PLAN.md section 4) and on an A100 only: nothing scored")
+if BANK and NAME != "math":
+    print("full-bank answers are scored for math only (PLAN.md section 4): nothing scored")
     BANK = ""
+if BANK:   # one GPU type for all full-bank scores: notebook 13's (in this Drive, or committed), and those already here
+    KEPT = [f"{OUT}/{NAME}/gpu.txt"] if glob.glob(f"{OUT}/{NAME}/*/*.jsonl") else []
+    KEPT += glob.glob("/content/drive/MyDrive/cs544_full_scoring/full/gpu.txt") + glob.glob("results/full/gpu.txt")
+    TYPES = set()
+    for path in KEPT:
+        with open(path) as f:
+            TYPES.add(f.read().strip())
+    if TYPES - {GPU}:
+        print(f"full-bank answers were scored on {' and '.join(sorted(TYPES))}; this is {GPU}: nothing scored. Choose that runtime type.")
+        BANK = ""
+    else:
+        !mkdir -p {OUT}/{NAME}
+        with open(f"{OUT}/{NAME}/gpu.txt", "w") as f:
+            f.write(GPU)
 SUBSET = f"{OUT}/{NAME}/side/subset.json"
 if BANK and not WHOLE_BANK:
     !mkdir -p {OUT}/{NAME}/side
@@ -123,12 +137,12 @@ if RUN_AR:
     from google.colab import userdata
     from huggingface_hub import login
     login(token=userdata.get("HF_TOKEN"))
-    for cfg in ("pilot_qwen_mistral", "pilot_llama_gemma"):
+    for cfg in ("qwen_mistral", "llama_gemma"):
         for which in ("A", "B"):
             if SAME_GPU:
-                !python -m harness.ar_logprob --config configs/{cfg}.json --which {which} --items bank/pilot/pilot_bank.jsonl --out {OUT}/pilot/ar_{cfg}_{which}.jsonl
-            if BANK and not WHOLE_BANK:
-                !python -m harness.ar_logprob --config configs/{cfg}.json --which {which} --items {BANK} --subset {SUBSET} --out {OUT}/{NAME}/side/ar_{cfg}_{which}.jsonl'''
+                !python -m harness.ar_logprob --config configs/pilot_{cfg}.json --which {which} --items bank/pilot/pilot_bank.jsonl --out {OUT}/pilot/ar_pilot_{cfg}_{which}.jsonl
+            if BANK and not WHOLE_BANK:   # the full bank uses the pilot's model commits
+                !python -m harness.ar_logprob --config configs/full_{cfg}.json --which {which} --items {BANK} --subset {SUBSET} --out {OUT}/{NAME}/side/ar_full_{cfg}_{which}.jsonl'''
 
 DISCONNECT = '''
 !ls -lR {OUT} | tail -40
@@ -148,7 +162,7 @@ def cells(repo):
         ("code", LLADA_PILOT),
         ("markdown", "## 2. Does LLaDA's reconstruction score pass as the repair?\nGate A on the pilot's math answers and the repeat check between the two seeds (PLAN.md §7)."),
         ("code", REPORT),
-        ("markdown", "## 3. Optional: LLaDA on the pilot's code answers, the development bank, and the math bank\nThe development bank gives the smallest sample count whose two seeds reach a rank correlation of 0.95 (PLAN.md §4). The repair always uses 128. Set `BANK` only after the final model record is merged (PLAN.md §7), and only on an A100. Scoring the whole math bank at 128 samples takes about 4.5 A100-hours for 2,100 answers (estimated)."),
+        ("markdown", "## 3. Optional: LLaDA on the pilot's code answers, the development bank, and the math bank\nThe development bank gives the smallest sample count whose two seeds reach a rank correlation of 0.95 (PLAN.md §4). The repair always uses 128. Set `BANK` only after the final model record is merged (PLAN.md §7); the GPU type must be the one of the other full-bank scores. Scoring the whole math bank at 128 samples takes about 4.5 A100-hours, or about 14 L4-hours, for 2,100 answers (estimated)."),
         ("code", LLADA_OPTIONAL),
         ("code", BANK_SETUP),
         ("code", LLADA_BANK),

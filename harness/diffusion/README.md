@@ -101,7 +101,7 @@ python -m harness.ar_logprob --config configs/pilot_qwen_mistral.json --which A 
 python -m analysis.reconstruction pilot --bank bank/pilot/pilot_bank.jsonl --labels bank/pilot/pilot_labels.jsonl --scores results/reconstruction/pilot --verdicts results/pilot/ar results/pilot/llada results/pilot/dream --out results/reconstruction/pilot/analysis
 ```
 
-Notebook 12 runs all of it, and can also score the side experiment: 500 validation and 500 test answers of the math bank (whole problems, seed 544, drawn by `analysis.reconstruction draw`). It runs on an A100 or an L4, one type for all the pilot scores; full-bank answers are scored on an A100, after the final model record is merged. What is fixed:
+Notebook 12 runs all of it, and can also score the side experiment: 500 validation and 500 test answers of the math bank (whole problems, seed 544, drawn by `analysis.reconstruction draw`). It runs on an A100 or an L4, one type for all the pilot scores; full-bank answers are scored on one type too, the type of notebook 13's scores ([record](../../decisions/2026-11-22-scoring-one-gpu-type.md)), after the final model record is merged. What is fixed:
 
 - **End-of-turn token:** neither shown nor scored, in every model. The official code scores the answer ids it is given and appends nothing.
 - **Answer text:** the candidate without leading and trailing whitespace (LLaDA's, Llama's and Gemma's templates drop it anyway). The whole text is tokenized and cut after the prompt's tokens; if a token would span the boundary, the answer is tokenized on its own, and the row's `boundary` says `separate`.

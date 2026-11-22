@@ -1,0 +1,28 @@
+{
+  "models": {
+    "A": {
+      "model_id": "meta-llama/Llama-3.2-3B-Instruct",
+      "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+      "tokenizer_revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95"
+    },
+    "B": {
+      "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+      "tokenizer_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+    }
+  },
+  "input_format": "dev_bank",
+  "field_mapping": {
+    "id": "candidate_id",
+    "problem": "problem",
+    "candidate_answer": "candidate",
+    "problem_id": "problem_id",
+    "pair_id": "pair_id"
+  },
+  "template": "T1",
+  "max_prompt_tokens": 1760,
+  "device": "cuda:0",
+  "dtype": "bf16",
+  "load_in_4bit": false,
+  "thresholds": null
+}
