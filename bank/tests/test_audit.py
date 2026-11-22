@@ -398,8 +398,8 @@ if sys.argv[1:2] == ["--version"]:
     print("codex-cli 0.155.1"); sys.exit()
 if sys.argv[1:3] == ["debug", "models"]:
     print(json.dumps({{"models": [{{"slug": "gpt-6.2-sol", "tool_mode": "code_mode_only", "shell_type": "unified_exec", "keep": 1}}]}})); sys.exit()
-prompt = sys.stdin.read()
-log = {{"argv": sys.argv[1:], "cwd": os.getcwd(), "files": sorted(os.listdir(".")), "item": open("item.md").read() == prompt,
+prompt = sys.stdin.buffer.read().decode("utf-8")
+log = {{"argv": sys.argv[1:], "cwd": os.getcwd(), "files": sorted(os.listdir(".")), "item": open("item.md", newline="").read() == prompt,
        "env": sorted(os.environ), "home": os.environ.get("CODEX_HOME")}}
 open({log!r}, "a").write(json.dumps(log) + "\n")
 def event(**e): print(json.dumps(e))
@@ -422,7 +422,7 @@ event(type="item.completed", item={{"type": "agent_message", "text": text}}); ev
 @pytest.fixture
 def runner(tmp_path):
     sheet = tmp_path / "audit_sheet.jsonl"
-    write_jsonl(sheet, [{"audit_id": f"a00{i}", "domain": d, "problem": f"problem {i}", "candidate": "```py\nx = '{y}'\n```"}
+    write_jsonl(sheet, [{"audit_id": f"a00{i}", "domain": d, "problem": f"problem {i}", "candidate": "```py\r\nx = '{y}'\n```"}
                         for i, d in ((1, "math"), (2, "code"), (3, "math"))])
     mode, log, home = tmp_path / "mode", tmp_path / "log.jsonl", tmp_path / "home"
     home.mkdir()
@@ -534,6 +534,12 @@ def test_judge_reads_the_last_message_and_flags_unreadable_logs():
     assert codex_audit.judge(log(say("wrong")), 1, [])["status"] == "failed"
     assert codex_audit.judge(log("not json", say("wrong")), 0, [])["status"] == "invalid"
     assert codex_audit.judge("", 0, [])["status"] == "failed"
+    lost = {"type": "error", "message": "Reconnecting... 1/5 (stream disconnected before completion)"}
+    again = codex_audit.judge(log(lost, say("wrong"), {"type": "turn.completed"}), 0, [])     # the connection came back
+    assert (again["status"], again["verdict"], again["problems"]) == ("ok", "wrong", [])
+    for events, code in (((lost, {"type": "turn.failed"}, say("wrong")), 0), ((say("wrong"), lost), 1), ((lost,), 0)):
+        gone = codex_audit.judge(log(*events), code, [])
+        assert gone["status"] == "failed" and gone["verdict"] is None and "Reconnecting" in gone["problems"][-1]
     for kind in ("file_change", "mcp_tool_call", "todo_list", "collab_tool_call", None):
         assert codex_audit.judge(log({"type": "item.completed", "item": {"type": kind}}, say("wrong")), 0, [])["status"] == "invalid"
 
