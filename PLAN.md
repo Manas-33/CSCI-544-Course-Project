@@ -1,8 +1,10 @@
 # Plan — Do Diffusion Language Models Provide Useful Verification Diversity?
 
-**CSCI 544 (Applied NLP, USC, Fall 2026) · Team "project 16" · Research-focused · Version 1.4, November 21, 2026 (updated after the pilot)**
+**CSCI 544 (Applied NLP, USC, Fall 2026) · Team "project 16" · Research-focused · Version 1.5, November 22, 2026 (updated after the pilot)**
 
 This is the team's working plan. It is built from [PROJECT.md](PROJECT.md) (the project idea and design) and the execution rules of the earlier team plan, follows the instructor's feedback on the proposal (pairs and thresholds chosen on validation data and frozen before the test set; kept with the team's course records), and adds only improvements that independent reviews confirmed fix real problems. Every difference from PROJECT.md is listed in §13 with its reason. Course deadlines are fixed (§10); everything else is done as soon as possible, in the order in [NEXT_STEPS.md](NEXT_STEPS.md), which splits the remaining work into six packages.
+
+**What changed in version 1.5.** The label check is judged separately for math and code, and MBPP+ leaves the bank, after the pilot check found 8 label errors in 136 items, all in MBPP+ code (§2, §7; post hoc). See [the record](decisions/2026-11-22-label-check-by-domain.md) and §13 row 43.
 
 **What changed in version 1.4.** Changes made after the pilot and before any full-bank answer exists: the matching check allows 5 points from 90% and 3 between the pairs (§5 step 7, post hoc), the label check is done by Codex plus one person (§2), the license and terms check comes before the release instead of before generating (§9), the full bank's details are fixed (§2), and how the mechanism and side results are worded is settled without touching the H1 verdict (§4, §5, §7, §8). See `decisions/` and §13 rows 38–42.
 
@@ -40,9 +42,9 @@ A fixed set of (problem, candidate answer, label) triples that every verifier ju
 | Domain | Source | Label | Notes |
 |---|---|---|---|
 | Math | GSM8K (test labels from **GSM8K-Platinum**: 1,209 problems after 110 ambiguous ones were removed and 10 relabeled) and MATH (problems whose reference answer is a rational number, which both checkers read reliably): MATH-500, then the rest of the MATH test set | Final-answer match, cross-checked by two checkers (e.g. Math-Verify plus a numeric/sympy check); if they disagree, the candidate's matched pair is removed | GSM8K-Platinum fixes known label errors in the GSM8K test set |
-| Code | HumanEval+ (164) and MBPP+ v0.2 (378), from EvalPlus | Pass all EvalPlus base and plus tests under EvalPlus's execution guard on a disposable cloud machine (`bank/label_evalplus.py`); each candidate run twice, flaky results excluded | EvalPlus adds 80× / 35× more tests than the originals, so fewer wrong programs are labeled correct |
+| Code | HumanEval+ (164), from EvalPlus. MBPP+ v0.2 (378) was used in the pilot and is left out of the full bank ([record](decisions/2026-11-22-label-check-by-domain.md)) | Pass all EvalPlus base and plus tests under EvalPlus's execution guard on a disposable cloud machine (`bank/label_evalplus.py`); each candidate run twice, flaky results excluded | EvalPlus adds 80× / 35× more tests than the originals, so fewer wrong programs are labeled correct |
 
-Code is supply-limited: 390 of the 542 problems are left after the pilot (392 unused, of which two near-duplicates of development problems are dropped), about 850 candidates at the pilot's yield (est.).
+Code is supply-limited: 114 HumanEval+ problems are left after the pilot, about 300 candidates at the pilot's HumanEval+ yield (est., 1.34 pairs per problem).
 
 **Math sources and mix.** The pilot used GSM8K-Platinum and MATH-500 in equal shares, and the gates were judged on that mix. The full bank keeps it: **half the math pairs from GSM8K-Platinum, half from MATH**. GSM8K-Platinum sets the size (1,059 unused problems, about 535 pairs at the pilot's 0.51 pairs per problem). MATH matches it, using the 239 unused MATH-500 problems first (about 195 pairs at 0.81 per problem) and then problems from the rest of the MATH test set (about 340 pairs, so generate for about 500 numeric-answer problems to leave a margin).
 
@@ -63,7 +65,7 @@ Code is supply-limited: 390 of the 542 problems are left after the pilot (392 un
 ### Labels
 
 - Fully programmatic for the main bank, as in PROJECT.md: no main-bank label is set by hand. The audit measures label error, and a fix to the checker goes into a new pre-freeze bank version.
-- **Audit:** on the pilot (for the data gate) and again on a fresh 200-candidate sample of the full bank before the bank freeze. Each audit takes 200 candidates stratified by label and task, judged blind by Codex, one at a time. One person then reads, blind to our label and to Codex's answer, every item where Codex disagrees with our label or gave no usable verdict, every GPT-written item, and 100 others drawn at random. Pass: at most 3 label errors in 200 (1.5%), which keeps the one-sided 95% upper bound below 4%; every error found counts. The audit can pass without reading all 200 only if there is no error among the 100 others, at most 3 errors were found in all, and the 95% bound, worked out over the items read in full and the others, is below 4%. In every other case the person reads all 200 and the 3-in-200 rule decides. A fail means fixing the checker and re-auditing a fresh sample. On the full bank the reader is A or B, who take no part in selection or threshold work, and F runs the commands, so the reader never holds the files that show Codex's answers. Details and the bound: [record](decisions/2026-11-21-label-check-codex-plus-one.md).
+- **Audit:** judged per domain since version 1.5; only math decides anything. The pilot's 200-candidate sample (stratified by label and task) was judged blind by Codex, one at a time, and one person read 136 of it. For math, the person reads all 100 math items and **passes the pilot only if none is a label error** (upper bound 2.95%, one-sided 95%). On the full bank, before the bank freeze, a fresh sample of **200 math candidates** is checked as follows. Codex judges all 200 blind, one at a time. One person then reads, blind to our label and to Codex's answer, every item where Codex disagrees with our label or gave no usable verdict, every GPT-written item, and 100 others drawn at random. Pass: at most 3 label errors in 200 (1.5%), which keeps the one-sided 95% upper bound below 4%; every error found counts. The audit can pass without reading all 200 only if there is no error among the 100 others, at most 3 errors were found in all, and the 95% bound, worked out over the items read in full and the others, is below 4%. In every other case the person reads all 200 and the 3-in-200 rule decides. A fail on the full bank means fixing the checker and re-auditing a fresh sample; on the pilot it is the §7 row for a failed math check. Code has no pass mark: HumanEval+ only, with the pilot's measured error rate. On the full bank the reader is A or B, who take no part in selection or threshold work, and F runs the commands, so the reader never holds the files that show Codex's answers. Details and the bound: [record](decisions/2026-11-21-label-check-codex-plus-one.md), and [the change per domain](decisions/2026-11-22-label-check-by-domain.md).
 - **Error types** (secondary): code from execution logs (wrong output / timeout; EvalPlus's check counts exceptions as wrong output); math tagged by hand on a 200-item sample of wrong answers (arithmetic slip / misread problem / wrong method / formatting).
 - **Known limits:** passing tests is an operational label, not a proof, and a correct final answer does not prove every reasoning step is correct.
 
@@ -73,7 +75,7 @@ Code is supply-limited: 390 of the 542 problems are left after the pilot (392 un
 |---|---|---|
 | Development bank | ~150 candidates | Parsers and Yes/No token sets; the shared wording of T1–T3 (one wording per template, identical for every verifier); answer-slot lengths; Monte Carlo sample count; scoring-code checks. Never used to choose a template per verifier. Never reported as results. |
 | Pilot | 500 candidates (250 math / 250 code) | Go/no-go gates (§7) and precision estimates. Exploratory. |
-| Full bank | About 3,000 candidates: about 2,100 math and 850 code (est., §6), within PROJECT.md's 2,000–5,000 range. Drawn by the rule above | **Validation** (one third) for selection and thresholds; **test** (two thirds) for the final comparison |
+| Full bank | About 2,400 candidates: about 2,100 math and 300 code (est., §6), within PROJECT.md's 2,000–5,000 range. Drawn by the rule above | **Validation** (one third) for selection and thresholds; **test** (two thirds) for the final comparison |
 
 - **Split by problem:** all candidates of a problem, and any near-duplicate problems, stay in one set. Full-bank problems exclude all development and pilot problems. The split is stratified by source.
 - **Two freezes.** The **bank freeze** fixes the bank version and the validation/test split. The **preregistration freeze** (§5 step 5) fixes the selected pairs, thresholds and analysis code before test labels are joined.
@@ -243,7 +245,7 @@ Compare Qwen2.5-7B + Dream with Qwen2.5-7B + LLaDA and with Qwen2.5-7B + each AR
 - **Method:** from pilot data, estimate how often the two candidate pairs disagree on wrong answers and how much answers to the same problem cluster. Then compute the smallest ΔFAR the planned test set can detect.
 - **Earlier planning figures (est., made before the pilot and replaced by the check above):** a 5,000-candidate bank gives about 1,650 wrong test answers. With the pooling in §5 step 9, the detectable effect is then roughly 3.2–4.6 points, depending on how often the pairs disagree. So even the top of PROJECT.md's range may not reach the 3-point margin, and the "no meaningful benefit" verdict (90% interval inside ±3 points) is reachable only if the observed difference is near zero.
 - **Decided (option a):** the bank stays within the approved range and the smallest detectable effect is reported alongside the verdict. Option (b), a bank above 5,000, is not used. Equal domain weights would make this worse (about 3.8–5.4 points), which is why §5 weights by wrong answers.
-- **Code** (a few hundred wrong test answers) can detect only large effects, which is one reason it is descriptive (est.).
+- **Code** (about 100 wrong test answers, est.) can detect only large effects, which is one reason it is descriptive (est.).
 
 ---
 
@@ -253,7 +255,7 @@ Gate values were fixed on October 19, before the pilot was run on October 27. So
 
 | Gate | Pass | If it fails |
 |---|---|---|
-| **Data and pipeline** | 500 labeled pilot candidates; split and provenance checks pass; audit within target; scoring-code tests 2 and 3 pass and test 4 has been run for every verifier in H1 except Qwen3-8B if it joins (test 1 is a smoke test, **post hoc**, §4; a test 4 failure is a gate A failure, §4). Mistral, not eligible, missed its AR reference check on 3 of 20 items by at most 0.125, a BF16 rounding step or two, and does not block this gate. Pilot AUROC, calibration (ECE) and runtime are reported per verifier, as the proposal's Milestone 1 promised. | Fix the pipeline before judging any model |
+| **Data and pipeline** | 500 labeled pilot candidates; split and provenance checks pass; math label check passes (§2); scoring-code tests 2 and 3 pass and test 4 has been run for every verifier in H1 except Qwen3-8B if it joins (test 1 is a smoke test, **post hoc**, §4; a test 4 failure is a gate A failure, §4). Mistral, not eligible, missed its AR reference check on 3 of 20 items by at most 0.125, a BF16 rounding step or two, and does not block this gate. Pilot AUROC, calibration (ECE) and runtime are reported per verifier, as the proposal's Milestone 1 promised. | Fix the pipeline before judging any model |
 | **Usable scores** | Median Yes+No probability ≥ 0.5 under T1 for every verifier, checked on the development bank before the pilot (and reported on the pilot) | Switch the answer words to "Correct/Incorrect" for every verifier and every template, once, on the development bank, so the wording stays identical across verifiers. A verifier that still fails is excluded. |
 | **Gate A — competence** (PROJECT.md; required of diffusion models, and the same bar decides which AR verifiers are in H1) | Per domain, on T1 scores: AUROC ≥ 0.60 with 95% lower bound > 0.50; diffusion models must also be **no more than 0.10 AUROC below the small AR verifier** (Llama-3.2-3B); being above it is fine (**clarified**). LLaDA's AUROC on validation is reported next to this bar, but does not change the test (**post hoc**, below). | Not in H1. If LLaDA fails, use the one repair below. |
 | **Gate B — prompt stability** (PROJECT.md) | **AUROC spread across T1–T2 ≤ 0.05** for each verifier, per domain and pooled, on the pilot. **Post hoc:** the rule was T1–T3 until version 1.3. The T1–T3 outcome and the T3 results are reported beside it. | Investigate the scoring. Any verifier, AR or diffusion, that stays unstable is excluded from primary pairs. Templates are never picked on pilot or test data. |
@@ -278,11 +280,12 @@ Gate values were fixed on October 19, before the pilot was run on October 27. So
 | **Why T1–T2** | T3 gives every verifier, AR and diffusion, a lower pooled AUROC than T1, and most verifiers accept nearly everything under it (Qwen 98.8%, Llama-3.1 97.4%, LLaDA 99.8%, Dream 98.6%). Gemma-2 (62.8%) is the main exception. T1 and T2 agree within 0.05 for every verifier. Read this way, the T1–T3 spread mostly measures how models handle a negated question. This is an interpretation made after seeing the data, not a test of it. |
 | **Code** | Under the old code rule code would have been admitted (three AR verifiers and Dream meet the bar there), but no diffusion model passes in both domains, so H1 narrowed to math. Version 1.3 fixes math. |
 | **Dynamic range** | Math passes narrowly (Qwen 0.696; the highest-AUROC verifier, Gemma, would give 0.744 and fail). Code passes (Qwen 0.616). |
-| **Not yet done** | The pilot label audit, test 4 and the AR repeat-run check. They complete the go/no-go below. |
+| **Label check** | As written: failed (8 label errors in 136 items read, all MBPP+ code). As changed in version 1.5 (post hoc, [record](decisions/2026-11-22-label-check-by-domain.md)): math alone, 0 errors in the 63 math items read; the other 37 are read after version 1.5 is merged. |
+| **Not yet done** | The math part of the label check. Test 4 in math and the AR repeat-run check are done (`results/step0/`). They complete the go/no-go below. |
 
 ### The go/no-go: made once, on the pilot, before any full-bank answer is scored
 
-Three pilot checks are left: the label audit (§2), test 4 in math (§4), and a recorded repeat-run check for the AR models (§4 test 3; a failure there is a scorer bug to fix, not a verdict on the model). When they are done, the models and LLaDA's score are written to `decisions/` as the **final model record**. No full-bank answer is scored before that record is merged (building the banks can go ahead).
+The pilot checks are the label audit (§2), test 4 in math (§4) and a recorded repeat-run check for the AR models (§4 test 3; a failure there is a scorer bug to fix, not a verdict on the model). Test 4 and the repeat-run check are done; the math part of the label audit is left. When it is done, the models and LLaDA's score are written to `decisions/` as the **final model record**. No full-bank answer is scored before that record is merged (building the banks can go ahead).
 
 The verifiers that can be in H1 are LLaDA, Qwen2.5-7B, Llama-3.1-8B and Gemma-2-9B. The pool can only shrink: no other verifier enters, whatever the checks show (Qwen3-8B only as §3 says). Below, **fails** means failing gate A, gate B or test 4 in math on the pilot.
 
@@ -292,7 +295,7 @@ The verifiers that can be in H1 are LLaDA, Qwen2.5-7B, Llama-3.1-8B and Gemma-2-
 | LLaDA fails, and its reconstruction score passes | **Repair:** the same table with LLaDA's reconstruction score in place of its verdict score (details below), reported as "AR verdict versus diffusion reconstruction score" and without the "comparable cost" claim |
 | LLaDA fails, and its reconstruction score fails or is not finished within its one-week time box | **Pivot:** H1 is not run. The AR-family study is reported: the four AR verifiers, all six cross-family pairs, math and code, descriptively, with the negative result on diffusion |
 | An AR verifier fails | It leaves the pool and §3's rule on a smaller pool applies. LLaDA is paired only with the AR verifiers left, never with Qwen3-8B |
-| The audit finds more than 3 errors in 200 | Fix the checker, relabel the pilot, drop pairs that no longer hold one correct and one wrong answer, re-audit 200 fresh candidates, and recompute gates A and B and test 4 on the corrected labels. Then apply the rows above. If the second audit also fails, H1 is not run and the instructor is told |
+| The math label check fails (§2; [record](decisions/2026-11-22-label-check-by-domain.md), post hoc) | Fix the math checker, relabel the pilot's math answers, drop pairs that no longer hold one correct and one wrong answer, re-audit 100 fresh math answers of the pilot (none may be an error, read by a different person), and recompute gates A and B and test 4 in math on the corrected labels. Then apply the rows above. If the second check also fails, H1 is not run and the instructor is told |
 
 Rows combine, and the result is recorded. Only the second row needs the reconstruction score before scoring starts, so D builds it in parallel and it delays nothing otherwise.
 
@@ -327,7 +330,7 @@ E1 is read alongside: it can support or weaken a lineage explanation, but never 
 
 - **Compute:** Colab Pro+ now; USC CARC allocation as the likely upgrade; modest API credits for generation. Every model fits one 24 GB GPU (measure in Phase 0).
 - **Rough budget (est.):** candidate generation ≈ 10–20 A100-hours; primary scoring of ~10 models × ~5,000 candidates × 2 templates (plus 3 on the pilot) ≈ 5–15 A100-hours; reconstruction score on 3 diffusion models × ~2,000 candidates × ~32 Monte Carlo passes ≈ 5–15 A100-hours (about 2.5–3× more if all three diffusion models are repaired on the full bank); critique-then-verdict ≈ 10–20 more. Replace with Phase 0 measurements, and confirm Colab compute units and CARC status, since the total can exceed one Colab Pro+ subscription.
-- **Measured on the pilot:** about 0.03–0.09 s per answer per model on an A100 (Dream 0.15 s on an L4), so scoring about 3,000 candidates with 8 models and 2 templates is roughly one GPU-hour plus model loading.
+- **Measured on the pilot:** about 0.03–0.09 s per answer per model on an A100 (Dream 0.15 s on an L4), so scoring about 2,400 candidates with 8 models and 2 templates is roughly one GPU-hour plus model loading.
 - **Environments:** one for LLaDA (`transformers 4.38.2`), one for iLLaDA (`transformers 4.57.1`, as pinned in its official evaluation script; its chat template ships as a `chat_template.jinja` file that 4.38.2 does not read), one for Dream (`transformers 4.46.2`, `torch 2.5.1`), and one for the AR models (`transformers ≥ 4.51` for Qwen3). Before scoring, each adapter saves the rendered prompt for one fixed example, and a test compares it with the model's official chat template. The shared boundary is the saved score file.
 - **Measure, don't assume:** batch size, precision, token counts, steps, warm-up, synchronized time, peak memory and retries, on the same GPU type for cost comparisons. A100- and L4-seconds are never compared directly.
 - **Saved contracts:**
@@ -346,7 +349,7 @@ E1 is read alongside: it can support or weaken a lineage explanation, but never 
 
 **Applied now, to finish as fast as possible:** (1)–(3) are not planned work; they are done only if someone is free after the main result is in, and the report says they were cut. The exception is Qwen3-8B, which C scores if the AR pool falls below three (§3). (4) is applied. (5) is not: code stays in, reported descriptively.
 
-**Cut order if behind:** (1) critique-then-verdict ablation, (2) Qwen3 strong-baseline check, (3) answer-only control, (4) reconstruction ablation reduced to the pilot, 500 validation and 500 test candidates, (5) code domain. **Never cut:** the validation/test separation and freeze, the primary comparison, the audit, the same-model pseudo-pairs, gates A and B, and the generator and error-type breakdowns (a Milestone 2 commitment). Dropping the reconstruction ablation entirely, or the code domain, changes approved scope and is raised with the instructor first (§12).
+**Cut order if behind:** (1) critique-then-verdict ablation, (2) Qwen3 strong-baseline check, (3) answer-only control, (4) reconstruction ablation reduced to the pilot, 500 validation and 500 test candidates, (5) code domain. **Never cut:** the validation/test separation and freeze, the primary comparison, the math label audit (code's is a measured rate, §2), the same-model pseudo-pairs, gates A and B, and the generator and error-type breakdowns (a Milestone 2 commitment). Dropping the reconstruction ablation entirely, or the code domain, changes approved scope and is raised with the instructor first (§12).
 
 ---
 
@@ -360,7 +363,7 @@ The remaining course deliverables. Internal work has no dates: every package in 
 | **Final report** | 8 pages + appendix, no late tokens | **Dec 15, 6:30 PM** |
 
 - **Done:** midterm presentation; midterm report (version 1.3 settles the rules it left open, with one final test, §5, and one go/no-go before scoring, §7); the 500-candidate pilot (October 27).
-- **Not done:** Milestone 2, the full comparison with generator and error-type breakdowns, planned for Nov 20. Tell the instructor it is late and that code is reported descriptively rather than in the primary result.
+- **Not done:** Milestone 2, the full comparison with generator and error-type breakdowns, planned for Nov 20. Tell the instructor it is late, that code is reported descriptively rather than in the primary result, and that the code bank is HumanEval+ only after the pilot label check (version 1.5).
 - **Minimum result:** H1 on math with the verifiers that pass the gates, with generator, source and error-type breakdowns, H2, E1 and the same-model pseudo-pairs.
 - **If the presentation comes before the test result:** present the pilot, the settled rules and the frozen protocol, and label every pilot number in-sample.
 - **What goes in the 8 pages:** question and design; bank and labels; verifiers and scoring; the primary H1 table and figure; H2 with the competence check; E1; limitations. **Appendix:** gates and pilot, full pair matrix, ablations, robustness, error types, prompts, reproducibility details.
@@ -375,7 +378,7 @@ Six packages, one per person, listed with their steps and hand-offs in [NEXT_STE
 | Role | Owns | Reviewer |
 |---|---|---|
 | **A — Bank: math** | GSM8K/MATH sources, generators, checkers, matched-pair selection, math error tags, label check (A or B reads, §2) | F |
-| **B — Bank: code** | HumanEval+/MBPP+, EvalPlus execution, flaky-test reruns, code labels and error types, answer-swap items for test 4 | F |
+| **B — Bank: code** | HumanEval+ (MBPP+ is left out, §2), EvalPlus execution, flaky-test reruns, code labels and error types, answer-swap items for test 4 | F |
 | **C — Verifier harness** | Common scoring interface, prompt templates, AR adapters, Yes/No sets, batching and resume, cost logging | D |
 | **D — Diffusion specialist** | LLaDA and Dream scoring, scoring-code tests, reconstruction score | C |
 | **E — Metrics and statistics** | Validation selection and thresholds, the preregistration commit, bootstrap, decision rule, H2 and E1, power check, figures | C (A and B never review selection or thresholds, §2) |
@@ -396,11 +399,11 @@ A short check-in whenever a hand-off in NEXT_STEPS.md completes. Design changes 
 | Too little data to detect 3 points | About 3–5.5 points detectable (§6), reported with the verdict; "inconclusive" is a planned outcome (§5) |
 | LLaDA fails test 4 in math | Decided before scoring by the table in §7: reconstruction score, then pivot |
 | LLaDA is below the competence bar on validation | Reported; the test is unchanged and no mechanism claim is made (§7) |
-| Rules changed after seeing the pilot | The post hoc rule changes (§13 rows 29–31, 33, 36–38) and the settled terms (rows 32, 42) recorded in `decisions/`, the original outcome reported beside the adopted one, and H1 tested only on new problems under frozen thresholds |
+| Rules changed after seeing the pilot | The post hoc rule changes (§13 rows 29–31, 33, 36–38, 43) and the settled terms (rows 32, 42) recorded in `decisions/`, the original outcome reported beside the adopted one, and H1 tested only on new problems under frozen thresholds |
 | New MATH problems seen in training, or not redistributable | Results by source; release by problem id if terms are unclear (§2) |
 | Memorized benchmark answers | Exposure differs by model and is unknown; the answer-only control is run only if time allows (§9), and claims are scoped |
 | Compute shortfall | Everything fits one 24 GB GPU; cut order (§9) |
-| Changes the course did not approve | §13 lists them all. The midterm report names the ones that touch approved scope and asks the instructor to flag objections: four AR families instead of 2–3; three diffusion verifiers instead of 1–2, plus small AR references and a Qwen3 check; the validation/test split with a pilot kept separate from the full bank; a possible math-only primary result; and no causal claims. **New since the midterm:** gate B over T1–T2, math problems from the rest of the MATH test set, and Milestone 2 running late are told to the instructor; the sanity-set change was already in the midterm report. |
+| Changes the course did not approve | §13 lists them all. The midterm report names the ones that touch approved scope and asks the instructor to flag objections: four AR families instead of 2–3; three diffusion verifiers instead of 1–2, plus small AR references and a Qwen3 check; the validation/test split with a pilot kept separate from the full bank; a possible math-only primary result; and no causal claims. **New since the midterm:** gate B over T1–T2, math problems from the rest of the MATH test set, and Milestone 2 running late are told to the instructor; the sanity-set change was already in the midterm report. **New in version 1.5:** math and code label checks are judged separately and MBPP+ is left out. |
 
 ---
 
@@ -415,7 +418,7 @@ Each change has one of five sources: **Feedback** (instructor), **Review** (a fl
 | 3 | Bootstrap over candidates | Bootstrap over whole problems | Answers to the same problem are not independent | Review |
 | 4 | Bank of correct and incorrect candidates | Matched correct/wrong pairs within each (problem, generator) cell | Stops verifiers scoring well by spotting hard problems or a weak generator | Review |
 | 5 | 3–4 AR generators of varied strength; families unspecified | 4 generators (3 minimum), from families not used as verifiers | Verifiers tend to favor their own family's text | Review |
-| 6 | GSM8K/MATH-style; MBPP/HumanEval-style | GSM8K-Platinum labels; EvalPlus HumanEval+/MBPP+ tests | Fewer wrong labels (PROJECT.md risk 3) | Review |
+| 6 | GSM8K/MATH-style; MBPP/HumanEval-style | GSM8K-Platinum labels; EvalPlus HumanEval+/MBPP+ tests (MBPP+ left out later, row 43) | Fewer wrong labels (PROJECT.md risk 3) | Review |
 | 7 | Accept/reject plus confidence | Confidence read from the model's Yes/No probabilities in one pass | Fine-grained scores for thresholds; the same kind of operation for AR and diffusion, so cost stays comparable | Review |
 | 8 | 1–2 diffusion verifiers: LLaDA-8B, Dream-7B | LLaDA-8B and Dream-7B kept; **iLLaDA-8B added** (three in total) | Much stronger, from scratch, runs on LLaDA's code | Release |
 | 9 | AR: 2–3 families (Qwen2.5, Llama-3.1, Gemma-2 or Mistral) | All four of those families | Six AR+AR pairs instead of three makes the baseline harder to beat; one extra 7B pass per answer. After the pilot gates, H1 uses three of them (§5) | Review |
@@ -452,6 +455,7 @@ Each change has one of five sources: **Feedback** (instructor), **Review** (a fl
 | 40 | — (this plan until version 1.4: terms checked before generating) | Terms checked before the release; fields, stated licenses and hashes recorded at download | Only the release depends on the answer | Course |
 | 41 | — (this plan until version 1.4: 392 code problems; three code error types; draw and split choices left open) | 390 code problems; two code error types; the open choices fixed; question files public with attribution | Found while building the bank, before any answer is generated | Pilot |
 | 42 | — (this plan until version 1.4: "on the trend", "below gate A's bar", "beats the pseudo-pair" and the side experiment's domain undefined) | Defined (§4, §5, §7, §8) | One reading before the preregistration; none changes the H1 verdict. Decided after the pilot | Pilot |
+| 43 | — (this plan until version 1.5: one pooled audit; code from HumanEval+ and MBPP+) | Math and code judged separately, only math deciding; MBPP+ left out | 8 label errors in 136 pilot items, all MBPP+ code; H1 and H2 claims are math only. **Post hoc** | Pilot |
 
 **Considered and not adopted** (from an independently written alternative plan): newer AR models as the primary pool (breaks competence matching), DiffusionGemma and Gemma 4 26B (needs an 80 GB GPU), Nemotron-Labs-Diffusion, a five-model competence ladder, an 8,000-candidate bank, and an AceInstruct-based lineage contrast. They add scope the course format cannot hold. The alternative plans and their reviews are kept with the team's working files, outside this repository.
 

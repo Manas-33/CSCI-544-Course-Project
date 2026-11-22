@@ -15,11 +15,12 @@ Team decisions and every deviation from [PLAN.md](../PLAN.md), one file per deci
 | 2026-11-21 | [One final test, settled before scoring](2026-11-21-one-final-test.md) (post hoc) |
 | 2026-11-21 | [Terms that were undefined are settled](2026-11-21-settled-terms.md) (after the pilot) |
 | 2026-11-21 | [The dynamic-range gate's "best" verifier is the one with the lowest FAR](2026-11-21-dynamic-range-lowest-far.md) |
-| 2026-11-21 | [The label check is done by Codex plus one person](2026-11-21-label-check-codex-plus-one.md) |
+| 2026-11-21 | [The label check is done by Codex plus one person](2026-11-21-label-check-codex-plus-one.md) (pass mark changed 2026-11-22) |
 | 2026-11-21 | [The license check comes before the release, not before generating](2026-11-21-license-check-before-release.md) |
 | 2026-11-21 | [The matching check allows 5 points, and 3 between the pairs](2026-11-21-matching-check-five-points.md) (post hoc) |
-| 2026-11-21 | [Details of the full bank](2026-11-21-full-bank-details.md) |
+| 2026-11-21 | [Details of the full bank](2026-11-21-full-bank-details.md) (code sources changed 2026-11-22) |
 | 2026-11-21 | [How the mechanism and side results are worded](2026-11-21-mechanism-wording.md) (after the pilot) |
 | 2026-11-22 | [The full bank is scored on one GPU type, A100 or L4](2026-11-22-scoring-one-gpu-type.md) (before any full-bank answer is scored) |
+| 2026-11-22 | [The label check is judged per domain, and MBPP+ leaves the bank](2026-11-22-label-check-by-domain.md) (post hoc) |
 
 Still to record: the **final model record** (PLAN.md §7); the second-person read of the sanity set; dev-bank numbers as labeled pipeline checks; the code dev bank's MBPP-only tests.
