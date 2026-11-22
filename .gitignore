@@ -82,3 +82,6 @@ __pycache__/
 
 # Backup score: reconstruction and AR log-probability scores (notebook 12)
 !/results/reconstruction/
+
+# Final analysis: precision check, analysis manifest, test results
+!/results/final/

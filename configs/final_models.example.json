@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "note": "Example only. Copy to configs/final_models.json once the final model record of PLAN.md section 7 is merged. This example is the 'go' row; analysis/README.md shows the others.",
+  "record": "decisions/YYYY-MM-DD-final-model-record.md",
+  "mode": "go",
+  "reason": "Example text, not a result: put the words of the final model record here.",
+  "h1_ar": ["Gemma-2-9B", "Llama-3.1-8B", "Qwen2.5-7B"],
+  "llada_score": "verdict",
+  "dropped": {},
+  "qwen3_scored": false
+}

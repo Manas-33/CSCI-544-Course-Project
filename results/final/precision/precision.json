@@ -1,0 +1,378 @@
+{
+ "status": "pilot, exploratory planning estimates",
+ "settings": {
+  "mode": "go",
+  "h1_ar": [
+   "Gemma-2-9B",
+   "Llama-3.1-8B",
+   "Qwen2.5-7B"
+  ],
+  "llada_score": "verdict",
+  "dropped": {},
+  "reason": "Example text, not a result: put the words of the final model record here.",
+  "record": "decisions/YYYY-MM-DD-final-model-record.md",
+  "qwen3_scored": false
+ },
+ "precision": {
+  "math": [
+   {
+    "domain": "math",
+    "ar_diffusion": "Gemma-2-9B + LLaDA-8B",
+    "ar_ar": "Gemma-2-9B + Llama-3.1-8B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.12,
+    "design_effect": 0.9844324324324325,
+    "pilot_delta_far_points": 4.0,
+    "planned_wrong_test": 700,
+    "detectable_points": 3.6681360936777265
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "Gemma-2-9B + LLaDA-8B",
+    "ar_ar": "Gemma-2-9B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.144,
+    "design_effect": 1.090604651162791,
+    "pilot_delta_far_points": 8.0,
+    "planned_wrong_test": 700,
+    "detectable_points": 4.196330987961101
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "Gemma-2-9B + LLaDA-8B",
+    "ar_ar": "Llama-3.1-8B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.232,
+    "design_effect": 1.1884653243847871,
+    "pilot_delta_far_points": 5.6000000000000005,
+    "planned_wrong_test": 700,
+    "detectable_points": 5.560221173264559
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "LLaDA-8B + Llama-3.1-8B",
+    "ar_ar": "Gemma-2-9B + Llama-3.1-8B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.12,
+    "design_effect": 1.0006486486486488,
+    "pilot_delta_far_points": 4.0,
+    "planned_wrong_test": 700,
+    "detectable_points": 3.669325566581609
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "LLaDA-8B + Llama-3.1-8B",
+    "ar_ar": "Gemma-2-9B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.224,
+    "design_effect": 0.9278823529411766,
+    "pilot_delta_far_points": 8.0,
+    "planned_wrong_test": 700,
+    "detectable_points": 5.011627993967338
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "LLaDA-8B + Llama-3.1-8B",
+    "ar_ar": "Llama-3.1-8B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.12,
+    "design_effect": 1.1182650602409636,
+    "pilot_delta_far_points": 5.6000000000000005,
+    "planned_wrong_test": 700,
+    "detectable_points": 3.8789824812234954
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "LLaDA-8B + Qwen2.5-7B",
+    "ar_ar": "Gemma-2-9B + Llama-3.1-8B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.224,
+    "design_effect": 0.9285714285714286,
+    "pilot_delta_far_points": 0.0,
+    "planned_wrong_test": 700,
+    "detectable_points": 5.011627993967338
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "LLaDA-8B + Qwen2.5-7B",
+    "ar_ar": "Gemma-2-9B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.104,
+    "design_effect": 1.00075,
+    "pilot_delta_far_points": 4.0,
+    "planned_wrong_test": 700,
+    "detectable_points": 3.416129189995149
+   },
+   {
+    "domain": "math",
+    "ar_diffusion": "LLaDA-8B + Qwen2.5-7B",
+    "ar_ar": "Llama-3.1-8B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.08,
+    "design_effect": 0.9918073836276083,
+    "pilot_delta_far_points": 1.6,
+    "planned_wrong_test": 700,
+    "detectable_points": 2.9950205788654487
+   }
+  ],
+  "code": [
+   {
+    "domain": "code",
+    "ar_diffusion": "Gemma-2-9B + LLaDA-8B",
+    "ar_ar": "Gemma-2-9B + Llama-3.1-8B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.12,
+    "design_effect": 0.9971910352187832,
+    "pilot_delta_far_points": 0.8,
+    "planned_wrong_test": 283,
+    "detectable_points": 5.769009346346159
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "Gemma-2-9B + LLaDA-8B",
+    "ar_ar": "Gemma-2-9B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.184,
+    "design_effect": 0.8574959349593495,
+    "pilot_delta_far_points": 10.4,
+    "planned_wrong_test": 283,
+    "detectable_points": 7.143639517217512
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "Gemma-2-9B + LLaDA-8B",
+    "ar_ar": "Llama-3.1-8B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.264,
+    "design_effect": 0.8750531803962461,
+    "pilot_delta_far_points": 13.600000000000001,
+    "planned_wrong_test": 283,
+    "detectable_points": 8.556823677282626
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "LLaDA-8B + Llama-3.1-8B",
+    "ar_ar": "Gemma-2-9B + Llama-3.1-8B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.128,
+    "design_effect": 1.0074869739478958,
+    "pilot_delta_far_points": -1.6,
+    "planned_wrong_test": 283,
+    "detectable_points": 5.980470111141776
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "LLaDA-8B + Llama-3.1-8B",
+    "ar_ar": "Gemma-2-9B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.304,
+    "design_effect": 0.865290322580645,
+    "pilot_delta_far_points": 8.0,
+    "planned_wrong_test": 283,
+    "detectable_points": 9.182214024415952
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "LLaDA-8B + Llama-3.1-8B",
+    "ar_ar": "Llama-3.1-8B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.256,
+    "design_effect": 0.8107928496319662,
+    "pilot_delta_far_points": 11.200000000000001,
+    "planned_wrong_test": 283,
+    "detectable_points": 8.4261774758718
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "LLaDA-8B + Qwen2.5-7B",
+    "ar_ar": "Gemma-2-9B + Llama-3.1-8B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.28,
+    "design_effect": 0.9863014740846411,
+    "pilot_delta_far_points": -10.4,
+    "planned_wrong_test": 283,
+    "detectable_points": 8.812307338179664
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "LLaDA-8B + Qwen2.5-7B",
+    "ar_ar": "Gemma-2-9B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.072,
+    "design_effect": 1.0006548042704626,
+    "pilot_delta_far_points": -0.8,
+    "planned_wrong_test": 283,
+    "detectable_points": 4.470118232406289
+   },
+   {
+    "domain": "code",
+    "ar_diffusion": "LLaDA-8B + Qwen2.5-7B",
+    "ar_ar": "Llama-3.1-8B + Qwen2.5-7B",
+    "n_wrong_pilot": 125,
+    "disagree": 0.12,
+    "design_effect": 0.9939035369774919,
+    "pilot_delta_far_points": 2.4,
+    "planned_wrong_test": 283,
+    "detectable_points": 5.769009346346159
+   }
+  ]
+ },
+ "matching": [
+  {
+   "noise_sd": 0.0,
+   "runs": 3000,
+   "seed": 544,
+   "validation_pairs": 350,
+   "test_pairs": 700,
+   "pass_rate": [
+    {
+     "off_target_points": 3,
+     "gap_points": 3,
+     "passes": 0.7036666666666667
+    },
+    {
+     "off_target_points": 4,
+     "gap_points": 3,
+     "passes": 0.813
+    },
+    {
+     "off_target_points": 5,
+     "gap_points": 3,
+     "passes": 0.848
+    },
+    {
+     "off_target_points": 6,
+     "gap_points": 3,
+     "passes": 0.8626666666666667
+    },
+    {
+     "off_target_points": null,
+     "gap_points": 3,
+     "passes": 0.8686666666666667
+    },
+    {
+     "off_target_points": 4,
+     "gap_points": 4,
+     "passes": 0.875
+    },
+    {
+     "off_target_points": 5,
+     "gap_points": 5,
+     "passes": 0.951
+    }
+   ],
+   "adopted_rule_passes": 0.848,
+   "monte_carlo_se": 0.006554794682774841,
+   "mean_tar": {
+    "ar_ar": 89.67190992459741,
+    "ar_diffusion": 89.62133129542839
+   },
+   "sd_tar_points": {
+    "ar_ar": 2.078259816169536,
+    "ar_diffusion": 2.1184002739198835
+   },
+   "sd_gap_points": 2.0496558609353337,
+   "share_of_3_3_failures_with_gap_above_3": 0.4431946006749156
+  },
+  {
+   "noise_sd": 0.15,
+   "runs": 3000,
+   "seed": 544,
+   "validation_pairs": 350,
+   "test_pairs": 700,
+   "pass_rate": [
+    {
+     "off_target_points": 3,
+     "gap_points": 3,
+     "passes": 0.7086666666666667
+    },
+    {
+     "off_target_points": 4,
+     "gap_points": 3,
+     "passes": 0.8163333333333334
+    },
+    {
+     "off_target_points": 5,
+     "gap_points": 3,
+     "passes": 0.8593333333333333
+    },
+    {
+     "off_target_points": 6,
+     "gap_points": 3,
+     "passes": 0.879
+    },
+    {
+     "off_target_points": null,
+     "gap_points": 3,
+     "passes": 0.889
+    },
+    {
+     "off_target_points": 4,
+     "gap_points": 4,
+     "passes": 0.87
+    },
+    {
+     "off_target_points": 5,
+     "gap_points": 5,
+     "passes": 0.9436666666666667
+    }
+   ],
+   "adopted_rule_passes": 0.8593333333333333,
+   "monte_carlo_se": 0.006347691327182285,
+   "mean_tar": {
+    "ar_ar": 89.21573901229559,
+    "ar_diffusion": 89.35333475986702
+   },
+   "sd_tar_points": {
+    "ar_ar": 2.0495981029247714,
+    "ar_diffusion": 2.102489859434123
+   },
+   "sd_gap_points": 1.9439444140471909,
+   "share_of_3_3_failures_with_gap_above_3": 0.38100686498855835
+  }
+ ],
+ "far_slope": {
+  "Gemma-2-9B + Llama-3.1-8B": {
+   "0.85": 0.664,
+   "0.87": 0.696,
+   "0.90": 0.736,
+   "0.93": 0.816,
+   "0.95": 0.864
+  },
+  "Gemma-2-9B + Qwen2.5-7B": {
+   "0.85": 0.608,
+   "0.87": 0.648,
+   "0.90": 0.696,
+   "0.93": 0.736,
+   "0.95": 0.792
+  },
+  "Llama-3.1-8B + Qwen2.5-7B": {
+   "0.85": 0.664,
+   "0.87": 0.696,
+   "0.90": 0.72,
+   "0.93": 0.752,
+   "0.95": 0.776
+  },
+  "Gemma-2-9B + LLaDA-8B": {
+   "0.85": 0.68,
+   "0.87": 0.76,
+   "0.90": 0.776,
+   "0.93": 0.864,
+   "0.95": 0.904
+  },
+  "LLaDA-8B + Llama-3.1-8B": {
+   "0.85": 0.72,
+   "0.87": 0.744,
+   "0.90": 0.776,
+   "0.93": 0.832,
+   "0.95": 0.832
+  },
+  "LLaDA-8B + Qwen2.5-7B": {
+   "0.85": 0.656,
+   "0.87": 0.696,
+   "0.90": 0.736,
+   "0.93": 0.76,
+   "0.95": 0.776
+  }
+ }
+}
