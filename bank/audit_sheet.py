@@ -22,6 +22,20 @@ or the full bank (give --bank and --labels as many files as needed):
   error, at most 3 errors were found in all and the bound is below 4%.
 - table prints the bound for typical cases and how often the rule passes a bad bank.
 
+decisions/2026-11-22-label-check-by-domain.md judges the pilot per domain, and checks math only
+on the full bank:
+
+    python -m bank.audit_sheet human --bank ... --labels ... --audit bank/pilot/audit \\
+        --only math code:evalplus/humaneval+
+    python -m bank.audit_sheet score --bank ... --labels ... --audit bank/pilot/audit --by-domain
+    python -m bank.audit_sheet sample --bank ... --labels ... --out ... --domain math --per-stratum 100
+
+- human --only writes a sheet with every item of these domains (or domain:source) not read yet.
+- score --by-domain writes audit_result_by_domain.json and leaves audit_result.json alone. Math
+  passes only if all 100 items are read and none is a label error. HumanEval+ gets a rate and no
+  verdict. MBPP+ is not counted.
+- sample --domain draws from one domain; the steps above then apply to its 200 items unchanged.
+
 On the full bank every file except the sheet (the key, Codex's replies, the answers and the
 result) gives labels away. They stay with the label holder and are not committed before the
 test join.
@@ -51,6 +65,10 @@ SAME_FAMILY = "openai/"          # generators of Codex's own family; their items
 OTHERS = 100                     # others read, drawn at random, before the shortcut can pass
 MAX_ERRORS, BAD_RATE, ALPHA = 3, 0.04, 0.05
 VERDICTS = ("correct", "wrong", "unsure")
+RESULT, RESULT_BY_DOMAIN = "audit_result.json", "audit_result_by_domain.json"
+POOLED_ITEMS = 200                               # what MAX_ERRORS is counted in
+MATH_ITEMS, MATH_MAX_ERRORS = 100, 0             # the per-domain mark: all read, none a label error
+RATE_ONLY, NOT_COUNTED = "evalplus/humaneval+", "evalplus/mbpp+"     # the two code sources
 
 QUESTIONS = {
     "math": ("Solve the problem yourself first. Then judge only the candidate's final answer, the content of its "
@@ -88,14 +106,14 @@ def load_bank(bank_paths: list[str], label_paths: list[str]) -> tuple[dict[str, 
 # ---------------------------------------------------------------- the 200-candidate sheet
 
 def sample(bank: dict[str, dict], labels: dict[str, int], seed: int = SEED, per_stratum: int = PER_STRATUM,
-           exclude: set[str] = frozenset()) -> list[str]:
+           exclude: set[str] = frozenset(), domains: tuple[str, ...] = DOMAINS) -> list[str]:
     """Candidate IDs in sheet order. Within a domain, pairs come in a seeded random order and give
     one answer each, so every candidate is equally likely and no pair shows both its answers."""
     pairs: dict[tuple[str, str], dict[int, str]] = defaultdict(dict)
     for cid in sorted(bank):
         pairs[(bank[cid]["domain"], bank[cid]["pair_id"])][labels[cid]] = cid
     chosen = []
-    for domain in DOMAINS:
+    for domain in domains:
         rng = random.Random(f"{seed}:audit:{domain}")
         order = sorted(k for k in pairs if k[0] == domain)
         rng.shuffle(order)
@@ -128,14 +146,16 @@ def sheet_rows(bank: dict[str, dict], chosen: list[str]) -> tuple[list[dict], li
 def cmd_sample(args) -> None:
     bank, labels = load_bank(args.bank, args.labels)
     exclude = {r["candidate_id"] for p in args.exclude_key for r in read_jsonl(p)}
-    sheet, key = sheet_rows(bank, sample(bank, labels, args.seed, args.per_stratum, exclude))
+    domains = (args.domain,) if args.domain else DOMAINS
+    sheet, key = sheet_rows(bank, sample(bank, labels, args.seed, args.per_stratum, exclude, domains))
     out = Path(args.out)
     if (out / SHEET).exists() and not args.overwrite:
         raise SystemExit(f"{out / SHEET} exists; a new audit needs a new --out (or --overwrite)")
     write_jsonl(out / SHEET, sheet)
     write_jsonl(out / KEY, key)
     write_json(out / MANIFEST, {
-        "seed": args.seed, "per_stratum": args.per_stratum, "items": len(sheet), "excluded_candidates": len(exclude),
+        "seed": args.seed, "per_stratum": args.per_stratum, **({"domain": args.domain} if args.domain else {}),
+        "items": len(sheet), "excluded_candidates": len(exclude),
         "inputs": {Path(p).as_posix(): sha256_file(p) for p in [*args.bank, *args.labels, *args.exclude_key]},
         "outputs": {f: sha256_file(out / f) for f in (SHEET, KEY)},
     })
@@ -216,6 +236,16 @@ def read_answers(path: Path) -> list[dict]:
         return [{k.strip().lower(): (v or "").strip() for k, v in row.items() if k} for row in csv.DictReader(f)]
 
 
+def chosen_items(sheet, key, bank, only: list[str]) -> list[str]:
+    """audit_ids of the items of these domains, or domain:source, in sheet order."""
+    names = {r["audit_id"]: (r["domain"], f"{r['domain']}:{bank[key[r['audit_id']]].get('source')}") for r in sheet}
+    unknown = [o for o in only if not any(o in n for n in names.values())]
+    if unknown:
+        raise SystemExit(f"no item of the sheet is of {', '.join(unknown)}; "
+                         f"it holds {', '.join(sorted({x for n in names.values() for x in n}))}")
+    return [a for a, n in names.items() if set(n) & set(only)]
+
+
 def cmd_human(args) -> None:
     audit = Path(args.audit)
     bank, labels = load_bank(args.bank, args.labels)
@@ -227,10 +257,14 @@ def cmd_human(args) -> None:
         if failed and not args.allow_failed:
             raise SystemExit(f"{failed} Codex calls failed; run bank.codex_audit again to retry them, "
                              "or use --allow-failed to have the person read those items")
-    g = groups(sheet, key, bank, labels, codex, args.same_family, args.seed)
-    n = len(g["rest"]) if args.read == "all" else min(int(args.read), len(g["rest"]))
+    if args.only:
+        wanted = chosen_items(sheet, key, bank, args.only)
+    else:
+        g = groups(sheet, key, bank, labels, codex, args.same_family, args.seed)
+        n = len(g["rest"]) if args.read == "all" else min(int(args.read), len(g["rest"]))
+        wanted = g["read_all"] + g["rest"][:n]
     earlier = [r["audit_id"] for f in answer_files(audit) for r in read_answers(f)]
-    new = [a for a in g["read_all"] + g["rest"][:n] if a not in set(earlier)]
+    new = [a for a in wanted if a not in set(earlier)]
     if not new:
         raise SystemExit("nothing new to read")
     if source.name != FROZEN_ANSWERS:
@@ -458,14 +492,72 @@ def _agreement(sheet, key, labels, codex, domain) -> dict:
             "agrees_with_label": sum(codex[a] == ("correct" if labels[key[a]] else "wrong") for a in with_verdict)}
 
 
+def score_by_domain(sheet, key, bank, labels, answers, recheck) -> dict:
+    """The per-domain rule. recheck may cover any item the reader and our label differ on."""
+    part: dict[str, list[str]] = {"math": [], RATE_ONLY: [], NOT_COUNTED: []}
+    for r in sheet:
+        row = bank[key[r["audit_id"]]]
+        name = "math" if row["domain"] == "math" else row.get("source")
+        if name not in part:
+            raise SystemExit(f"the per-domain rule has no place for source {name!r}")
+        part[name].append(r["audit_id"])
+    if len(part["math"]) != MATH_ITEMS:
+        raise SystemExit(f"the sheet holds {len(part['math'])} math items; the per-domain mark is for {MATH_ITEMS}")
+    unread = sum(a not in answers for a in part["math"])
+    if unread:
+        raise SystemExit(f"{unread} math items have no answer; the per-domain rule needs all {MATH_ITEMS}")
+    expected = {a: "correct" if labels[key[a]] else "wrong" for a in answers}
+    differ = {a for a, r in answers.items() if r["verdict"] != expected[a]}
+    second_look = recheck(differ)
+    errors = {a for a in differ if second_look.get(a, {"label_error": True})["label_error"]}
+
+    def counts(ids: list[str]) -> dict:
+        read = [a for a in ids if a in answers]
+        found = sum(a in errors for a in read)
+        # the bound is for a random sample: none while the items left out were not left out at random
+        whole = bool(ids) and len(read) == len(ids)
+        return {"items": len(ids), "read": len(read), "label_errors": found, "rate": found / len(read) if whole else None,
+                "upper_bound_95": upper_bound(0, len(ids), len(ids), 0, found) if whole else None,
+                "reader_differs_blind": sum(a in differ for a in read),
+                "waiting_for_second_look": sorted(a for a in read if a in differ and a not in second_look)}
+
+    math_part, code_part = counts(part["math"]), counts(part[RATE_ONLY])
+    decision = "PASS" if math_part["label_errors"] <= MATH_MAX_ERRORS else "FAIL"
+    if decision != "PASS" and math_part["waiting_for_second_look"]:          # before a fail is called
+        decision = "SECOND LOOK"
+    return {
+        "math": {"decision": decision, **math_part},
+        "code": {RATE_ONLY: {"decision": None, **code_part}, NOT_COUNTED: "not counted"},
+        "rule": {"math_items": MATH_ITEMS, "math_max_errors": MATH_MAX_ERRORS},
+        "differences": [{"audit_id": a, "candidate_id": key[a], "our_label": expected[a], "reader": answers[a]["verdict"],
+                         "note": answers[a]["note"], "label_error": a in errors,
+                         "second_look": second_look.get(a, {}).get("reason")}
+                        for a in sorted(differ) if a not in part[NOT_COUNTED]],
+    }
+
+
 def cmd_score(args) -> None:
     audit = Path(args.audit)
     bank, labels = load_bank(args.bank, args.labels)
     sheet, key = load_audit(audit)
+    if args.by_domain:
+        result = score_by_domain(sheet, key, bank, labels, collect_answers(audit, sheet),
+                                 lambda differ: apply_recheck(args.recheck, differ))
+        write_json(audit / RESULT_BY_DOMAIN, result)
+        print(json.dumps({k: v for k, v in result.items() if k != "differences"}, indent=2))
+        if result["math"]["decision"] == "SECOND LOOK":
+            print("Second look first: for each math item in waiting_for_second_look the reader writes label_error "
+                  "(yes or no) and a reason, then score again with --recheck.")
+        if result["code"][RATE_ONLY]["waiting_for_second_look"]:
+            print(f"The {RATE_ONLY} rate counts the items waiting for a second look as errors.")
+        return
+    if len({r["domain"] for r in sheet}) == 1 and len(sheet) != POOLED_ITEMS:
+        raise SystemExit(f"the sheet holds {len(sheet)} items of one domain; the rule is for {POOLED_ITEMS} "
+                         "(for the pilot's math re-audit use --by-domain)")
     result = score(sheet, key, bank, labels, load_codex(codex_file(args, audit), sheet),
                    collect_answers(audit, sheet), lambda differ: apply_recheck(args.recheck, differ),
                    args.same_family, args.seed)
-    write_json(audit / "audit_result.json", result)
+    write_json(audit / RESULT, result)
     print(json.dumps({k: v for k, v in result.items() if k != "differences"}, indent=2))
     if result["decision"] == "SECOND LOOK":
         print("Second look first: for each item in waiting_for_second_look the reader writes label_error (yes or no) "
@@ -488,6 +580,7 @@ def main(argv: list[str] | None = None) -> None:
         if name == "sample":
             p.add_argument("--out", required=True)
             p.add_argument("--per-stratum", type=int, default=PER_STRATUM)
+            p.add_argument("--domain", choices=DOMAINS, default=None, help="draw from this domain only")
             p.add_argument("--exclude-key", nargs="*", default=[], help="audit_key.jsonl of earlier audits")
             p.add_argument("--overwrite", action="store_true")
         else:
@@ -495,9 +588,12 @@ def main(argv: list[str] | None = None) -> None:
             p.add_argument("--codex", default=None, help=f"default: <audit>/{CODEX_ANSWERS}")
             p.add_argument("--same-family", default=SAME_FAMILY, help="generator prefix whose items are always read")
         if name == "human":
-            p.add_argument("--read", required=True, choices=(str(OTHERS), "all"), help="others to read in total")
+            which = p.add_mutually_exclusive_group(required=True)
+            which.add_argument("--read", choices=(str(OTHERS), "all"), help="others to read in total")
+            which.add_argument("--only", nargs="+", metavar="DOMAIN[:SOURCE]", help="every unread item of these")
             p.add_argument("--allow-failed", action="store_true", help="have the person read items whose Codex call failed")
         if name == "score":
+            p.add_argument("--by-domain", action="store_true", help=f"the per-domain rule; writes {RESULT_BY_DOMAIN}")
             p.add_argument("--recheck", default=None, help="CSV audit_id,label_error,reason: the reader's second look")
     p = sub.add_parser("table", help="the bound for typical cases, and how often the rule passes a bad bank")
     p.add_argument("--others", type=int, default=OTHERS, help="how many others are read before the shortcut can pass")
