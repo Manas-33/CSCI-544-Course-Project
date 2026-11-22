@@ -18,9 +18,9 @@ in the prompt. Nothing else reaches the model:
   anything but the model's own messages: a command, a file change, a search, any tool.
 
 --codex picks the CLI (default: the codex on the PATH; the desktop app carries its own). The flags
-were checked with codex-cli 0.155.1 against a local stand-in server (no model call); there the only
-tool left in the request was request_user_input, which does nothing in this mode. Another CLI
-version has to be checked the same way before it is used.
+were checked with codex-cli 0.155.1 and 0.171.0-alpha.13 against a local stand-in server (no model
+call); there the only tool left in the request was request_user_input, which does nothing in this
+mode. Another CLI version has to be checked the same way before it is used.
 
 Saved: the model, settings and prompts (codex_settings.json), every call's exact prompt, command,
 event log and reply (raw/<audit_id>.json), and codex_answers.jsonl. A rerun with the same settings
@@ -81,7 +81,9 @@ NO_TOOLS = {"tool_mode": None, "multi_agent_version": None, "apply_patch_tool_ty
 # Event-log entries that are the model's own output. "error" entries are notices from the CLI.
 ALLOWED_ITEMS = {"agent_message", "reasoning", "error"}
 ALLOWED_EVENTS = {"thread.started", "turn.started", "turn.completed", "item.started", "item.updated", "item.completed"}
-FAILED_EVENTS = {"turn.failed", "error"}
+# An "error" event can be a lost connection that the CLI then got back, so alone it decides nothing: a call
+# that really failed also has turn.failed, a nonzero exit code or no verdict.
+FAILED_EVENTS, NOTICE_EVENTS = {"turn.failed"}, {"error"}
 
 
 def prompt_for(item: dict) -> str:
@@ -106,7 +108,7 @@ def judge(stdout: str, returncode: int, leftovers: list[str]) -> dict:
     """status, verdict and problems from one call's event log. ok: a usable verdict. invalid: the log
     shows something other than the model's own messages, so the verdict is not used. failed: no
     verdict came back, so the call can be retried."""
-    invalid, failed, messages = [], [], []
+    invalid, failed, notices, messages = [], [], [], []
     for line in filter(str.strip, stdout.splitlines()):
         try:
             event = json.loads(line)
@@ -116,6 +118,8 @@ def judge(stdout: str, returncode: int, leftovers: list[str]) -> dict:
             continue
         if kind in FAILED_EVENTS:
             failed.append(f"{kind}: {json.dumps(event)[:200]}")
+        elif kind in NOTICE_EVENTS:
+            notices.append(f"{kind}: {json.dumps(event)[:200]}")
         elif kind not in ALLOWED_EVENTS:
             invalid.append(f"unknown event {kind}")
         elif kind.startswith("item."):
@@ -136,6 +140,7 @@ def judge(stdout: str, returncode: int, leftovers: list[str]) -> dict:
     if verdict not in VERDICTS:
         failed.append("no verdict in the last message")
         reply = {}
+    failed += notices[-1:] if failed else []             # why, for the log
     status = "invalid" if invalid else "failed" if failed else "ok"
     return {"status": status, "verdict": verdict if status == "ok" else None,
             "answer": reply.get("answer"), "reason": reply.get("reason"), "problems": invalid + failed}
@@ -212,7 +217,7 @@ def run_item(item: dict, args, home: Path, schema: Path, catalog: Path) -> dict:
             out = exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else exc.stdout or ""
             out, err, code = out[:out.rfind("\n") + 1], f"timed out after {args.timeout} s", -1
         leftovers = sorted(p.name for p in Path(workdir).iterdir() if p.name != "item.md")
-        if sheet.read_text(encoding="utf-8") != prompt:
+        if sheet.read_bytes() != prompt.encode("utf-8"):     # bytes: some answers have \r\n line ends
             leftovers.append("item.md (changed)")
         return {"audit_id": item["audit_id"], "prompt_sha256": sha256_text(prompt), "prompt": prompt,
                 "command": ["codex"] + [scrub(c.replace(str(schema.resolve()), SCHEMA_FILE), workdir, str(home))
