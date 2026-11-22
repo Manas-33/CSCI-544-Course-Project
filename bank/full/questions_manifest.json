@@ -1,0 +1,178 @@
+{
+  "step": "select_full",
+  "seed": 544,
+  "sources": {
+    "gsm8k_platinum_test.parquet": {
+      "url": "https://huggingface.co/datasets/madrylab/gsm8k-platinum/resolve/main/main/test-00000-of-00001.parquet",
+      "sha256": "0c466762794c61ef364b7f72c3cb7e8bf9e5d8feca2c62e1bfce81eae7c7a1ea",
+      "bytes": 380973,
+      "rows": 1209,
+      "fields": {
+        "answer": 1209,
+        "cleaning_status": 1209,
+        "question": 1209
+      }
+    },
+    "math500_test.jsonl": {
+      "url": "https://huggingface.co/datasets/HuggingFaceH4/MATH-500/resolve/main/test.jsonl",
+      "sha256": "35dc41080a3680858b27fa7e0533d2d547825316fc5dafe5d316f4ccc5a06132",
+      "bytes": 446564,
+      "rows": 500,
+      "fields": {
+        "answer": 500,
+        "level": 500,
+        "problem": 500,
+        "solution": 500,
+        "subject": 500,
+        "unique_id": 500
+      }
+    },
+    "HumanEvalPlus.jsonl": {
+      "url": "https://github.com/evalplus/humanevalplus_release/releases/download/v0.1.10/HumanEvalPlus.jsonl.gz",
+      "sha256": "42526ec0e7d5f3ee0b06d6ced98f8c8bae3d76519151bfb3d36f79010645bd7f",
+      "bytes": 7714666,
+      "rows": 164,
+      "fields": {
+        "atol": 164,
+        "base_input": 164,
+        "canonical_solution": 164,
+        "contract": 164,
+        "entry_point": 164,
+        "plus_input": 164,
+        "prompt": 164,
+        "task_id": 164,
+        "test": 164
+      }
+    },
+    "MbppPlus.jsonl": {
+      "url": "https://github.com/evalplus/mbppplus_release/releases/download/v0.2.0/MbppPlus.jsonl.gz",
+      "sha256": "b54e762755248ca411b523c917fa9f93c07b5ff2966bf60b3917b853926a3dad",
+      "bytes": 2592369,
+      "rows": 378,
+      "fields": {
+        "assertion": 378,
+        "atol": 378,
+        "base_input": 378,
+        "canonical_solution": 378,
+        "contract": 378,
+        "entry_point": 378,
+        "plus_input": 378,
+        "prompt": 378,
+        "task_id": 378
+      }
+    },
+    "prm800k_math_splits_train.jsonl": {
+      "url": "https://media.githubusercontent.com/media/openai/prm800k/main/prm800k/math_splits/train.jsonl",
+      "sha256": "90d96daeac3fe343ebb1e22ce93dd99690f75983e957f88de42f87cffe1e8076",
+      "bytes": 10896985,
+      "rows": 12000,
+      "fields": {
+        "answer": 12000,
+        "level": 12000,
+        "problem": 12000,
+        "solution": 12000,
+        "subject": 12000,
+        "unique_id": 12000
+      }
+    }
+  },
+  "prm800k_lfs_pointer": "matches",
+  "licenses": {
+    "gsm8k-platinum": {
+      "sha256": "96c66743ff2b3d131bf7cd4e97f19786373e17dc14d8fda113d4ab6a0a2471bf",
+      "bytes": 230,
+      "text_start": "From the dataset card (huggingface.co/datasets/madrylab/gsm8k-platinum), read 2026-11-21:\ncard metadata: license: mit\nGSM8K itself: MIT (github.com/openai/grade-school-math).\nThe annotations added by GSM8K-Platinum: CC BY-SA 4.0.\n"
+    },
+    "math-500": {
+      "sha256": "4cd8c27965382f54de4e214afc4c4c6386ccd9c06ae0acd639bc6d71a617c099",
+      "bytes": 261,
+      "text_start": "From the dataset card (huggingface.co/datasets/HuggingFaceH4/MATH-500), read 2026-11-21:\nthe card states no license; it points to github.com/openai/prm800k (MIT).\nMATH itself: github.com/hendrycks/math carries an MIT license (Copyright (c) 2021 Dan Hendrycks).\n"
+    },
+    "prm800k": {
+      "sha256": "22d61a2226e035da51c56149c3358c36d1f61716435866bc6e6fe0e54c7270db",
+      "bytes": 1062,
+      "text_start": "MIT License\n\nCopyright (c) 2023 OpenAI\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+    },
+    "evalplus": {
+      "sha256": "fcc1f77fe5443b21bfc4dfcc3d66f7654f599b91582df771850e5e876986a103",
+      "bytes": 11558,
+      "text_start": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object"
+    }
+  },
+  "pool_sizes": {
+    "gsm8k": 1209,
+    "math500": 389,
+    "humaneval": 164,
+    "mbpp": 378
+  },
+  "near_duplicate_rule": "token Jaccard above 0.9 (bank.select_full.problem_tokens)",
+  "dropped_near_duplicates": [
+    {
+      "problem_id": "mbpp-plus-130",
+      "source": "evalplus/mbpp+",
+      "like": "mbpp-658"
+    },
+    {
+      "problem_id": "mbpp-plus-743",
+      "source": "evalplus/mbpp+",
+      "like": "mbpp-328"
+    }
+  ],
+  "new_math": {
+    "problems": 4500,
+    "repeated_ids": [
+      "test/precalculus/24307.json"
+    ],
+    "numeric": 3580,
+    "also_in_math500_by_id": 0,
+    "dropped_near_duplicates": [
+      {
+        "problem_id": "mathrest-01929",
+        "source": "math-rest/test",
+        "like": "MATH-500 test/algebra/187.json"
+      },
+      {
+        "problem_id": "mathrest-01932",
+        "source": "math-rest/test",
+        "like": "MATH-500 test/intermediate_algebra/121.json"
+      },
+      {
+        "problem_id": "mathrest-04821",
+        "source": "math-rest/test",
+        "like": "MATH-500 test/intermediate_algebra/1300.json"
+      },
+      {
+        "problem_id": "mathrest-06401",
+        "source": "math-rest/test",
+        "like": "MATH-500 test/intermediate_algebra/102.json"
+      },
+      {
+        "problem_id": "mathrest-07331",
+        "source": "math-rest/test",
+        "like": "MATH-500 test/intermediate_algebra/1422.json"
+      },
+      {
+        "problem_id": "mathrest-08906",
+        "source": "math-rest/test",
+        "like": "MATH-500 test/intermediate_algebra/1300.json"
+      }
+    ],
+    "eligible": 3574,
+    "drawn": 500,
+    "answer_differs_from_boxed_solution": []
+  },
+  "selected": {
+    "gsm8k": 1059,
+    "math500": 239,
+    "math_rest": 500,
+    "humaneval": 114,
+    "mbpp": 276
+  },
+  "math_rule": "reference answer parses as a rational number (bank.common.parse_rational)",
+  "outputs": {
+    "questions_math.jsonl": "6647e3c7dfb5277c70e274b239cca86141058cbb2676354a48aba097156f6b1b",
+    "questions_code.jsonl": "048de9de2b5635b8fc25333d8d9a47cdae001f6ec6ba6ce2b7ff01f8e42b847f",
+    "question_ids.txt": "ba947c38c70c5c04aef884f76ce2ddb35db44cdf37aa219fb4e5c9c4b94fed10"
+  },
+  "created_utc": "2026-11-22T07:13:09+00:00"
+}
