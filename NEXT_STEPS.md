@@ -1,6 +1,6 @@
 # Next steps
 
-**Start here.** The plan is [PLAN.md](PLAN.md) (version 1.3). The pilot and the midterm report are done. What's left is the full experiment, the presentation and the final report. It is split into **six packages, one per person**. There are no internal dates: do each step as soon as its inputs exist.
+**Start here.** The plan is [PLAN.md](PLAN.md) (version 1.4). The pilot and the midterm report are done. What's left is the full experiment, the presentation and the final report. It is split into **six packages, one per person**. There are no internal dates: do each step as soon as its inputs exist.
 
 ## The rules are settled (PLAN §2, §4, §7; records in `decisions/`)
 
@@ -12,6 +12,9 @@
 | What does "best" mean in the dynamic-range gate? | The verifier that **accepts the fewest wrong answers** at 90% TAR. |
 | What is the main test? | **One test (PLAN §5): math.** The best of LLaDA+Qwen, LLaDA+Llama, LLaDA+Gemma against the best of Qwen+Llama, Qwen+Gemma, Llama+Gemma. Code is reported separately. |
 | When is go/no-go decided? | **Once, from the pilot, before any full-bank answer is scored** (PLAN §7). It needs the pilot label audit, test 4 in math and the AR repeat-run check. |
+| Who checks the labels? | **Codex, blind, plus one person**, who reads the disagreements, the GPT-written items and 100 others, or all 200 (PLAN §2). Pass mark unchanged: at most 3 errors in 200. |
+| When does the final comparison count as matched? | Each pair's test TAR **within 5 points of 90%**, the two pairs **within 3 points of each other** (PLAN §5 step 7). |
+| When are licenses and terms checked? | **Before the release.** Fields, stated licenses and hashes are recorded at download. |
 | What if LLaDA fails test 4 in math? | Its reconstruction score if that passes on the pilot; otherwise the AR-only study. |
 | What if LLaDA is below the bar on validation? | Reported. It does not change the test. |
 | What if an AR verifier fails test 4 in math? | It drops out. Fewer than three left: C also scores Qwen3-8B, for the AR+AR pairs only. No cross-family AR+AR pair left: H1 is not run. |
@@ -21,11 +24,11 @@ The three wordings (`harness/prompts.py`): **T1** "Is the final answer correct?"
 ## Order of work
 
 ```
-0  GO/NO-GO (first):  B swap items -> C + D run test 4; C repeat-run check }  -> F writes the FINAL MODEL RECORD in decisions/, team merges it
-                      A + B + F audit 200 pilot labels                    }
-   Meanwhile, in parallel:  A math bank   B code bank   D reconstruction score   E analysis code   F data terms, slides, report skeleton
+0  GO/NO-GO (first):  notebook 09: test 4 for every verifier + AR repeat runs }  -> F writes the FINAL MODEL RECORD in decisions/, team merges it
+                      label check: Codex + one person, 200 pilot labels     }
+   Meanwhile, in parallel:  A math bank   B code bank   D reconstruction score   E analysis code   F slides, report skeleton
 
-1  A + B finish the banks  ->  A + B + F audit 200  ->  F does the BANK FREEZE (split fixed, test labels to F)
+1  A + B finish the banks  ->  Codex + one person check 200  ->  F does the BANK FREEZE (split fixed, test labels to F)
 2  C + D score both banks (validation and test) with T1 and T2    [needs the final model record and the bank freeze]
 3  E picks pairs and thresholds on VALIDATION only, reports LLaDA's re-check  ->  E makes the PREREGISTRATION COMMIT, C reviews it
 4  F joins the test labels, once  ->  E runs the final test, once
@@ -37,7 +40,7 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 ## The six packages
 
 ### A. Math bank
-1. Check the terms of every data source and generator with F **before generating** (PLAN §9). Get the new MATH problems (PLAN §2): `math_splits/train.jsonl` from OpenAI's `prm800k`, rows whose `unique_id` starts with `test/`. Check the fields and license, record the hash, and drop anything already in MATH-500 or the pilot, by id and by text.
+1. Get the new MATH problems (PLAN §2): `math_splits/train.jsonl` from OpenAI's `prm800k`, rows whose `unique_id` starts with `test/`. Record the fields, the stated license and the hash, and drop anything already in MATH-500 or the pilot, by id and by text.
 2. Select problems: all 1,059 unused GSM8K-Platinum, all 239 unused MATH-500, a seeded draw (seed 544) of 500 from the new set with numeric answers. Start from `bank/select_pilot.py`.
 3. Generate (4 generators, 4 samples each), label and pair, reusing `bank/generate.py`, `bank/generate_api.py`, `bank/label.py`, `bank/make_pairs.py`. The API budget cap in `generate_api.py` defaults to $5 and the pilot already spent $1.19, so raise it or use a new ledger. Run `bank/token_lengths.py` with every verifier's tokenizer loaded, plus Qwen3-8B's (Llama and Gemma failed to load for the pilot).
 4. Draw the bank by PLAN §2's draw rule. **Careful:** `bank/sample_pilot.py` takes a fixed target and splits evenly over *sources*, so with three sources GSM8K would get only a third; group MATH-500 and the new problems, take MATH-500 first, and compute the target from the rule.
@@ -46,16 +49,16 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 **Done when:** a hashed math bank of about 2,100 answers exists with separate validation and test label files, and the test labels are handed to F and deleted from your copies.
 
 ### B. Code bank and checks
-1. Build the **answer-swap items** for test 4 exactly as PLAN §4 says (200 pilot items, 100 per domain) and give them to C and D. This comes first.
-2. Build the code bank from the 392 unused HumanEval+ and MBPP+ problems (8 samples, 4 generators), reusing `bank/label_evalplus.py`. Split like math.
-3. With A and F: audit 200 pilot labels, then 200 new ones from the full bank before the freeze. Two people label independently, the third resolves. Pass: at most 3 errors.
+1. The **answer-swap items** for test 4 (PLAN §4) are built: `bank/pilot/swap/` (`bank/answer_swap.py`; 100 math and 100 code items, originals and swaps in one file, the key beside it).
+2. Build the code bank from the 390 unused HumanEval+ and MBPP+ problems (8 samples, 4 generators), reusing `bank/label_evalplus.py`. Split like math.
+3. Label check (PLAN §2): 200 pilot labels (sheet in `bank/pilot/audit/`), then 200 new ones from the full bank before the freeze. `bank/codex_audit.py` gets Codex's blind verdicts, `bank/audit_sheet.py` writes the sheet one person reads and applies the rule. On the full bank the reader is A or B, and F runs the commands. Pass: at most 3 errors in 200.
 4. With A and F: tag 200 wrong math answers from the test split by error type (PLAN §2), before deleting your copies. Code error types come from the execution logs. Tags and logs go to F with the test labels.
 
-**Done when:** the swap items are with C and D, a hashed code bank of about 850 answers exists, and both audits and the error tags are recorded.
+**Done when:** a hashed code bank of about 850 answers exists, and both audits and the error tags are recorded.
 
 ### C. AR scoring
-1. Run test 4 (answer swap) for all six AR models, as soon as B's items exist. Report it per domain.
-2. Record a repeat-run check (scoring test 3) for the AR models on the pilot; it is part of the go/no-go.
+1. Run **notebook 09** on an A100: test 4 (answer swap) for all eight verifiers and the repeat-run check (scoring test 3) for the AR models, the H1 models first. `analysis/step0.py` applies the rules per domain.
+2. Commit `results/step0/` and give F the go/no-go table.
 3. Score **both splits** of both banks with T1 and T2: Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B, Mistral-7B (H2 only), Llama-3.2-3B (gate A's reference and H2) and Qwen2.5-1.5B (H2 only). Use notebook 06 and `configs/pilot_*.json` as the template. All on an **A100**, batch size 1; Gemma with eager attention, the rest SDPA.
 4. AR arm of the reconstruction score: exact log-probability of the answer, for the four AR models, on the same answers as D's step 4.
 5. Only if the final model record leaves fewer than three AR verifiers: score Qwen3-8B (thinking off) too, with the rest.
@@ -64,10 +67,10 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 **Done when:** complete score files for 6 models × 2 templates × 2 banks, test 4 results for each model, and the reproduction check.
 
 ### D. Diffusion scoring and reconstruction
-1. Run test 4 for LLaDA and Dream, as soon as B's items exist. Report it per domain.
+1. Test 4 for LLaDA and Dream runs in notebook 09 (C); check their environments and score files.
 2. Implement the **reconstruction score** (PLAN §4): LLaDA's `get_log_likelihood` Monte Carlo estimate, ported to Dream with its shift. Choose the sample count on the development bank. Run it on the pilot and report gate A (per token, 128 samples, seed 544) and the repeat check with seed 545 (PLAN §7).
 3. Score both splits of both banks with T1 and T2 for LLaDA and Dream: unbatched, on an **A100** (the pilot's Dream run used an L4, so its time is not comparable).
-4. Run the reconstruction score on 500 validation and 500 test answers (on the whole math bank only if it is needed as the repair).
+4. Run the reconstruction score on 500 validation and 500 test answers of the math bank (on the whole math bank only if it is needed as the repair).
 
 **Done when:** complete score files for both models, and reconstruction results on the pilot.
 
@@ -85,7 +88,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 2. Write the **final model record** (PLAN §7) as soon as test 4 and the pilot audit are in. Finish `decisions/`: confirm the post-pilot records, the pilot status, and the instructor note (gate B, MATH problems, code descriptive, Milestone 2 late).
 3. Check every citation, including PRISM, DEER, HIVE and FreeCache (PLAN §14), and make the difference from prior work explicit.
 4. Presentation (5 slides, 6 minutes), then the report (8 pages + appendix). Build both skeletons now with the pilot numbers.
-5. Release: labeled bank and analysis code. The data terms are checked at the start, before A generates.
+5. Check the terms of every data source and generator (PLAN §9), then release the labeled bank and analysis code.
 
 **Done when:** the presentation is delivered, the report is submitted, and the release is out.
 
@@ -103,7 +106,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 |---|---|
 | Pilot, midterm report | Done |
 | Rules settled | Written; confirmed when this is merged |
-| Go/no-go: pilot label audit, test 4, final model record | Not started, do first |
+| Go/no-go: pilot label audit, test 4, final model record | Code, items and notebook 09 ready; not run. Do first |
 | Reconstruction score | Not started, no code yet |
 | Math bank, code bank | Not started, pilot code to reuse |
 | Scoring the full bank | Not started, pilot notebooks to reuse |
