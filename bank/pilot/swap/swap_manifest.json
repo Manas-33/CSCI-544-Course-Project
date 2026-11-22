@@ -1,0 +1,53 @@
+{
+  "dropped": {},
+  "domains": {
+    "math": {
+      "usable": 125,
+      "items": 100,
+      "problems": 97,
+      "problems_used_twice_or_more": [
+        "gsm8kp-0274",
+        "gsm8kp-0505",
+        "gsm8kp-0741"
+      ],
+      "longest_prompt_bound": 1429,
+      "items_with_several_boxes": 5
+    },
+    "code": {
+      "usable": 125,
+      "items": 100,
+      "problems": 86,
+      "problems_used_twice_or_more": [
+        "humaneval-plus-038",
+        "humaneval-plus-062",
+        "humaneval-plus-077",
+        "humaneval-plus-161",
+        "mbpp-plus-123",
+        "mbpp-plus-223",
+        "mbpp-plus-247",
+        "mbpp-plus-301",
+        "mbpp-plus-455",
+        "mbpp-plus-473",
+        "mbpp-plus-611",
+        "mbpp-plus-643",
+        "mbpp-plus-755",
+        "mbpp-plus-757"
+      ],
+      "longest_prompt_bound": 905
+    }
+  },
+  "seed": 544,
+  "per_domain": 100,
+  "max_prompt_tokens": 1760,
+  "inputs": {
+    "bank/pilot/pilot_bank.jsonl": "aa4d8cc3ee3c9ca1f3bbb6e48762d40a63f5d422d48246c6ec7b3de02ce0d7ab",
+    "bank/pilot/pilot_labels.jsonl": "84c206b7f14f58767f366939d7ef63dbb8bb8d953e706620138bd1fb5f512f24"
+  },
+  "lengths_from": [
+    "results/pilot/ar"
+  ],
+  "outputs": {
+    "swap_items.jsonl": "ce36308284e6baf27aa62514b3b122474efc3b3cf854b3050f7bf0eb247337bf",
+    "swap_key.jsonl": "6b218426a69d4cbf0c0c5f4affb34f3b39056a0071e7d80456f2b12db5b67f00"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "seed": 544,
+  "per_stratum": 50,
+  "items": 200,
+  "excluded_candidates": 0,
+  "inputs": {
+    "bank/pilot/pilot_bank.jsonl": "aa4d8cc3ee3c9ca1f3bbb6e48762d40a63f5d422d48246c6ec7b3de02ce0d7ab",
+    "bank/pilot/pilot_labels.jsonl": "84c206b7f14f58767f366939d7ef63dbb8bb8d953e706620138bd1fb5f512f24"
+  },
+  "outputs": {
+    "audit_sheet.jsonl": "353667f339949f1de25400f0b0bad50ddb34f74bdb2548c45c0acff9d9849afd",
+    "audit_key.jsonl": "59c7fe67d30ddeb3c9ebd7a4e72ff88cd344ce9fdc61096f2e3e302a803909d1"
+  }
+}

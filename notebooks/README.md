@@ -9,6 +9,10 @@ Each notebook runs in its **own fresh Colab runtime** (the model environments co
 | `03_illada.ipynb` | `.../illada.txt` (transformers 4.57.1) | iLLaDA's answer-slot count on the development bank, the usable-scores gate, and tests 1–3. |
 | `04_dream.ipynb` | `.../dream.txt` (transformers 4.46.2, torch 2.5.1; restart the session after installing) | Dream's answer-slot count, the usable-scores gate, and tests 1–3 (test 2 is also its shift check). |
 
+Notebooks 05–08 built and scored the pilot bank (`results/pilot/README.md`).
+
+**Step 0 of the go/no-go:** `09_step0.ipynb` (A100, about an hour; cells in `nb_step0.py`) scores the answer-swap items with every verifier, the H1 models first, and the pilot bank twice with the AR models, then runs `analysis.step0`. It saves to Google Drive (`MyDrive/cs544_step0/`) after each step, continues after a disconnect, and gives the GPU back at the end. Unzip `step0_results.zip` into the repo and commit `results/step0/`.
+
 Each notebook clones `main` by default; set `BRANCH` in the first code cell to test another branch. Shell lines use `{VAR}` for Python variables (IPython reads `$N.json` as attribute access and leaves the line unexpanded).
 
 **Reading the output.** Every check prints PASS or FAIL and writes a JSON report either way. A FAIL is a result, not a crash. Under PLAN.md §4, a model that fails the sanity bar (test 1) after its code passes the reference checks counts as a weak verifier (a gate A failure), not an open bug. The development-bank scores are pipeline checks, never results (PLAN.md §2).

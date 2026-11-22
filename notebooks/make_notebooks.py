@@ -9,6 +9,8 @@ import json
 import sys
 from pathlib import Path
 
+import nb_step0
+
 REPO = "https://github.com/Manas-33/CSCI-544-Course-Project.git"
 
 def nb(cells):
@@ -308,6 +310,8 @@ restart_note="**After the install cell finishes:** open *Runtime → Restart ses
 out = Path(sys.argv[1])
 for name, book in (("01_ar_verifiers", ar), ("02_llada", llada), ("03_illada", illada), ("04_dream", dream),
                    ("05_pilot_bank", pilot_bank), ("06_pilot_ar", pilot_ar), ("07_pilot_llada", pilot_llada),
-                   ("08_pilot_dream", pilot_dream)):
+                   ("08_pilot_dream", pilot_dream),
+                   ("09_step0", nb(nb_step0.cells(REPO))),
+                   ):
     (out / f"{name}.ipynb").write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print("wrote", name)

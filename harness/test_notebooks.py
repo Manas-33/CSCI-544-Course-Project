@@ -10,7 +10,9 @@ from pathlib import Path
 NOTEBOOKS = sorted(Path("notebooks").glob("*.ipynb"))
 NAMESPACE = {"BRANCH": "main", "PY": "/content/env/bin/python", "OUT": "results/stage3/x", "N": 1, "n": 8, "p": "think_nl", "PREFIX": "think_nl", "FILES": "a.jsonl b.jsonl",
              "DEV_HASH": "d" * 64, "SANITY_HASH": "s" * 64, "PILOT_HASH": "h" * 64,
-             "d": "math", "t": "T1", "cfg": "pilot_small"}
+             "d": "math", "t": "T1", "cfg": "pilot_small",
+             "COMMIT": "c" * 40, "SWAP": "bank/pilot/swap/swap_items.jsonl", "PILOT": "bank/pilot/pilot_bank.jsonl", "SWAP_HASH": "e" * 64, "step": "swap/pilot_small",
+             }
 
 
 def shell_lines():
