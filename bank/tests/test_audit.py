@@ -390,6 +390,258 @@ def test_answers_outside_the_drawn_order_are_refused(audit):
             run(ids)
 
 
+# ---------------------------------------------------------------- per domain
+
+HUMANEVAL, MBPP = "evalplus/humaneval+", "evalplus/mbpp+"
+
+
+@pytest.fixture
+def by_domain(audit, tmp_path):
+    """The audit above with sources, and its first sheet (the items that must be read and 100 others) answered."""
+    for row in audit.bank.values():
+        row["source"] = "gsm8k-platinum/test" if row["domain"] == "math" else (
+            HUMANEVAL if int(row["problem_id"][4:]) % 5 < 2 else MBPP)
+    write_jsonl(tmp_path / "bank.jsonl", audit.bank.values())
+    audit.source = {a: audit.bank[audit.key[a]]["source"] for a in audit.truth}
+    audit.math = [a for a in audit.truth if audit.source[a].startswith("gsm8k")]
+    audit.humaneval = [a for a in audit.truth if audit.source[a] == HUMANEVAL]
+    audit.mbpp = [a for a in audit.truth if audit.source[a] == MBPP]
+    audit.codex(flip=[i for i in audit.truth if i not in audit.family][:20])
+    audit.human(100)
+    audit.first = {r["audit_id"] for r in audit_sheet.read_answers(audit.folder / "human_answers_1.csv")}
+    audit.answer()
+    audit.only = lambda *names: audit_sheet.main(["human", *audit.args, "--only", *names])
+
+    def result(errors=(), cleared=(), differ=()):
+        look = tmp_path / "recheck.csv"
+        look.write_text("audit_id,label_error,reason\n" + "".join(f"{i},yes,checked\n" for i in errors)
+                        + "".join(f"{i},no,misread it\n" for i in cleared))
+        audit.answer(differ=differ)
+        audit_sheet.main(["score", *audit.args, "--by-domain", "--recheck", str(look)])
+        return json.loads((audit.folder / "audit_result_by_domain.json").read_text())
+
+    audit.by_domain = result
+    return audit
+
+
+def test_a_chosen_sheet_holds_every_unread_item_of_its_domains_and_sources(by_domain):
+    a = by_domain
+    a.only("math", f"code:{HUMANEVAL}")
+    ids = [r["audit_id"] for r in audit_sheet.read_answers(a.folder / "human_answers_2.csv")]
+    assert set(ids) == set(a.math + a.humaneval) - a.first and len(ids) == len(set(ids))
+    assert not set(ids) & set(a.mbpp)
+    assert ids != sorted(ids)
+    kinds = [a.source[i].startswith("gsm8k") for i in ids]
+    assert kinds != sorted(kinds) and kinds != sorted(kinds, reverse=True)                # the domains are mixed
+    expected = sorted(ids)
+    random.Random("544:audit:human:2").shuffle(expected)
+    assert ids == expected                                                                # seeded, from sheet order alone
+    rows = {r["audit_id"]: r for r in a.sheet}
+    text = (a.folder / "human_sheet_2.md").read_text()
+    assert text == audit_sheet.human_sheet([rows[i] for i in ids], 2)                     # the earlier sheets' layout
+    for leak in ("tag", "openai", "gpt", "Phi", "codex", "Codex", "disagree", "evalplus", "gsm8k", "reference"):
+        assert leak not in text, leak
+    with pytest.raises(SystemExit, match="nothing new"):
+        a.only("math")
+    a.human("all")                                                                        # the items left are still found
+    assert {r["audit_id"] for r in audit_sheet.read_answers(a.folder / "human_answers_3.csv")} == set(a.mbpp) - a.first
+
+
+def test_a_chosen_sheet_can_take_one_source_and_refuses_unknown_names(by_domain):
+    a = by_domain
+    for bad in ("maths", HUMANEVAL, "code:evalplus/humaneval", "math:" + HUMANEVAL):
+        with pytest.raises(SystemExit, match="no item of the sheet"):
+            a.only("math", bad)
+    for both in (["--read", "100", "--only", "math"], []):
+        with pytest.raises(SystemExit):
+            audit_sheet.main(["human", *a.args, *both])
+    assert len(audit_sheet.answer_files(a.folder)) == 1                                   # nothing was written
+    a.only(f"code:{HUMANEVAL}")
+    assert {r["audit_id"] for r in audit_sheet.read_answers(a.folder / "human_answers_2.csv")} == set(a.humaneval) - a.first
+
+
+def test_the_first_sheet_keeps_the_answers_whichever_way_it_is_chosen(audit):
+    with pytest.raises(FileNotFoundError):
+        audit_sheet.main(["human", *audit.args, "--only", "math"])
+    audit.codex()
+    audit_sheet.main(["human", *audit.args, "--only", "math"])
+    kept = (audit.folder / "codex_answers_used.jsonl").read_bytes()
+    assert kept == (audit.folder / "codex/codex_answers.jsonl").read_bytes()
+
+
+def test_math_passes_per_domain_only_without_any_label_error(by_domain):
+    a = by_domain
+    a.only("math", f"code:{HUMANEVAL}")
+    r = a.by_domain()
+    assert r["math"] == {"decision": "PASS", "items": 100, "read": 100, "label_errors": 0, "rate": 0,
+                         "upper_bound_95": pytest.approx(0.0295, abs=5e-5), "reader_differs_blind": 0,
+                         "waiting_for_second_look": []}
+    one = a.math[:1]
+    r = a.by_domain(differ=one)
+    assert (r["math"]["decision"], r["math"]["waiting_for_second_look"]) == ("SECOND LOOK", one)    # never a fail before it
+    assert r["math"]["label_errors"] == 1                                                 # counted until then
+    r = a.by_domain(differ=one, errors=one)
+    assert (r["math"]["decision"], r["math"]["label_errors"]) == ("FAIL", 1)
+    assert r["math"]["upper_bound_95"] == pytest.approx(0.0466, abs=5e-5)
+    r = a.by_domain(differ=one, cleared=one)
+    assert (r["math"]["decision"], r["math"]["label_errors"], r["math"]["reader_differs_blind"]) == ("PASS", 0, 1)
+    path = a.folder / "human_answers_2.csv"                 # "unsure" counts as an error too, whatever our label is
+    a.answer()
+    rows = audit_sheet.read_answers(path)
+    for i in (next(r["audit_id"] for r in rows if r["audit_id"] in a.math and a.truth[r["audit_id"]] == v)
+              for v in ("correct", "wrong")):
+        path.write_text("audit_id,verdict,note\n" + "".join(
+            f"{r['audit_id']},{'unsure' if r['audit_id'] == i else r['verdict']},\n" for r in rows))
+        audit_sheet.main(["score", *a.args, "--by-domain"])
+        m = json.loads((a.folder / "audit_result_by_domain.json").read_text())["math"]
+        assert (m["decision"], m["label_errors"], m["waiting_for_second_look"]) == ("SECOND LOOK", 1, [i])
+    waiting_code = a.humaneval[:1] + [i for i in a.mbpp if i in a.first][:1]
+    r = a.by_domain(differ=one + waiting_code, errors=one)  # only math items hold back the math verdict
+    assert r["math"]["decision"] == "FAIL" and r["code"][HUMANEVAL]["waiting_for_second_look"] == a.humaneval[:1]
+    assert a.by_domain(differ=waiting_code)["math"]["decision"] == "PASS"
+    two = a.math[:2]                                        # one error is certain, but the second look is not finished
+    assert a.by_domain(differ=two, errors=two[:1])["math"]["decision"] == "SECOND LOOK"
+    assert a.by_domain(differ=two, errors=two[:1], cleared=two[1:])["math"]["decision"] == "FAIL"
+
+
+def test_code_gets_a_rate_without_a_verdict_and_mbpp_is_not_counted(by_domain):
+    a = by_domain
+    a.only("math", f"code:{HUMANEVAL}")
+    n, clean = len(a.humaneval), a.by_domain()
+    assert clean["code"][HUMANEVAL] == {"decision": None, "items": n, "read": n, "label_errors": 0, "rate": 0,
+                                        "upper_bound_95": pytest.approx(1 - 0.05 ** (1 / n), abs=1e-6),
+                                        "reader_differs_blind": 0, "waiting_for_second_look": []}
+    assert clean["code"][MBPP] == "not counted"
+    mbpp = [i for i in a.mbpp if i in a.first][:5]
+    bad = a.humaneval[:2]
+    r = a.by_domain(differ=mbpp + bad, errors=mbpp + bad[:1])            # a second look at MBPP+ items is accepted
+    assert r["math"] == clean["math"] and r["code"][MBPP] == "not counted"
+    he = r["code"][HUMANEVAL]
+    assert (he["decision"], he["label_errors"], he["waiting_for_second_look"]) == (None, 2, bad[1:])
+    assert he["rate"] == pytest.approx(2 / n) and he["upper_bound_95"] == pytest.approx(upper_bound(0, n, n, 0, 2))
+    assert [d["audit_id"] for d in r["differences"]] == sorted(bad)
+    assert not [i for i in mbpp if i in json.dumps(r)]
+    assert "codex" not in json.dumps(r)
+    assert upper_bound(0, 41, 41, 0, 0) == pytest.approx(0.070, abs=5e-4)                 # the pilot's, in the record
+
+
+def test_the_per_domain_score_refuses_unread_math_items(by_domain, tmp_path):
+    a = by_domain
+    with pytest.raises(SystemExit, match=f"{len(set(a.math) - a.first)} math items have no answer"):
+        a.by_domain()
+    a.only("math")
+    path = a.folder / "human_answers_2.csv"
+    with pytest.raises(SystemExit, match="no verdict"):                                   # a blank answer
+        audit_sheet.main(["score", *a.args, "--by-domain"])
+    a.answer()
+    rows = audit_sheet.read_answers(path)
+    path.write_text("audit_id,verdict,note\n" + "".join(f"{r['audit_id']},{r['verdict']},\n" for r in rows[1:]))
+    with pytest.raises(SystemExit, match="1 math items have no answer"):
+        audit_sheet.main(["score", *a.args, "--by-domain"])
+    assert not (a.folder / "audit_result_by_domain.json").exists()
+    path.write_text("audit_id,verdict,note\n" + "".join(f"{r['audit_id']},{r['verdict']},\n" for r in rows))
+    r = a.by_domain()                                       # math alone is enough, but code has no rate yet
+    he = r["code"][HUMANEVAL]
+    assert r["math"]["decision"] == "PASS" and he["read"] < he["items"]
+    assert he["rate"] is None and he["upper_bound_95"] is None
+
+
+def test_the_per_domain_mark_is_for_100_math_items_and_known_sources(by_domain):
+    a = by_domain
+    answers = {i: {"verdict": v, "note": ""} for i, v in a.truth.items()}
+    def run(sheet, bank=a.bank):
+        return audit_sheet.score_by_domain(sheet, a.key, bank, a.labels, answers, lambda d: {})
+    assert run(a.sheet)["math"]["decision"] == "PASS"
+    assert run([r for r in a.sheet if r["domain"] == "math"])["code"][HUMANEVAL]["items"] == 0     # a fresh math re-audit
+    with pytest.raises(SystemExit, match="99 math items"):
+        run([r for r in a.sheet if r["audit_id"] != a.math[0]])
+    other = {**a.bank, a.key[a.humaneval[0]]: {**a.bank[a.key[a.humaneval[0]]], "source": "somewhere/else"}}
+    with pytest.raises(SystemExit, match="no place"):
+        run(a.sheet, other)
+
+
+def test_the_two_scores_do_not_touch_each_other(by_domain, tmp_path):
+    a = by_domain
+    pooled = a.result()
+    before = (a.folder / "audit_result.json").read_bytes()
+    assert pooled["decision"] == "PASS (shortcut)"
+    a.only("math", f"code:{HUMANEVAL}")
+    a.by_domain(differ=a.math[:1])
+    assert (a.folder / "audit_result.json").read_bytes() == before
+    mine = (a.folder / "audit_result_by_domain.json").read_bytes()
+    a.human("all")
+    a.answer()
+    assert a.result()["decision"] == "PASS (all items read)"
+    assert (a.folder / "audit_result_by_domain.json").read_bytes() == mine
+
+
+def test_a_math_sheet_of_200_goes_through_the_unchanged_rule(tmp_path):
+    bank, labels = make_bank(pairs=220, gpt=10)
+    write_jsonl(tmp_path / "bank.jsonl", bank.values())
+    write_jsonl(tmp_path / "labels.jsonl", [{"candidate_id": c, "label": l} for c, l in labels.items()])
+    folder, files = tmp_path / "audit", ["--bank", str(tmp_path / "bank.jsonl"), "--labels", str(tmp_path / "labels.jsonl")]
+    audit_sheet.main(["sample", *files, "--out", str(folder), "--domain", "math", "--per-stratum", "100"])
+    sheet, key = audit_sheet.load_audit(folder)
+    assert Counter((r["domain"], labels[key[r["audit_id"]]]) for r in sheet) == {("math", 1): 100, ("math", 0): 100}
+    assert len({bank[c]["pair_id"] for c in key.values()}) == 200
+    assert json.loads((folder / "audit_manifest.json").read_text())["domain"] == "math"
+    # the math half does not depend on whether code is drawn too
+    both = sample(bank, labels, per_stratum=100)
+    assert sorted(c for c in both if bank[c]["domain"] == "math") == sorted(key.values())
+    truth = {a: "correct" if labels[c] else "wrong" for a, c in key.items()}
+    write_jsonl(folder / "codex" / "codex_answers.jsonl", [{"audit_id": a, "status": "ok", "verdict": v} for a, v in truth.items()])
+    args = [*files, "--audit", str(folder)]
+    audit_sheet.main(["human", *args, "--read", "100"])
+    path = folder / "human_answers_1.csv"
+    path.write_text("audit_id,verdict,note\n" + "".join(f"{r['audit_id']},{truth[r['audit_id']]},\n"
+                                                         for r in audit_sheet.read_answers(path)))
+    audit_sheet.main(["score", *args])
+    r = json.loads((folder / "audit_result.json").read_text())
+    assert (r["decision"], r["items"], r["others_read"]) == ("PASS (shortcut)", 200, 100)
+    with pytest.raises(SystemExit, match="200 math items"):                               # not the pilot's mark
+        audit_sheet.main(["score", *args, "--by-domain"])
+    for bad in ("both", "Math"):
+        with pytest.raises(SystemExit):
+            audit_sheet.main(["sample", *files, "--out", str(tmp_path / "x"), "--domain", bad])
+
+
+def test_the_pooled_rule_refuses_a_one_domain_sheet_that_is_not_200(tmp_path):
+    bank, labels = make_bank(pairs=120, gpt=10)
+    write_jsonl(tmp_path / "bank.jsonl", bank.values())
+    write_jsonl(tmp_path / "labels.jsonl", [{"candidate_id": c, "label": l} for c, l in labels.items()])
+    folder, files = tmp_path / "audit", ["--bank", str(tmp_path / "bank.jsonl"), "--labels", str(tmp_path / "labels.jsonl")]
+    audit_sheet.main(["sample", *files, "--out", str(folder), "--domain", "math"])        # 50 per label
+    _, key = audit_sheet.load_audit(folder)
+    truth = {a: "correct" if labels[c] else "wrong" for a, c in key.items()}
+    write_jsonl(folder / "codex" / "codex_answers.jsonl", [{"audit_id": a, "status": "ok", "verdict": v} for a, v in truth.items()])
+    args = [*files, "--audit", str(folder)]
+    audit_sheet.main(["human", *args, "--only", "math"])
+    path = folder / "human_answers_1.csv"
+    path.write_text("audit_id,verdict,note\n" + "".join(f"{a},{v},\n" for a, v in truth.items()))
+    with pytest.raises(SystemExit, match="100 items of one domain"):
+        audit_sheet.main(["score", *args])
+    assert not (folder / "audit_result.json").exists()
+    audit_sheet.main(["score", *args, "--by-domain"])
+    assert json.loads((folder / "audit_result_by_domain.json").read_text())["math"]["decision"] == "PASS"
+
+
+def test_the_pilot_can_give_100_fresh_math_candidates(tmp_path):
+    audit_sheet.main(["sample", *PILOT, "--out", str(tmp_path), "--domain", "math",
+                      "--exclude-key", "bank/pilot/audit/audit_key.jsonl"])
+    bank, labels = load_bank(PILOT[1:2], PILOT[3:4])
+    fresh = [k["candidate_id"] for k in read_jsonl(tmp_path / "audit_key.jsonl")]
+    assert Counter((bank[c]["domain"], labels[c]) for c in fresh) == {("math", 1): 50, ("math", 0): 50}
+    assert not set(fresh) & {k["candidate_id"] for k in read_jsonl("bank/pilot/audit/audit_key.jsonl")}
+
+
+def test_the_pilot_sheet_has_the_sources_the_per_domain_rule_counts():
+    bank, _ = load_bank(PILOT[1:2], PILOT[3:4])
+    sheet, key = audit_sheet.load_audit(Path("bank/pilot/audit"))
+    sizes = {o: len(audit_sheet.chosen_items(sheet, key, bank, [o])) for o in ("math", f"code:{HUMANEVAL}", f"code:{MBPP}")}
+    assert sizes == {"math": 100, f"code:{HUMANEVAL}": 41, f"code:{MBPP}": 59}
+    assert len(audit_sheet.chosen_items(sheet, key, bank, ["math", f"code:{HUMANEVAL}"])) == 141
+
+
 # ---------------------------------------------------------------- the Codex runner, with a stand-in CLI
 
 FAKE = r'''#!{python}
