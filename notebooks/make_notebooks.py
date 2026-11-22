@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import nb_backup_score
+import nb_score_full
 import nb_step0
 
 REPO = "https://github.com/Manas-33/CSCI-544-Course-Project.git"
@@ -314,6 +315,7 @@ for name, book in (("01_ar_verifiers", ar), ("02_llada", llada), ("03_illada", i
                    ("08_pilot_dream", pilot_dream),
                    ("09_step0", nb(nb_step0.cells(REPO))),
                    ("12_backup_score", nb(nb_backup_score.cells(REPO))),
+                   ("13_score_full", nb(nb_score_full.cells(REPO))),
                    ):
     (out / f"{name}.ipynb").write_text(json.dumps(book, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print("wrote", name)

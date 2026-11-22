@@ -85,3 +85,6 @@ __pycache__/
 
 # Final analysis: precision check, analysis manifest, test results
 !/results/final/
+
+# Full bank: verdict scores of every verifier (notebook 13)
+!/results/full/

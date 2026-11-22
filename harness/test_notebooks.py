@@ -14,6 +14,7 @@ NAMESPACE = {"BRANCH": "main", "PY": "/content/env/bin/python", "OUT": "results/
              "COMMIT": "c" * 40, "SWAP": "bank/pilot/swap/swap_items.jsonl", "PILOT": "bank/pilot/pilot_bank.jsonl", "SWAP_HASH": "e" * 64, "step": "swap/pilot_small",
              "g": "phi4mini", "DOMAINS_ARG": "math code", "DRIVE": "/d", "SHARED": "/s", "PRIVATE": "/p", "WORK": "/w", "BOX": "/b", "CHECKS": "/b/c.jsonl",
              "s": 544, "BANK": "bank/full/math/bank.jsonl", "NAME": "math", "SUBSET": "subset.json", "which": "A",
+             "SAVED": "/d/full", "BANKS": "bank/full", "ALSO_GPU": "/d/gpu.txt",
              }
 
 

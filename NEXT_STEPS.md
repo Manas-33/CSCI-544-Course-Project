@@ -59,7 +59,7 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 ### C. AR scoring
 1. Run **notebook 09** on an A100: test 4 (answer swap) for all eight verifiers and the repeat-run check (scoring test 3) for the AR models, the H1 models first. `analysis/step0.py` applies the rules per domain.
 2. Commit `results/step0/` and give F the go/no-go table.
-3. Score **both splits** of both banks with T1 and T2: Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B, Mistral-7B (H2 only), Llama-3.2-3B (gate A's reference and H2) and Qwen2.5-1.5B (H2 only). Use notebook 06 and `configs/pilot_*.json` as the template. All on an **A100**, batch size 1; Gemma with eager attention, the rest SDPA.
+3. Score **both splits** of both banks with T1 and T2: Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B, Mistral-7B (H2 only), Llama-3.2-3B (gate A's reference and H2) and Qwen2.5-1.5B (H2 only). Use **notebook 13** (`harness/full_run.py`, `configs/full_*.json`), from one Google account for C and D together. All on **one GPU type**, A100 or L4, whichever the first scoring run gets ([record](decisions/2026-11-22-scoring-one-gpu-type.md)), batch size 1; Gemma with eager attention, the rest SDPA.
 4. AR arm of the reconstruction score: exact log-probability of the answer, for the four AR models, on the same answers as D's step 4.
 5. Only if the final model record leaves fewer than three AR verifiers: score Qwen3-8B (thinking off) too, with the rest.
 6. Reproduce the pilot gates and, at the end, the final main table from the saved outputs, and review E's preregistration commit.
@@ -69,7 +69,7 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 ### D. Diffusion scoring and reconstruction
 1. Test 4 for LLaDA and Dream runs in notebook 09 (C); check their environments and score files.
 2. Implement the **reconstruction score** (PLAN §4): LLaDA's `get_log_likelihood` Monte Carlo estimate, ported to Dream with its shift. Choose the sample count on the development bank. Run it on the pilot and report gate A (per token, 128 samples, seed 544) and the repeat check with seed 545 (PLAN §7).
-3. Score both splits of both banks with T1 and T2 for LLaDA and Dream: unbatched, on an **A100** (the pilot's Dream run used an L4, so its time is not comparable).
+3. Score both splits of both banks with T1 and T2 for LLaDA and Dream: unbatched, in notebook 13, on the **same GPU type** as the AR models ([record](decisions/2026-11-22-scoring-one-gpu-type.md); the pilot's Dream run used an L4, so its time is not comparable).
 4. Run the reconstruction score on 500 validation and 500 test answers of the math bank (on the whole math bank only if it is needed as the repair).
 
 **Done when:** complete score files for both models, and reconstruction results on the pilot.
@@ -84,7 +84,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 **Done when:** the frozen manifest is committed, then the final tables and figures are produced from it in one run.
 
 ### F. Custody, infrastructure and writing
-1. Do the bank freeze. Keep the **test labels**, code execution logs and error tags off the repo and the shared storage used by C, D and E. Join the labels once, after E's preregistration commit, and log it.
+1. Do the bank freeze: each bank file is committed once (notebook 13 refuses a bank that changed after its first commit). Keep the **test labels**, code execution logs and error tags off the repo and the shared storage used by C, D and E. Join the labels once, after E's preregistration commit, and log it.
 2. Write the **final model record** (PLAN §7) as soon as test 4 and the pilot audit are in. Finish `decisions/`: confirm the post-pilot records, the pilot status, and the instructor note (gate B, MATH problems, code descriptive, Milestone 2 late).
 3. Check every citation, including PRISM, DEER, HIVE and FreeCache (PLAN §14), and make the difference from prior work explicit.
 4. Presentation (5 slides, 6 minutes), then the report (8 pages + appendix). Build both skeletons now with the pilot numbers.
@@ -109,7 +109,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 | Go/no-go: pilot label audit, test 4, final model record | Code, items and notebook 09 ready; not run. Do first |
 | Reconstruction score | Not started, no code yet |
 | Math bank, code bank | Not started, pilot code to reuse |
-| Scoring the full bank | Not started, pilot notebooks to reuse |
+| Scoring the full bank | Notebook 13 ready; not run (needs the final model record and the bank freeze) |
 | Validation, preregistration, final test | Not started, metric code partly exists |
 | Presentation | Slot not confirmed |
 | Final report | Not started |

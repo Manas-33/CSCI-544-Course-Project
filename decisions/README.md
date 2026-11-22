@@ -20,5 +20,6 @@ Team decisions and every deviation from [PLAN.md](../PLAN.md), one file per deci
 | 2026-11-21 | [The matching check allows 5 points, and 3 between the pairs](2026-11-21-matching-check-five-points.md) (post hoc) |
 | 2026-11-21 | [Details of the full bank](2026-11-21-full-bank-details.md) |
 | 2026-11-21 | [How the mechanism and side results are worded](2026-11-21-mechanism-wording.md) (after the pilot) |
+| 2026-11-22 | [The full bank is scored on one GPU type, A100 or L4](2026-11-22-scoring-one-gpu-type.md) (before any full-bank answer is scored) |
 
 Still to record: the **final model record** (PLAN.md §7); the second-person read of the sanity set; dev-bank numbers as labeled pipeline checks; the code dev bank's MBPP-only tests.

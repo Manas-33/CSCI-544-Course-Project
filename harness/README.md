@@ -62,6 +62,15 @@ Model/local paths and revisions are configured under `models`; pin both model/to
 Share `manifest.json`, `scores_A.jsonl`, `scores_B.jsonl`, `pairs.jsonl`, and analysis `metrics.json`, `summary.csv`, `review.csv`, `development.png`. Missing/failed scores produce coverage-only `metrics.json` and a nonzero exit, not subset metrics. Runtime excludes only explicitly cold forward calls; loading and peak allocated memory are separate. Figures show precision/quantization. Development evidence is not a test result, H1 test, strongest-pair selection, or proof of ensemble benefit. Final-answer correctness does not establish correct reasoning; Yes/No probabilities are uncalibrated token events. The development bank has not been scored by the AR models yet, so its exact token lengths on the real tokenizers are still unchecked.
 
 
+## Scoring the full bank
+
+`harness/full_run.py` (notebook 13) holds the guards, the exact scoring commands of every verifier, saving and resuming, and the completeness check; its docstring lists the rules. `configs/full_*.json` are the pilot's configs with the model and tokenizer commits recorded in the pilot's manifests.
+
+```bash
+python -m harness.full_run check     # offline: is every verifier x template x candidate in results/full?
+```
+
+
 ## Diffusion verifiers (LLaDA, iLLaDA, Dream)
 
 Scoring goes through **`harness/diffusion/`** for all three models: see its README for the environments, the scoring-code checks and `run_score`. The same T1 wording and the same six Yes and six No spellings are used as for the AR models (a test checks that the T1 text matches `harness/prompts.py`).
