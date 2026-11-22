@@ -7,6 +7,7 @@ Scores a candidate with LLaDA-8B-Instruct, iLLaDA-8B-Instruct or Dream-v0-Instru
 | `scorer.py` | Model specs, Yes/No token sets, the scorer classes, `load_scorer()` |
 | `interface.py` | Score row (PLAN §9) and the T1 prompt, the same text as `harness/prompts.py` (a test checks this) |
 | `run_score.py` | Scores a JSONL of candidates into score rows; resumes by skipping ids already written |
+| `reconstruction.py`, `run_reconstruction.py` | The reconstruction score and its runner (last section) |
 | `checks/` | Scoring-code tests 1–3 (GPU) and a CPU smoke test on the real model code |
 | `requirements/` | One file per model environment, plus `cpu-tests.txt` |
 | `tests/` | CPU unit tests with tiny mocks; no downloads |
@@ -88,3 +89,22 @@ python -m pytest harness/diffusion/tests -q
 ```
 
 They cover the Yes/No sets (multi-token spellings dropped, overlap rejected), the verdict arithmetic, mask-slot indexing for 1, 8 and 32 slots, Dream's shift against the official shifted logits, Dream's official mask and position ids, iLLaDA's unbatched calls, left padding on tiny attention models (including a deliberately leaky scorer that the test catches), score rows, the scoring loop's `too_long` and `error` rows, and the AUROC and Spearman helpers.
+
+## Reconstruction score (LLaDA and Dream; PLAN §4 and §7)
+
+`reconstruction.py` estimates how likely the candidate is given the problem: the problem is a user turn in the model's own chat template, the candidate is the assistant's answer, and the score is the **per-token masked-reconstruction log-likelihood** (higher = more plausible). It follows LLaDA's official `get_log_likelihood` (the commit pinned above): each Monte Carlo sample masks k of the L answer tokens, never the prompt, and is weighted by L/k; mask counts are spread evenly within groups of 16. Dream uses the same estimate with its one-position shift. `harness/ar_logprob.py` is the AR arm: the exact log-probability of the same answer tokens, in the same row format. It is LLaDA's only allowed repair (math, 128 samples, seed 544; PLAN §7) and otherwise a side experiment.
+
+```bash
+python -m harness.diffusion.checks.check_reconstruction --model llada --llada-repo /content/LLaDA --report reports/reconstruction_llada.json   # GPU
+python -m harness.diffusion.run_reconstruction --model llada --domain math --seed 544 --items bank/pilot/pilot_bank.jsonl --out results/reconstruction/pilot/llada_math_s544.jsonl
+python -m harness.ar_logprob --config configs/pilot_qwen_mistral.json --which A --items bank/pilot/pilot_bank.jsonl --out results/reconstruction/pilot/ar_qwen25.jsonl
+python -m analysis.reconstruction pilot --bank bank/pilot/pilot_bank.jsonl --labels bank/pilot/pilot_labels.jsonl --scores results/reconstruction/pilot --verdicts results/pilot/ar results/pilot/llada results/pilot/dream --out results/reconstruction/pilot/analysis
+```
+
+Notebook 12 runs all of it, and can also score the side experiment: 500 validation and 500 test answers of the math bank (whole problems, seed 544, drawn by `analysis.reconstruction draw`). It runs on an A100 or an L4, one type for all the pilot scores; full-bank answers are scored on an A100, after the final model record is merged. What is fixed:
+
+- **End-of-turn token:** neither shown nor scored, in every model. The official code scores the answer ids it is given and appends nothing.
+- **Answer text:** the candidate without leading and trailing whitespace (LLaDA's, Llama's and Gemma's templates drop it anyway). The whole text is tokenized and cut after the prompt's tokens; if a token would span the boundary, the answer is tokenized on its own, and the row's `boundary` says `separate`.
+- **Seeds:** each item's random numbers come from the seed and its candidate id, so the order of the items and resuming change nothing. Fewer samples are a prefix of more, and `loglik_at` keeps the estimates from 8 to 128 samples, for the development-bank choice (`analysis.reconstruction samples`).
+- **`--micro-batch`** (samples per forward pass): 1. Samples of one item have equal length, so nothing is padded and FP32 results agree, but BF16 can round differently for another matrix shape (`decisions/2026-10-26-diffusion-scored-unbatched.md`). The GPU check reports the difference.
+- **Rows** are described in `run_reconstruction.py`. A file scored with other settings is refused; `error` rows are retried; answers that do not fit the context (`too_long`) or have no text (`empty`) get a row without a score.

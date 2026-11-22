@@ -79,3 +79,6 @@ __pycache__/
 
 # Step 0 of the go/no-go: answer-swap and repeat-run scores (notebook 09)
 !/results/step0/
+
+# Backup score: reconstruction and AR log-probability scores (notebook 12)
+!/results/reconstruction/

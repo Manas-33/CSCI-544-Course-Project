@@ -1,6 +1,6 @@
 # Colab notebooks (stage 3: finish the scoring-code tests)
 
-Each notebook runs in its **own fresh Colab runtime** (the model environments conflict), on an **A100**. Open it from GitHub in Colab (*File → Open notebook → GitHub*), run all cells, and download the zip at the end. Unzip it into the repo at the same path (`results/stage3/<name>/`) and commit it, or send it over.
+Each notebook runs in its **own fresh Colab runtime** (the model environments conflict), on an **A100** unless its paragraph below says otherwise. Open it from GitHub in Colab (*File → Open notebook → GitHub*), run all cells, and download the zip at the end. Unzip it into the repo at the same path (`results/stage3/<name>/`) and commit it, or send it over.
 
 | Notebook | Environment | What it settles |
 |---|---|---|
@@ -11,7 +11,9 @@ Each notebook runs in its **own fresh Colab runtime** (the model environments co
 
 Notebooks 05–08 built and scored the pilot bank (`results/pilot/README.md`).
 
-**Step 0 of the go/no-go:** `09_step0.ipynb` (A100, about an hour; cells in `nb_step0.py`) scores the answer-swap items with every verifier, the H1 models first, and the pilot bank twice with the AR models, then runs `analysis.step0`. It saves to Google Drive (`MyDrive/cs544_step0/`) after each step, continues after a disconnect, and gives the GPU back at the end. Unzip `step0_results.zip` into the repo and commit `results/step0/`.
+**Step 0 of the go/no-go:** `09_step0.ipynb` (A100 or L4; about an hour on an A100, an L4 is roughly three times slower per pass; cells in `nb_step0.py`) scores the answer-swap items with every verifier, the H1 models first, and the pilot bank twice with the AR models, then runs `analysis.step0`. It saves to Google Drive (`MyDrive/cs544_step0/`) after each step, continues after a disconnect, and gives the GPU back at the end. Unzip `step0_results.zip` into the repo and commit `results/step0/`.
+
+**The full bank and the backup score.** `10_full_generate.ipynb` writes the full bank's answers: the three open models on an A100 (about two hours), GPT-4.1-mini by API in a separate CPU runtime. `11_full_label_split.ipynb` labels them, builds the bank and splits it; it runs on a CPU, and **only the label keeper** (role F in PLAN.md §2, who takes no part in scoring, selection or thresholds) runs it. Cells of both are in `nb_full_bank.py`. `12_backup_score.ipynb` (A100 or L4; cells in `nb_backup_score.py`) scores the pilot's math answers with LLaDA's reconstruction score and says whether it passes as the repair (PLAN.md §7); Dream, the AR arm and the math-bank side experiment are switches. Both pilot seeds must come from one GPU type, and it scores full-bank answers on an A100 only. All three save to Google Drive, continue after a disconnect, and release the runtime at the end.
 
 Each notebook clones `main` by default; set `BRANCH` in the first code cell to test another branch. Shell lines use `{VAR}` for Python variables (IPython reads `$N.json` as attribute access and leaves the line unexpanded).
 
