@@ -1,0 +1,575 @@
+{
+  "swap_items_sha256": "ce36308284e6baf27aa62514b3b122474efc3b3cf854b3050f7bf0eb247337bf",
+  "bank_sha256": "aa4d8cc3ee3c9ca1f3bbb6e48762d40a63f5d422d48246c6ec7b3de02ce0d7ab",
+  "template": "T1",
+  "rules": {
+    "swap_share_at_least": 0.8,
+    "rerun_spearman_above": 0.999
+  },
+  "swap": {
+    "Qwen2.5-7B": {
+      "math": {
+        "items": 100,
+        "lowered": 99,
+        "tied": 0,
+        "raised": 1,
+        "unscored": 0,
+        "share_lowered": 0.99,
+        "ci95": [
+          0.9455138038212946,
+          0.9982325679358593
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 71,
+        "tied": 0,
+        "raised": 29,
+        "unscored": 0,
+        "share_lowered": 0.71,
+        "ci95": [
+          0.6146110882442888,
+          0.7898516425087772
+        ],
+        "outcome": "fail"
+      },
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28"
+    },
+    "Llama-3.1-8B": {
+      "math": {
+        "items": 100,
+        "lowered": 99,
+        "tied": 0,
+        "raised": 1,
+        "unscored": 0,
+        "share_lowered": 0.99,
+        "ci95": [
+          0.9455138038212946,
+          0.9982325679358593
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 68,
+        "tied": 0,
+        "raised": 32,
+        "unscored": 0,
+        "share_lowered": 0.68,
+        "ci95": [
+          0.5833738138954762,
+          0.7633085267500092
+        ],
+        "outcome": "fail"
+      },
+      "revision": "0e9e39f249a16976918f6564b8830bc894c89659"
+    },
+    "Gemma-2-9B": {
+      "math": {
+        "items": 100,
+        "lowered": 99,
+        "tied": 0,
+        "raised": 1,
+        "unscored": 0,
+        "share_lowered": 0.99,
+        "ci95": [
+          0.9455138038212946,
+          0.9982325679358593
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 69,
+        "tied": 0,
+        "raised": 31,
+        "unscored": 0,
+        "share_lowered": 0.69,
+        "ci95": [
+          0.5937394428051057,
+          0.7722030278762395
+        ],
+        "outcome": "fail"
+      },
+      "revision": "11c9b309abf73637e4b6f9a3fa1e92e615547819"
+    },
+    "LLaDA-8B": {
+      "math": {
+        "items": 100,
+        "lowered": 99,
+        "tied": 0,
+        "raised": 1,
+        "unscored": 0,
+        "share_lowered": 0.99,
+        "ci95": [
+          0.9455138038212946,
+          0.9982325679358593
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 66,
+        "tied": 0,
+        "raised": 34,
+        "unscored": 0,
+        "share_lowered": 0.66,
+        "ci95": [
+          0.5627772885472462,
+          0.7453847920265184
+        ],
+        "outcome": "fail"
+      },
+      "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07"
+    },
+    "Mistral-7B": {
+      "math": {
+        "items": 100,
+        "lowered": 98,
+        "tied": 0,
+        "raised": 2,
+        "unscored": 0,
+        "share_lowered": 0.98,
+        "ci95": [
+          0.929988209271456,
+          0.9944980324498376
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 57,
+        "tied": 0,
+        "raised": 43,
+        "unscored": 0,
+        "share_lowered": 0.57,
+        "ci95": [
+          0.47215389549212305,
+          0.6626670147588988
+        ],
+        "outcome": "fail"
+      },
+      "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71"
+    },
+    "Llama-3.2-3B": {
+      "math": {
+        "items": 100,
+        "lowered": 99,
+        "tied": 0,
+        "raised": 1,
+        "unscored": 0,
+        "share_lowered": 0.99,
+        "ci95": [
+          0.9455138038212946,
+          0.9982325679358593
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 58,
+        "tied": 0,
+        "raised": 42,
+        "unscored": 0,
+        "share_lowered": 0.58,
+        "ci95": [
+          0.4820648670304296,
+          0.6720161732564526
+        ],
+        "outcome": "fail"
+      },
+      "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95"
+    },
+    "Qwen2.5-1.5B": {
+      "math": {
+        "items": 100,
+        "lowered": 100,
+        "tied": 0,
+        "raised": 0,
+        "unscored": 0,
+        "share_lowered": 1.0,
+        "ci95": [
+          0.9630065017930143,
+          1.0
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 50,
+        "tied": 0,
+        "raised": 50,
+        "unscored": 0,
+        "share_lowered": 0.5,
+        "ci95": [
+          0.4038315303659956,
+          0.5961684696340044
+        ],
+        "outcome": "fail"
+      },
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+    },
+    "Dream-7B": {
+      "math": {
+        "items": 100,
+        "lowered": 98,
+        "tied": 0,
+        "raised": 2,
+        "unscored": 0,
+        "share_lowered": 0.98,
+        "ci95": [
+          0.929988209271456,
+          0.9944980324498376
+        ],
+        "outcome": "pass"
+      },
+      "code": {
+        "items": 100,
+        "lowered": 54,
+        "tied": 0,
+        "raised": 46,
+        "unscored": 0,
+        "share_lowered": 0.54,
+        "ci95": [
+          0.44264860323368227,
+          0.6343919169097589
+        ],
+        "outcome": "fail"
+      },
+      "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae"
+    }
+  },
+  "rerun": {
+    "Qwen2.5-7B": {
+      "outcome": "pass",
+      "unscored": {
+        "run_1": 0,
+        "run_2": 0
+      },
+      "run_1_vs_run_2": {
+        "all": {
+          "n": 500,
+          "spearman": 1.0,
+          "max_abs_difference": 0.0,
+          "identical": 500
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        }
+      },
+      "run_1_vs_october_27": {
+        "all": {
+          "n": 500,
+          "spearman": 0.9983364093456373,
+          "max_abs_difference": 1.5000012616678422,
+          "identical": 0
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9980776652426439,
+          "max_abs_difference": 1.1249995445132273,
+          "identical": 0
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9982328037248593,
+          "max_abs_difference": 1.5000012616678422,
+          "identical": 0
+        }
+      },
+      "revisions": {
+        "run_1": "a09a35458c702b33eeacc393d103063234e8bc28",
+        "run_2": "a09a35458c702b33eeacc393d103063234e8bc28",
+        "october_27": "a09a35458c702b33eeacc393d103063234e8bc28"
+      }
+    },
+    "Llama-3.1-8B": {
+      "outcome": "pass",
+      "unscored": {
+        "run_1": 0,
+        "run_2": 0
+      },
+      "run_1_vs_run_2": {
+        "all": {
+          "n": 500,
+          "spearman": 1.0,
+          "max_abs_difference": 0.0,
+          "identical": 500
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        }
+      },
+      "run_1_vs_october_27": {
+        "all": {
+          "n": 500,
+          "spearman": 0.9983115452461809,
+          "max_abs_difference": 0.3749998372598493,
+          "identical": 0
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9937537560600969,
+          "max_abs_difference": 0.3749998372598493,
+          "identical": 0
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9976552584841356,
+          "max_abs_difference": 0.374993592379949,
+          "identical": 0
+        }
+      },
+      "revisions": {
+        "run_1": "0e9e39f249a16976918f6564b8830bc894c89659",
+        "run_2": "0e9e39f249a16976918f6564b8830bc894c89659",
+        "october_27": "0e9e39f249a16976918f6564b8830bc894c89659"
+      }
+    },
+    "Gemma-2-9B": {
+      "outcome": "pass",
+      "unscored": {
+        "run_1": 0,
+        "run_2": 0
+      },
+      "run_1_vs_run_2": {
+        "all": {
+          "n": 500,
+          "spearman": 1.0,
+          "max_abs_difference": 0.0,
+          "identical": 500
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        }
+      },
+      "run_1_vs_october_27": {
+        "all": {
+          "n": 500,
+          "spearman": 0.9994107496429986,
+          "max_abs_difference": 0.4999873150349716,
+          "identical": 0
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9991375222003552,
+          "max_abs_difference": 0.3749827468221767,
+          "identical": 0
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9990108001728027,
+          "max_abs_difference": 0.4999873150349716,
+          "identical": 0
+        }
+      },
+      "revisions": {
+        "run_1": "11c9b309abf73637e4b6f9a3fa1e92e615547819",
+        "run_2": "11c9b309abf73637e4b6f9a3fa1e92e615547819",
+        "october_27": "11c9b309abf73637e4b6f9a3fa1e92e615547819"
+      }
+    },
+    "Mistral-7B": {
+      "outcome": "pass",
+      "unscored": {
+        "run_1": 0,
+        "run_2": 0
+      },
+      "run_1_vs_run_2": {
+        "all": {
+          "n": 500,
+          "spearman": 1.0,
+          "max_abs_difference": 0.0,
+          "identical": 500
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        }
+      },
+      "run_1_vs_october_27": {
+        "all": {
+          "n": 500,
+          "spearman": 0.9982747770991085,
+          "max_abs_difference": 0.7499992965184994,
+          "identical": 0
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9979148466375461,
+          "max_abs_difference": 0.4999889343237811,
+          "identical": 0
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9974187106993712,
+          "max_abs_difference": 0.7499992965184994,
+          "identical": 0
+        }
+      },
+      "revisions": {
+        "run_1": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+        "run_2": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+        "october_27": "c170c708c41dac9275d15a8fff4eca08d52bab71"
+      }
+    },
+    "Llama-3.2-3B": {
+      "outcome": "pass",
+      "unscored": {
+        "run_1": 0,
+        "run_2": 0
+      },
+      "run_1_vs_run_2": {
+        "all": {
+          "n": 500,
+          "spearman": 1.0,
+          "max_abs_difference": 0.0,
+          "identical": 500
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        }
+      },
+      "run_1_vs_october_27": {
+        "all": {
+          "n": 500,
+          "spearman": 0.9966820347281389,
+          "max_abs_difference": 1.1249717284974947,
+          "identical": 0
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.99089905438487,
+          "max_abs_difference": 1.1249717284974947,
+          "identical": 0
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9963066289060625,
+          "max_abs_difference": 0.5000011506262236,
+          "identical": 0
+        }
+      },
+      "revisions": {
+        "run_1": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+        "run_2": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+        "october_27": "0cb88a4f764b7a12671c53f0838cd831a0843b95"
+      }
+    },
+    "Qwen2.5-1.5B": {
+      "outcome": "pass",
+      "unscored": {
+        "run_1": 0,
+        "run_2": 0
+      },
+      "run_1_vs_run_2": {
+        "all": {
+          "n": 500,
+          "spearman": 1.0,
+          "max_abs_difference": 0.0,
+          "identical": 500
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.9999999999999998,
+          "max_abs_difference": 0.0,
+          "identical": 250
+        }
+      },
+      "run_1_vs_october_27": {
+        "all": {
+          "n": 500,
+          "spearman": 0.9919346237384948,
+          "max_abs_difference": 0.25000349766255936,
+          "identical": 0
+        },
+        "math": {
+          "n": 250,
+          "spearman": 0.9814356069697114,
+          "max_abs_difference": 0.2500010223853488,
+          "identical": 0
+        },
+        "code": {
+          "n": 250,
+          "spearman": 0.993136274180387,
+          "max_abs_difference": 0.25000349766255936,
+          "identical": 0
+        }
+      },
+      "revisions": {
+        "run_1": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+        "run_2": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+        "october_27": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+      }
+    }
+  },
+  "go_no_go": {
+    "Qwen2.5-7B": {
+      "answer_swap_math": "pass",
+      "repeat_runs": "pass"
+    },
+    "Llama-3.1-8B": {
+      "answer_swap_math": "pass",
+      "repeat_runs": "pass"
+    },
+    "Gemma-2-9B": {
+      "answer_swap_math": "pass",
+      "repeat_runs": "pass"
+    },
+    "LLaDA-8B": {
+      "answer_swap_math": "pass",
+      "repeat_runs": "not needed (passed in stage 3)"
+    }
+  }
+}
