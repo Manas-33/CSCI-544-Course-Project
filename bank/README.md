@@ -78,7 +78,7 @@ The code half of the development bank. It covers 150 MBPP problems, chosen with 
 
 ## Full bank (`full/`, not built yet)
 
-About 2,100 math and 850 code answers for the final comparison (PLAN.md §2). Math and code are separate banks and can be built one at a time. Every step stops if its inputs are incomplete or not the expected ones.
+About 2,100 math and 300 code answers (HumanEval+ only) for the final comparison (PLAN.md §2). Math and code are separate banks and can be built one at a time. Every step stops if its inputs are incomplete or not the expected ones.
 
 | Step | Command | Needs |
 |---|---|---|
@@ -93,7 +93,7 @@ Step 3 runs `bank.generate_full merge`, `bank.label` or `bank.label_evalplus`, `
 - `labels_validation.jsonl`, and `labels_test.jsonl` in the label keeper's private folder: the pilot label file's fields, plus `error_type` for the tagged math answers. Code answers have one of EvalPlus's two error types: `wrong_output` (a crash counts here too) or `timeout`.
 - `manifest.json`: SHA-256 of every file (`files`), counts per split, shortfalls, seeds, and the share of (problem, generator) cells that qualified.
 
-Selected so far (`full/questions_manifest.json`): 1,059 GSM8K-Platinum, 239 MATH-500, 500 new MATH and 390 code problems. Two of the 392 unused code problems are near-duplicates of development problems and were left out.
+Selected so far (`full/questions_manifest.json`): 1,059 GSM8K-Platinum, 239 MATH-500, 500 new MATH and 390 code problems (114 HumanEval+ and 276 MBPP+). Two of the 392 unused code problems are near-duplicates of development problems and were left out. MBPP+ is left out of the bank ([record](../decisions/2026-11-22-label-check-by-domain.md)).
 
 **Sources and licences**, as found on November 21, 2026 (read on the linked pages; `licenses` in `full/questions_manifest.json` keeps PRM800K's text, the start of EvalPlus's, and notes on the two dataset cards):
 
