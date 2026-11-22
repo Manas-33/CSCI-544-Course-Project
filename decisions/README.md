@@ -5,8 +5,15 @@ Team decisions and every deviation from [PLAN.md](../PLAN.md), one file per deci
 | Date | Decision |
 |---|---|
 | 2026-10-25 | [iLLaDA is scored with thinking off](2026-10-25-illada-thinking-off.md) |
-| 2026-10-25 | [iLLaDA is excluded: it fails the usable-scores gate with thinking off](2026-10-25-illada-excluded.md) |
-| 2026-10-26 | [LLaDA fails the sanity bar with verified scoring code](2026-10-26-llada-fails-sanity.md) (proposed) |
-| 2026-10-26 | [Diffusion models are scored unbatched](2026-10-26-diffusion-scored-unbatched.md) (proposed) |
+| 2026-10-25 | [iLLaDA is excluded: it fails the usable-scores gate with thinking off](2026-10-25-illada-excluded.md) (stands; its next steps are replaced by PLAN.md §7) |
+| 2026-10-26 | [LLaDA fails the sanity bar with verified scoring code](2026-10-26-llada-fails-sanity.md) (proposed; superseded 2026-11-21) |
+| 2026-10-26 | [Diffusion models are scored unbatched](2026-10-26-diffusion-scored-unbatched.md) (proposed; adopted 2026-11-21) |
+| 2026-11-21 | [Pilot status, and changes already made in it](2026-11-21-pilot-status.md) |
+| 2026-11-21 | [Gate B is judged on T1 and T2](2026-11-21-gate-b-t1-t2.md) (post hoc) |
+| 2026-11-21 | [The sanity set is a smoke test, not a gate](2026-11-21-sanity-set-smoke-test.md) (post hoc) |
+| 2026-11-21 | [The math bank adds problems from the rest of the MATH test set](2026-11-21-math-bank-sources.md) (post hoc) |
+| 2026-11-21 | [One final test, settled before scoring](2026-11-21-one-final-test.md) (post hoc) |
+| 2026-11-21 | [Terms that were undefined are settled](2026-11-21-settled-terms.md) (after the pilot) |
+| 2026-11-21 | [The dynamic-range gate's "best" verifier is the one with the lowest FAR](2026-11-21-dynamic-range-lowest-far.md) |
 
-Still to record (from NEXT_STEPS.md): pilot status; the second-person read of the sanity set; the locked gate values, T1–T3 wording and generation defaults; the AR fallback; the SDPA attention decision; dev-bank numbers as labeled pipeline checks; the code dev bank's MBPP-only tests.
+Still to record: the **final model record** (PLAN.md §7); the second-person read of the sanity set; dev-bank numbers as labeled pipeline checks; the code dev bank's MBPP-only tests.

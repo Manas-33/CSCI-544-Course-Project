@@ -1,58 +1,112 @@
 # Next steps
 
-**Start here.** The plan is [PLAN.md](PLAN.md): read §1–5 for the design and §13 for what changed from our original idea in [PROJECT.md](PROJECT.md). This page is the to-do list. Tick items off in the repo as they get done.
+**Start here.** The plan is [PLAN.md](PLAN.md) (version 1.3). The pilot and the midterm report are done. What's left is the full experiment, the presentation and the final report. It is split into **six packages, one per person**. There are no internal dates: do each step as soon as its inputs exist.
 
-## This week
+## The rules are settled (PLAN §2, §4, §7; records in `decisions/`)
 
-| # | What | Who | By |
-|---|---|---|---|
-| 1 | **Assign roles A–F** (PLAN §11): A math bank, B code bank, C verifier harness, D diffusion specialist, E metrics and statistics, F infrastructure and writing | Everyone | Oct 20 |
-| 2 | **Midterm presentation** (2 min, 2 slides): problem, method, how the instructor feedback was addressed (pairs and thresholds chosen on validation data and frozen before the test set), and gate status | Presenter + F | Oct 20–22 |
-| 3 | **Record the pilot status** in `decisions/`: has the pilot run, and has anyone seen its results? If not, run the reduced pilot (PLAN §10) | F | Oct 21 |
-| 4 | **Decide the bank size** (PLAN §6): stay within 5,000 answers and report the smallest detectable effect, or ask the instructor at the midterm about a bigger bank | Everyone, E leads | Oct 22 |
-| 5 | **Falcon3 license:** confirm its outputs can be used and released, or pick another weak generator from an unused family (PLAN §2) | A | Oct 22 |
-
-## Phase 0: setup before the pilot (owner F, target Oct 24)
-
-- [ ] Request Hugging Face access for Llama-3.1-8B-Instruct, Llama-3.2-3B-Instruct and Gemma-2-9B-it (gated)
-- [ ] Build the four environments: LLaDA (`transformers 4.38.2`), iLLaDA (`transformers 4.57.1`), Dream (`transformers 4.46.2`, `torch 2.5.1`), AR models (`transformers ≥ 4.51`) (F, with C and D)
-- [ ] Measure peak memory on the actual GPU, especially Gemma-2-9B (about 18.5 GB of weights) (C)
-- [ ] Confirm Colab compute units and the CARC allocation (F)
-- [ ] Check data terms: GSM8K-Platinum annotations are CC BY-SA 4.0 (A)
-
-## First tasks by role
-
-| Role | Before the pilot |
+| Question | Rule |
 |---|---|
-| **A, math bank** | Math half of the ~150-answer development bank; generation defaults (PLAN §2); the two answer checkers; the matched-pair builder |
-| **B, code bank** | EvalPlus sandbox (Docker, or Apptainer on CARC); code half of the development bank; flaky-test reruns |
-| **C, verifier harness** | Shared T1–T3 wording; AR adapters reading P(Yes)/P(No) in one pass; Yes/No token sets; score-file format; usable-scores check |
-| **D, diffusion** | LLaDA, iLLaDA and Dream adapters (mask ids, Dream's one-position shift); answer-slot choice; scoring-code tests 1–3, including the 50-item sanity set (PLAN §4) |
-| **E, statistics** | Analysis code tested on synthetic data: pair thresholds on validation, AND rule, bootstrap over whole problems, decision rule (PLAN §5); the pilot precision check (PLAN §6) |
-| **F, infrastructure and writing** | Environments, run ledger, the `decisions/` folder, the test-label custody setup (PLAN §2), the midterm report outline |
+| Which wordings must a verifier be stable on? | **T1 and T2** (AUROC spread ≤ 0.05). T3 is only reported. |
+| Is the 0.90 sanity bar still a gate? | **No**, it is a smoke test. Gate A on the pilot decides competence. |
+| Where do new math problems come from? | Unused GSM8K-Platinum and MATH-500, plus **the rest of the MATH test set**. Half GSM8K, half MATH, as in the pilot. |
+| What does "best" mean in the dynamic-range gate? | The verifier that **accepts the fewest wrong answers** at 90% TAR. |
+| What is the main test? | **One test (PLAN §5): math.** The best of LLaDA+Qwen, LLaDA+Llama, LLaDA+Gemma against the best of Qwen+Llama, Qwen+Gemma, Llama+Gemma. Code is reported separately. |
+| When is go/no-go decided? | **Once, from the pilot, before any full-bank answer is scored** (PLAN §7). It needs the pilot label audit, test 4 in math and the AR repeat-run check. |
+| What if LLaDA fails test 4 in math? | Its reconstruction score if that passes on the pilot; otherwise the AR-only study. |
+| What if LLaDA is below the bar on validation? | Reported. It does not change the test. |
+| What if an AR verifier fails test 4 in math? | It drops out. Fewer than three left: C also scores Qwen3-8B, for the AR+AR pairs only. No cross-family AR+AR pair left: H1 is not run. |
 
-## Lock before the pilot (record in `decisions/`)
+The three wordings (`harness/prompts.py`): **T1** "Is the final answer correct?", **T2** the same question to "a grader", **T3** "Is the final answer incorrect?".
 
-Confirm these before anyone sees pilot results, so no rule is set after the data:
-- gate values (PLAN §7);
-- T1–T3 wording and the answer-slot rule (PLAN §4);
-- generation defaults (PLAN §2);
-- the fallback if fewer than three AR verifiers survive the gates (PLAN §3).
+## Order of work
 
-## Suggested latest dates (adjust as a team)
+```
+0  GO/NO-GO (first):  B swap items -> C + D run test 4; C repeat-run check }  -> F writes the FINAL MODEL RECORD in decisions/, team merges it
+                      A + B + F audit 200 pilot labels                    }
+   Meanwhile, in parallel:  A math bank   B code bank   D reconstruction score   E analysis code   F data terms, slides, report skeleton
 
-| By | Milestone |
+1  A + B finish the banks  ->  A + B + F audit 200  ->  F does the BANK FREEZE (split fixed, test labels to F)
+2  C + D score both banks (validation and test) with T1 and T2    [needs the final model record and the bank freeze]
+3  E picks pairs and thresholds on VALIDATION only, reports LLaDA's re-check  ->  E makes the PREREGISTRATION COMMIT, C reviews it
+4  F joins the test labels, once  ->  E runs the final test, once
+5  Everyone writes; F assembles the slides and the report
+```
+
+After step 0, nothing changes the models, the domain or the score. If step 0 says "repair", D's reconstruction score becomes part of step 2.
+
+## The six packages
+
+### A. Math bank
+1. Check the terms of every data source and generator with F **before generating** (PLAN §9). Get the new MATH problems (PLAN §2): `math_splits/train.jsonl` from OpenAI's `prm800k`, rows whose `unique_id` starts with `test/`. Check the fields and license, record the hash, and drop anything already in MATH-500 or the pilot, by id and by text.
+2. Select problems: all 1,059 unused GSM8K-Platinum, all 239 unused MATH-500, a seeded draw (seed 544) of 500 from the new set with numeric answers. Start from `bank/select_pilot.py`.
+3. Generate (4 generators, 4 samples each), label and pair, reusing `bank/generate.py`, `bank/generate_api.py`, `bank/label.py`, `bank/make_pairs.py`. The API budget cap in `generate_api.py` defaults to $5 and the pilot already spent $1.19, so raise it or use a new ledger. Run `bank/token_lengths.py` with every verifier's tokenizer loaded, plus Qwen3-8B's (Llama and Gemma failed to load for the pilot).
+4. Draw the bank by PLAN §2's draw rule. **Careful:** `bank/sample_pilot.py` takes a fixed target and splits evenly over *sources*, so with three sources GSM8K would get only a third; group MATH-500 and the new problems, take MATH-500 first, and compute the target from the rule.
+5. Split by problem, stratified by source: 1/3 validation, 2/3 test.
+
+**Done when:** a hashed math bank of about 2,100 answers exists with separate validation and test label files, and the test labels are handed to F and deleted from your copies.
+
+### B. Code bank and checks
+1. Build the **answer-swap items** for test 4 exactly as PLAN §4 says (200 pilot items, 100 per domain) and give them to C and D. This comes first.
+2. Build the code bank from the 392 unused HumanEval+ and MBPP+ problems (8 samples, 4 generators), reusing `bank/label_evalplus.py`. Split like math.
+3. With A and F: audit 200 pilot labels, then 200 new ones from the full bank before the freeze. Two people label independently, the third resolves. Pass: at most 3 errors.
+4. With A and F: tag 200 wrong math answers from the test split by error type (PLAN §2), before deleting your copies. Code error types come from the execution logs. Tags and logs go to F with the test labels.
+
+**Done when:** the swap items are with C and D, a hashed code bank of about 850 answers exists, and both audits and the error tags are recorded.
+
+### C. AR scoring
+1. Run test 4 (answer swap) for all six AR models, as soon as B's items exist. Report it per domain.
+2. Record a repeat-run check (scoring test 3) for the AR models on the pilot; it is part of the go/no-go.
+3. Score **both splits** of both banks with T1 and T2: Qwen2.5-7B, Llama-3.1-8B, Gemma-2-9B, Mistral-7B (H2 only), Llama-3.2-3B (gate A's reference and H2) and Qwen2.5-1.5B (H2 only). Use notebook 06 and `configs/pilot_*.json` as the template. All on an **A100**, batch size 1; Gemma with eager attention, the rest SDPA.
+4. AR arm of the reconstruction score: exact log-probability of the answer, for the four AR models, on the same answers as D's step 4.
+5. Only if the final model record leaves fewer than three AR verifiers: score Qwen3-8B (thinking off) too, with the rest.
+6. Reproduce the pilot gates and, at the end, the final main table from the saved outputs, and review E's preregistration commit.
+
+**Done when:** complete score files for 6 models × 2 templates × 2 banks, test 4 results for each model, and the reproduction check.
+
+### D. Diffusion scoring and reconstruction
+1. Run test 4 for LLaDA and Dream, as soon as B's items exist. Report it per domain.
+2. Implement the **reconstruction score** (PLAN §4): LLaDA's `get_log_likelihood` Monte Carlo estimate, ported to Dream with its shift. Choose the sample count on the development bank. Run it on the pilot and report gate A (per token, 128 samples, seed 544) and the repeat check with seed 545 (PLAN §7).
+3. Score both splits of both banks with T1 and T2 for LLaDA and Dream: unbatched, on an **A100** (the pilot's Dream run used an L4, so its time is not comparable).
+4. Run the reconstruction score on 500 validation and 500 test answers (on the whole math bank only if it is needed as the repair).
+
+**Done when:** complete score files for both models, and reconstruction results on the pilot.
+
+### E. Analysis
+Write and test everything on the pilot and synthetic data **now**, so it runs the moment scores arrive. Start from `analysis/metrics.py` and `analysis/pilot.py`.
+1. Recompute the pilot precision check (PLAN §6) with committed code.
+2. Validation step: report LLaDA's re-check (it does not change the test); choose the best AR+AR and AR+diffusion pair from the six in PLAN §5; set every threshold; cost check; pseudo-pairs; best single verifier; thresholds at 80%, 90% and 95% pair TAR; selection stability over validation resamples; the analysis manifest. Commit it yourself; C reviews, A and B do not. (`analysis/pilot.py` still uses T1–T3 for its decision and highest AUROC for the dynamic range; use the settled rules.)
+3. Test step: ΔFAR with a paired bootstrap over whole problems (10,000 replicates, stratified by domain), matching check, decision table.
+4. H2: κ, Spearman, CAPA, and the trend across AR pairs. E1: Dream+Qwen. Single-verifier ROC/AUROC, calibration (ECE, reliability) and GPU-seconds; accuracy-versus-cost curves. Breakdowns by source, generator and error type. Figures.
+
+**Done when:** the frozen manifest is committed, then the final tables and figures are produced from it in one run.
+
+### F. Custody, infrastructure and writing
+1. Do the bank freeze. Keep the **test labels**, code execution logs and error tags off the repo and the shared storage used by C, D and E. Join the labels once, after E's preregistration commit, and log it.
+2. Write the **final model record** (PLAN §7) as soon as test 4 and the pilot audit are in. Finish `decisions/`: confirm the post-pilot records, the pilot status, and the instructor note (gate B, MATH problems, code descriptive, Milestone 2 late).
+3. Check every citation, including PRISM, DEER, HIVE and FreeCache (PLAN §14), and make the difference from prior work explicit.
+4. Presentation (5 slides, 6 minutes), then the report (8 pages + appendix). Build both skeletons now with the pilot numbers.
+5. Release: labeled bank and analysis code. The data terms are checked at the start, before A generates.
+
+**Done when:** the presentation is delivered, the report is submitted, and the release is out.
+
+## Rules everyone follows
+- **Only validation labels may be used to choose anything.** Test labels are held by F and joined once, after the freeze commit.
+- **A and B take no part in selection or threshold work**, and delete their copies of the test labels after handing them to F.
+- **Never commit the full bank's `labeled.jsonl` or test labels** before the join. (The pilot's are in the repo; that one is exploratory.)
+- **No T3 on the full bank.** No new prompt wordings, gates or model swaps (Qwen3-8B only under the rule above). Until the final model record is merged, a change to the plan needs a dated file in `decisions/`. After it, the final test does not change.
+- The pilot's scores are in-sample. Never call them H1 results.
+- Optional, only if someone is free after the main result: critique-before-verdict, the Qwen3-8B check (unless the rule above requires it), answer-only control.
+
+## Status
+
+| Work | Status |
 |---|---|
-| Oct 24 | Phase 0 done |
-| **Oct 27** | **Midterm report (4 pages):** how the feedback was addressed, pilot or reduced-pilot results with gate outcomes, scope changes for the instructor (PLAN §10, §12) |
-| ~Nov 6 | Full bank built, audited and frozen |
-| ~Nov 13 | Pairs and thresholds selected on validation; preregistration freeze |
-| ~Nov 16 | Test labels joined once; primary analysis run |
-| **Nov 20** | **Milestone 2:** full comparison, with generator and error-type breakdowns |
-| Nov 20 – Dec 3 | Final presentation (6 min, 5 slides) |
-| Dec 4 | Full report draft |
-| **Dec 15, 6:30 PM** | **Final report** (8 pages + appendix), no late tokens |
-
-## About this repo
-
-Only `PLAN.md`, `PROJECT.md` and this file are tracked (see `.gitignore`). The proposal, the instructor feedback and the plan's review files are kept outside the repo. When code starts, add each new folder (for example `bank/`, `harness/`, `analysis/`) to the allow-list in `.gitignore`.
+| Pilot, midterm report | Done |
+| Rules settled | Written; confirmed when this is merged |
+| Go/no-go: pilot label audit, test 4, final model record | Not started, do first |
+| Reconstruction score | Not started, no code yet |
+| Math bank, code bank | Not started, pilot code to reuse |
+| Scoring the full bank | Not started, pilot notebooks to reuse |
+| Validation, preregistration, final test | Not started, metric code partly exists |
+| Presentation | Slot not confirmed |
+| Final report | Not started |
