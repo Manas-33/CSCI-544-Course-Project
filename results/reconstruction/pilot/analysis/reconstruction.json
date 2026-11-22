@@ -1,0 +1,112 @@
+{
+ "bank_hash": "aa4d8cc3ee3c9ca1f3bbb6e48762d40a63f5d422d48246c6ec7b3de02ce0d7ab",
+ "labels_sha256": "84c206b7f14f58767f366939d7ef63dbb8bb8d953e706620138bd1fb5f512f24",
+ "dropped_pairs": [],
+ "repair": {
+  "model": "LLaDA-8B",
+  "domain": "math",
+  "n_samples": 128,
+  "seed": 544,
+  "repeat_seed": 545,
+  "gate_a": {
+   "small_reference": 0.487488,
+   "minimum": 0.6,
+   "allowed_gap": 0.1,
+   "auroc_at_least_0.60": true,
+   "lower_bound_above_0.50": true,
+   "within_0.10_of_small_ar": true,
+   "passes": true
+  },
+  "repeat_check": {
+   "domain": "math",
+   "n": 250,
+   "n_both": 250,
+   "spearman": 0.9488672778764461,
+   "minimum": 0.95,
+   "passes": false
+  },
+  "problems": [],
+  "verdict": "fail"
+ },
+ "gate_a": {
+  "LLaDA-8B": {
+   "math": {
+    "small_reference": 0.487488,
+    "minimum": 0.6,
+    "allowed_gap": 0.1,
+    "auroc_at_least_0.60": true,
+    "lower_bound_above_0.50": true,
+    "within_0.10_of_small_ar": true,
+    "passes": true
+   }
+  }
+ },
+ "repeat": {
+  "LLaDA-8B": {
+   "math": {
+    "domain": "math",
+    "n": 250,
+    "n_both": 250,
+    "spearman": 0.9488672778764461,
+    "minimum": 0.95,
+    "passes": false
+   }
+  }
+ },
+ "models": [
+  {
+   "verifier": "LLaDA-8B",
+   "class": "diffusion",
+   "method": "diffusion_mc",
+   "n_samples": 128,
+   "seed": 544,
+   "micro_batch": 1,
+   "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+   "domain": "math",
+   "n": 250,
+   "n_ok": 250,
+   "statuses": {
+    "ok": 250
+   },
+   "auroc": 0.65152,
+   "auroc_lo": 0.6003944973415799,
+   "auroc_hi": 0.7026175676140037,
+   "pair_ranking_accuracy": 0.688,
+   "median_answer_tokens": 433.5,
+   "seconds_per_candidate": 33.827627109687995,
+   "boundary_separate": 0,
+   "gpus": [
+    "NVIDIA L4"
+   ],
+   "verdict_auroc_t1": 0.607232,
+   "role": "repair"
+  },
+  {
+   "verifier": "LLaDA-8B",
+   "class": "diffusion",
+   "method": "diffusion_mc",
+   "n_samples": 128,
+   "seed": 545,
+   "micro_batch": 1,
+   "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+   "domain": "math",
+   "n": 250,
+   "n_ok": 250,
+   "statuses": {
+    "ok": 250
+   },
+   "auroc": 0.66528,
+   "auroc_lo": 0.6174209035455804,
+   "auroc_hi": 0.7127162737780297,
+   "pair_ranking_accuracy": 0.744,
+   "median_answer_tokens": 433.5,
+   "seconds_per_candidate": 33.81243729342805,
+   "boundary_separate": 0,
+   "gpus": [
+    "NVIDIA L4"
+   ],
+   "verdict_auroc_t1": 0.607232,
+   "role": "repair"
+  }
+ ]
+}
