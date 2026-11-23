@@ -1,0 +1,40 @@
+{
+  "step": "generate_full",
+  "questions": "questions_code.jsonl",
+  "questions_sha256": "048de9de2b5635b8fc25333d8d9a47cdae001f6ec6ba6ce2b7ff01f8e42b847f",
+  "n_questions": 390,
+  "n_generations": 3120,
+  "sha256": "ea7c4c481842695034b23731e9b667ffbf379b563f2cb1733807110558062ebb",
+  "generator": "microsoft/Phi-4-mini-instruct",
+  "generator_revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+  "prompt": "Please provide a self-contained Python script that solves the following problem in a markdown code block:\n```\n{question}\n```\n",
+  "response_prefix": "Below is a Python script with a self-contained function that solves the problem and passes corresponding tests:\n```python\n",
+  "settings": {
+    "model": "microsoft/Phi-4-mini-instruct",
+    "revision": "cfbefacb99257ffa30c83adab238a50856ac3083",
+    "tag": "phi4mini",
+    "domain": "code",
+    "seed": 544,
+    "n_samples": 8,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 768,
+    "backend": "vllm",
+    "dtype": "bfloat16",
+    "max_model_len": 4096,
+    "chunk_problems": 200
+  },
+  "seconds_last_session": 488.4,
+  "finished_utc": "2026-11-22T09:34:24+00:00",
+  "environment": {
+    "code_revision": "078b3f89ddc0abb83531969656693287d7db1435",
+    "python": "3.13.16",
+    "versions": {
+      "torch": "2.13.0",
+      "transformers": "5.19.0",
+      "vllm": "0.32.0",
+      "huggingface-hub": "1.33.0"
+    },
+    "gpu": "NVIDIA L4"
+  }
+}

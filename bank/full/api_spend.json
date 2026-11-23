@@ -1,0 +1,489 @@
+{
+  "spent_usd": 5.46176160000006,
+  "runs": [
+    {
+      "questions": "/tmp/tmp2q3uam2i/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00000.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:01:16+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp11fk4jk3/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00050.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:02:33+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp0whizx7z/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00100.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:03:49+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmppmvoii08/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00150.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:05:03+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpn5ckfq_o/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00200.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:06:18+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpvj42hlwr/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00250.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:07:36+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp5elzkcpu/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00300.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:08:49+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpxkvi6saf/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00350.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:10:05+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpcl0dupji/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00400.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:11:17+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpfkwi1p2u/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00450.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:19:50+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmptfh283gp/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00500.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:21:17+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpxxnma9zh/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00550.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:22:41+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpeiveioju/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00600.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:23:59+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp053gyily/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00650.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:25:24+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp8808fjgt/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00700.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:26:51+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp8hul5a6y/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00750.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:28:13+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpuwiy8key/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00800.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:29:42+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpk6c0l21d/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00850.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:31:11+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpoi9vqtta/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00900.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:32:38+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp1lkw8iln/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_00950.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:34:11+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpv17hufw0/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01000.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:35:39+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp2etnek3s/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01050.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:37:00+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmphyqk5ofs/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01100.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:39:16+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpt5wo4wr1/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01150.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:41:59+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpn6zkss_a/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01200.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:44:38+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpbemle3vc/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01250.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:47:32+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp4eh3dd96/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01300.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:50:28+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp8bobgclg/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01350.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:53:36+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpfyp4e29c/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01400.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:56:32+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmplqmvsdju/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01450.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T09:59:24+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp38jrjcgx/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01500.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:02:03+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpv6fnet76/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01550.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:04:42+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpklfeowoi/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01600.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:07:31+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpi1rula78/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01650.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:10:02+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp7_5rdln7/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01700.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:12:54+00:00",
+      "counts": {
+        "ok": 200,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpw3tfejtj/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_math/chunks/chunk_01750.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:15:31+00:00",
+      "counts": {
+        "ok": 192,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpgrb9rjx6/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00000.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:18:25+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpbrrg694e/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00050.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:21:16+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp_lxpfxnm/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00100.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:25:07+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpsj3ki7be/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00150.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:27:42+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpbc0ej4ek/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00200.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:30:03+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpygcrsb_1/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00250.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:32:33+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmp5x6lv3dj/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00300.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:34:37+00:00",
+      "counts": {
+        "ok": 400,
+        "failed": 0,
+        "over_budget": 0
+      }
+    },
+    {
+      "questions": "/tmp/tmpc3o_x904/questions.jsonl",
+      "out": "bank/full/gen/gpt41mini_code/chunks/chunk_00350.jsonl",
+      "model": "openai/gpt-4.1-mini",
+      "started_utc": "2026-11-22T10:36:53+00:00",
+      "counts": {
+        "ok": 320,
+        "failed": 0,
+        "over_budget": 0
+      }
+    }
+  ]
+}

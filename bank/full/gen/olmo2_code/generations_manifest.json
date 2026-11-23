@@ -1,0 +1,40 @@
+{
+  "step": "generate_full",
+  "questions": "questions_code.jsonl",
+  "questions_sha256": "048de9de2b5635b8fc25333d8d9a47cdae001f6ec6ba6ce2b7ff01f8e42b847f",
+  "n_questions": 390,
+  "n_generations": 3120,
+  "sha256": "b35c9c35f120fa82c1be2e4cd6c12efeab62414c908661f881cf13e1af39a392",
+  "generator": "allenai/OLMo-2-1124-7B-Instruct",
+  "generator_revision": "470b1fba1ae01581f270116362ee4aa1b97f4c84",
+  "prompt": "Please provide a self-contained Python script that solves the following problem in a markdown code block:\n```\n{question}\n```\n",
+  "response_prefix": "Below is a Python script with a self-contained function that solves the problem and passes corresponding tests:\n```python\n",
+  "settings": {
+    "model": "allenai/OLMo-2-1124-7B-Instruct",
+    "revision": "470b1fba1ae01581f270116362ee4aa1b97f4c84",
+    "tag": "olmo2",
+    "domain": "code",
+    "seed": 544,
+    "n_samples": 8,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new_tokens": 768,
+    "backend": "vllm",
+    "dtype": "bfloat16",
+    "max_model_len": 4096,
+    "chunk_problems": 200
+  },
+  "seconds_last_session": 1542.2,
+  "finished_utc": "2026-11-22T14:15:11+00:00",
+  "environment": {
+    "code_revision": "078b3f89ddc0abb83531969656693287d7db1435",
+    "python": "3.13.16",
+    "versions": {
+      "torch": "2.13.0",
+      "transformers": "5.19.0",
+      "vllm": "0.32.0",
+      "huggingface-hub": "1.33.0"
+    },
+    "gpu": "NVIDIA L4"
+  }
+}

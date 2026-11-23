@@ -1,0 +1,173 @@
+{
+  "bank": "full",
+  "domain": "math",
+  "seed": 544,
+  "files": {
+    "bank.jsonl": "47c94b58bfa518ef47116704b97d8ecbbdf30e44b90276d8d28c233f643fb7e3",
+    "labels_validation.jsonl": "054d35c73cdbba092e08ff3daff697fa81d1f142c2b2b6d724b8071ac0a38077",
+    "labels_test.jsonl": "941d21923cb46a369d3b073c10d7e7e259f2647aa88e80de4fe1a8ae76fce5f3"
+  },
+  "labels_test": "held by the label keeper, not in the repository before the test join (PLAN.md \u00a72)",
+  "counts": {
+    "total": {
+      "problems": 780,
+      "pairs": 1050,
+      "candidates": 2100,
+      "pairs_by_source": {
+        "gsm8k-platinum/test": 521,
+        "math-500/test": 204,
+        "math-rest/test": 325
+      },
+      "pairs_by_generator": {
+        "allenai/OLMo-2-1124-7B-Instruct": 423,
+        "ibm-granite/granite-3.3-8b-instruct": 307,
+        "microsoft/Phi-4-mini-instruct": 291,
+        "openai/gpt-4.1-mini": 29
+      }
+    },
+    "validation": {
+      "problems": 260,
+      "pairs": 350,
+      "candidates": 700,
+      "pairs_by_source": {
+        "gsm8k-platinum/test": 177,
+        "math-500/test": 66,
+        "math-rest/test": 107
+      },
+      "pairs_by_generator": {
+        "allenai/OLMo-2-1124-7B-Instruct": 156,
+        "ibm-granite/granite-3.3-8b-instruct": 95,
+        "microsoft/Phi-4-mini-instruct": 90,
+        "openai/gpt-4.1-mini": 9
+      }
+    },
+    "test": {
+      "problems": 520,
+      "pairs": 700,
+      "candidates": 1400,
+      "pairs_by_source": {
+        "gsm8k-platinum/test": 344,
+        "math-500/test": 138,
+        "math-rest/test": 218
+      },
+      "pairs_by_generator": {
+        "allenai/OLMo-2-1124-7B-Instruct": 267,
+        "ibm-granite/granite-3.3-8b-instruct": 212,
+        "microsoft/Phi-4-mini-instruct": 201,
+        "openai/gpt-4.1-mini": 20
+      }
+    }
+  },
+  "split_rule": "by problem, stratified by source, one third validation, near-duplicate problems together",
+  "near_duplicate_problems_kept_together": [],
+  "share_of_cells_that_qualified": {
+    "all": {
+      "cells": 7192,
+      "qualified": 1184,
+      "share": 0.1646
+    },
+    "allenai/OLMo-2-1124-7B-Instruct": {
+      "cells": 1798,
+      "qualified": 489,
+      "share": 0.272
+    },
+    "gsm8k-platinum/test": {
+      "cells": 4236,
+      "qualified": 573,
+      "share": 0.1353
+    },
+    "ibm-granite/granite-3.3-8b-instruct": {
+      "cells": 1798,
+      "qualified": 346,
+      "share": 0.1924
+    },
+    "math-500/test": {
+      "cells": 956,
+      "qualified": 212,
+      "share": 0.2218
+    },
+    "math-rest/test": {
+      "cells": 2000,
+      "qualified": 399,
+      "share": 0.1995
+    },
+    "microsoft/Phi-4-mini-instruct": {
+      "cells": 1798,
+      "qualified": 315,
+      "share": 0.1752
+    },
+    "openai/gpt-4.1-mini": {
+      "cells": 1798,
+      "qualified": 34,
+      "share": 0.0189
+    }
+  },
+  "shortfall": {
+    "gsm8k": 8,
+    "math": 0
+  },
+  "draw": {
+    "seed": 544,
+    "pairs_dropped_too_long": 1,
+    "too_long_candidates": [
+      "mathrest-04582__olmo2__0"
+    ],
+    "longest_prompt_tokens": 1878,
+    "qualifying_pairs": 1183,
+    "qualifying_by_generator": {
+      "allenai/OLMo-2-1124-7B-Instruct": 488,
+      "ibm-granite/granite-3.3-8b-instruct": 346,
+      "microsoft/Phi-4-mini-instruct": 315,
+      "openai/gpt-4.1-mini": 34
+    },
+    "pairs_after_problem_cap": 1114,
+    "after_problem_cap_by_source": {
+      "gsm8k-platinum/test": 529,
+      "math-500/test": 204,
+      "math-rest/test": 381
+    },
+    "target": 1058,
+    "quota": {
+      "gsm8k": 529,
+      "math": 529
+    },
+    "generator_cap": {
+      "pairs": 423,
+      "percent": 40,
+      "available": [
+        "allenai/OLMo-2-1124-7B-Instruct",
+        "ibm-granite/granite-3.3-8b-instruct",
+        "microsoft/Phi-4-mini-instruct"
+      ],
+      "fewer_than_three_available": false
+    },
+    "chosen": 1050,
+    "skipped_at_generator_cap": {
+      "gsm8k": 8,
+      "math": 18
+    },
+    "by_source": {
+      "gsm8k-platinum/test": 521,
+      "math-500/test": 204,
+      "math-rest/test": 325
+    },
+    "by_generator": {
+      "allenai/OLMo-2-1124-7B-Instruct": 423,
+      "ibm-granite/granite-3.3-8b-instruct": 307,
+      "microsoft/Phi-4-mini-instruct": 291,
+      "openai/gpt-4.1-mini": 29
+    }
+  },
+  "inputs": {
+    "questions_math.jsonl": "6647e3c7dfb5277c70e274b239cca86141058cbb2676354a48aba097156f6b1b",
+    "generations.jsonl": "50a0e64f52b39fe76b37c41389405c6d6573bd702e8b3a752f60f509cdf8ed30",
+    "labeled.jsonl": "45dad64e2df330d67e4ffae7c10a962f6008d0a3c19151d484187248a8b19de9",
+    "full_bank.jsonl": "134f4294dacffdfbde99dcf4dae9ad0363aefba0be57f90fa0cb3849f111de91",
+    "full_labels.jsonl": "444f11101405cd35efc7ad2351d37f383758540d5aa31f58081bdd5a9251c106",
+    "too_long.json": "8f8ff6c8ec6917b514e072917da879d73a94b734f43eaab7080c691758ab8bfd",
+    "drawn_bank.jsonl": "e522250c89b2808a8c296a474c5df409629200bcbc35080d96a43f8c3047afa7",
+    "drawn_labels.jsonl": "d7a457c8aec8a7348f88f80d7fbf69dd64553ac32a898fd54ea48694d7768630"
+  },
+  "code_revision": "2d892faa1f80f9f248452abbfed53728984d13fe",
+  "math_error_tags": 200
+}
