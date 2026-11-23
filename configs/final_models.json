@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "record": "decisions/2026-11-22-final-model-record.md",
+  "mode": "go",
+  "reason": "None of LLaDA-8B, Qwen2.5-7B, Llama-3.1-8B and Gemma-2-9B fails gate A, gate B or test 4 in math on the pilot, and the pilot's math label check passes (0 errors in 100). LLaDA keeps its verdict score.",
+  "h1_ar": ["Gemma-2-9B", "Llama-3.1-8B", "Qwen2.5-7B"],
+  "llada_score": "verdict",
+  "dropped": {},
+  "qwen3_scored": false
+}

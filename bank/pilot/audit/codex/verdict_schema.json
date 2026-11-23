@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "answer",
+    "reason"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "correct",
+        "wrong",
+        "unsure"
+      ]
+    },
+    "answer": {
+      "type": "string",
+      "description": "math: the right final answer; code: for wrong, an input that fails"
+    },
+    "reason": {
+      "type": "string",
+      "description": "one or two sentences"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "decision": "READ ALL",
+  "items": 200,
+  "read": 136,
+  "read_in_full_group": 36,
+  "others": 164,
+  "others_read": 100,
+  "groups": {
+    "disagree": 25,
+    "no_verdict": 1,
+    "same_family": 10,
+    "rest": 164
+  },
+  "label_errors_found": 8,
+  "errors_by_group": {
+    "disagree": 5,
+    "no_verdict": 0,
+    "same_family": 0,
+    "others_read": 3
+  },
+  "reader_differs_blind": 9,
+  "second_looks": 9,
+  "waiting_for_second_look": [],
+  "upper_bound_95": 0.09428791049867868,
+  "rule": {
+    "max_errors": 3,
+    "bound_below": 0.04,
+    "others_read_first": 100
+  },
+  "differences": [
+    {
+      "audit_id": "a014",
+      "candidate_id": "humaneval-plus-022__gpt41mini__0",
+      "our_label": "wrong",
+      "codex": "wrong",
+      "reader": "correct",
+      "note": "",
+      "label_error": false,
+      "second_look": "isinstance(v, int) mistakenly keeps booleans True and False because bool subclasses int in Python, so the program fails on allowed lists containing booleans."
+    },
+    {
+      "audit_id": "a042",
+      "candidate_id": "mbpp-plus-611__granite33__4",
+      "our_label": "wrong",
+      "codex": "wrong",
+      "reader": "correct",
+      "note": "",
+      "label_error": true,
+      "second_look": "The failing tests pass negative column indices like -1 and -2 that are not implied by the n'th column of a matrix, so rejecting n < 0 does not make the solution wrong."
+    },
+    {
+      "audit_id": "a046",
+      "candidate_id": "mbpp-plus-410__phi4mini__5",
+      "our_label": "correct",
+      "codex": "wrong",
+      "reader": "wrong",
+      "note": "",
+      "label_error": true,
+      "second_look": "The candidate ignores floats and fails on allowed heterogeneous lists containing floats (e.g., returning 5 instead of 2.5 on ['Python', 10, 5, 2.5, 'version'] or crashing on ['Python', 2.5])."
+    },
+    {
+      "audit_id": "a076",
+      "candidate_id": "mbpp-plus-643__phi4mini__3",
+      "our_label": "correct",
+      "codex": "wrong",
+      "reader": "wrong",
+      "note": "",
+      "label_error": true,
+      "second_look": "Splitting only on whitespace leaves punctuation attached to words, so allowed inputs like 'quiz.' or '(zebra)' wrongly return True even though 'z' is at the end or start of the word."
+    },
+    {
+      "audit_id": "a097",
+      "candidate_id": "mbpp-plus-611__phi4mini__3",
+      "our_label": "wrong",
+      "codex": "wrong",
+      "reader": "correct",
+      "note": "",
+      "label_error": true,
+      "second_look": "The failing tests pass negative column indices like -1 and -2 that are not implied by the n'th column of a matrix, so rejecting n < 0 does not make the solution wrong."
+    },
+    {
+      "audit_id": "a113",
+      "candidate_id": "mbpp-plus-410__granite33__3",
+      "our_label": "wrong",
+      "codex": "wrong",
+      "reader": "correct",
+      "note": "",
+      "label_error": true,
+      "second_look": "The failing tests wrongly expect floats like 2.5 to be ignored (expecting 5 or 3 instead of 2.5), whereas the candidate correctly returns the minimum numeric value 2.5."
+    },
+    {
+      "audit_id": "a142",
+      "candidate_id": "mbpp-plus-781__gpt41mini__1",
+      "our_label": "wrong",
+      "codex": "correct",
+      "reader": "correct",
+      "note": "",
+      "label_error": true,
+      "second_look": "The O(n) loop is finite and computes the right answer for every positive integer, failing only because of a 30-second test timeout even though efficiency does not matter."
+    },
+    {
+      "audit_id": "a177",
+      "candidate_id": "mbpp-plus-643__granite33__4",
+      "our_label": "correct",
+      "codex": "wrong",
+      "reader": "wrong",
+      "note": "",
+      "label_error": true,
+      "second_look": "The candidate checks the middle of the entire string instead of individual words, so allowed inputs like 'cat zebra' or 'quiz.' wrongly return True when 'z' is only at the start or end of a word."
+    },
+    {
+      "audit_id": "a181",
+      "candidate_id": "mbpp-plus-459__olmo2__5",
+      "our_label": "wrong",
+      "codex": "correct",
+      "reader": "correct",
+      "note": "",
+      "label_error": true,
+      "second_look": "The failing tests wrongly expect non-letter punctuation like '%^%!&()*' to be deleted even though the problem only asks to remove uppercase substrings."
+    }
+  ],
+  "codex_agreement": {
+    "math": {
+      "items": 100,
+      "with_verdict": 99,
+      "agrees_with_label": 98
+    },
+    "code": {
+      "items": 100,
+      "with_verdict": 100,
+      "agrees_with_label": 76
+    }
+  }
+}
