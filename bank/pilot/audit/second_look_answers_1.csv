@@ -1,0 +1,10 @@
+audit_id,label_error,reason
+a014,no,"isinstance(v, int) mistakenly keeps booleans True and False because bool subclasses int in Python, so the program fails on allowed lists containing booleans."
+a042,yes,"The failing tests pass negative column indices like -1 and -2 that are not implied by the n'th column of a matrix, so rejecting n < 0 does not make the solution wrong."
+a046,yes,"The candidate ignores floats and fails on allowed heterogeneous lists containing floats (e.g., returning 5 instead of 2.5 on ['Python', 10, 5, 2.5, 'version'] or crashing on ['Python', 2.5])."
+a076,yes,"Splitting only on whitespace leaves punctuation attached to words, so allowed inputs like 'quiz.' or '(zebra)' wrongly return True even though 'z' is at the end or start of the word."
+a097,yes,"The failing tests pass negative column indices like -1 and -2 that are not implied by the n'th column of a matrix, so rejecting n < 0 does not make the solution wrong."
+a113,yes,"The failing tests wrongly expect floats like 2.5 to be ignored (expecting 5 or 3 instead of 2.5), whereas the candidate correctly returns the minimum numeric value 2.5."
+a142,yes,"The O(n) loop is finite and computes the right answer for every positive integer, failing only because of a 30-second test timeout even though efficiency does not matter."
+a177,yes,"The candidate checks the middle of the entire string instead of individual words, so allowed inputs like 'cat zebra' or 'quiz.' wrongly return True when 'z' is only at the start or end of a word."
+a181,yes,The failing tests wrongly expect non-letter punctuation like '%^%!&()*' to be deleted even though the problem only asks to remove uppercase substrings.

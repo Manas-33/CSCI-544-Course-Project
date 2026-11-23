@@ -1,0 +1,51 @@
+{
+  "math": {
+    "decision": "PASS",
+    "items": 100,
+    "read": 100,
+    "label_errors": 0,
+    "rate": 0.0,
+    "upper_bound_95": 0.029513049870729446,
+    "reader_differs_blind": 0,
+    "waiting_for_second_look": []
+  },
+  "code": {
+    "evalplus/humaneval+": {
+      "decision": null,
+      "items": 41,
+      "read": 41,
+      "label_errors": 1,
+      "rate": 0.024390243902439025,
+      "upper_bound_95": 0.1105531295761466,
+      "reader_differs_blind": 2,
+      "waiting_for_second_look": [
+        "a141"
+      ]
+    },
+    "evalplus/mbpp+": "not counted"
+  },
+  "rule": {
+    "math_items": 100,
+    "math_max_errors": 0
+  },
+  "differences": [
+    {
+      "audit_id": "a014",
+      "candidate_id": "humaneval-plus-022__gpt41mini__0",
+      "our_label": "wrong",
+      "reader": "correct",
+      "note": "",
+      "label_error": false,
+      "second_look": "isinstance(v, int) mistakenly keeps booleans True and False because bool subclasses int in Python, so the program fails on allowed lists containing booleans."
+    },
+    {
+      "audit_id": "a141",
+      "candidate_id": "humaneval-plus-077__granite33__2",
+      "our_label": "wrong",
+      "reader": "correct",
+      "note": "",
+      "label_error": true,
+      "second_look": null
+    }
+  ]
+}

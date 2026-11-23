@@ -51,7 +51,7 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 ### B. Code bank and checks
 1. The **answer-swap items** for test 4 (PLAN §4) are built: `bank/pilot/swap/` (`bank/answer_swap.py`; 100 math and 100 code items, originals and swaps in one file, the key beside it).
 2. Build the code bank from the 114 unused HumanEval+ problems (8 samples, 4 generators), reusing `bank/label_evalplus.py`. MBPP+ is left out. Split like math.
-3. Label check (PLAN §2): the rest of the 200 pilot labels (sheet in `bank/pilot/audit/`; math must have no error), then 200 new math ones from the full bank before the freeze. `bank/codex_audit.py` gets Codex's blind verdicts, `bank/audit_sheet.py` writes the sheet one person reads and applies the rule. On the full bank the reader is A or B, and F runs the commands. Pass: none in the pilot's 100 math items; at most 3 in the full bank's 200.
+3. Label check (PLAN §2): the pilot's is done (math passed, `bank/pilot/audit/`); 200 new math labels from the full bank are checked before the freeze. `bank/codex_audit.py` gets Codex's blind verdicts, `bank/audit_sheet.py` writes the sheet one person reads and applies the rule. On the full bank B reads and A runs the commands ([record](decisions/2026-11-22-label-keeper-handover.md)). Pass: none in the pilot's 100 math items; at most 3 in the full bank's 200.
 4. With A and F: tag 200 wrong math answers from the test split by error type (PLAN §2), before deleting your copies. Code error types come from the execution logs. Tags and logs go to F with the test labels.
 
 **Done when:** a hashed code bank of about 300 answers exists, and both audits and the error tags are recorded.
@@ -85,7 +85,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 
 ### F. Custody, infrastructure and writing
 1. Do the bank freeze: each bank file is committed once (notebook 13 refuses a bank that changed after its first commit). Keep the **test labels**, code execution logs and error tags off the repo and the shared storage used by C, D and E. Join the labels once, after E's preregistration commit, and log it.
-2. Write the **final model record** (PLAN §7) as soon as test 4 and the pilot audit are in. Finish `decisions/`: confirm the post-pilot records, the pilot status, and the instructor note (gate B, MATH problems, code descriptive and HumanEval+ only, the per-domain label check, Milestone 2 late).
+2. The **final model record** (PLAN §7) is written: go. Finish `decisions/`: confirm the post-pilot records, the pilot status, and the instructor note (gate B, MATH problems, code descriptive and HumanEval+ only, the per-domain label check, Milestone 2 late).
 3. Check every citation, including PRISM, DEER, HIVE and FreeCache (PLAN §14), and make the difference from prior work explicit.
 4. Presentation (5 slides, 6 minutes), then the report (8 pages + appendix). Build both skeletons now with the pilot numbers.
 5. Check the terms of every data source and generator (PLAN §9), then release the labeled bank and analysis code.
@@ -106,9 +106,9 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 |---|---|
 | Pilot, midterm report | Done |
 | Rules settled | Written; confirmed when this is merged |
-| Go/no-go: pilot label audit, test 4, final model record | Test 4 and the AR repeat check pass. Pilot label check: code fails, math clean so far; 37 math items left to read |
+| Go/no-go: pilot label audit, test 4, final model record | **Go** ([final model record](decisions/2026-11-22-final-model-record.md), `configs/final_models.json`) |
 | Reconstruction score | Run on the pilot (notebook 12): passes gate A, misses the repeat check (0.949 vs 0.95); repair not needed |
-| Math bank, code bank | Full-bank answers generated (notebook 10); labeling with notebook 11 is running |
+| Math bank, code bank | Built: 2,100 math answers and 350 HumanEval+ code answers, split. Full-bank math label check passed (0 errors, 105 of 200 read). Error tags under way; then the bank freeze |
 | Scoring the full bank | Notebook 13 ready; not run (needs the final model record and the bank freeze) |
 | Validation, preregistration, final test | Not started, metric code partly exists |
 | Presentation | Slot not confirmed |
