@@ -1,0 +1,100 @@
+{
+ "bank_hash": "47c94b58bfa518ef47116704b97d8ecbbdf30e44b90276d8d28c233f643fb7e3",
+ "labels_sha256": "054d35c73cdbba092e08ff3daff697fa81d1f142c2b2b6d724b8071ac0a38077",
+ "template": "T1",
+ "n_correct": 250,
+ "n_wrong": 250,
+ "bootstrap": 10000,
+ "models": {
+  "LLaDA-8B": {
+   "verdict_auroc": 0.625776,
+   "verdict_auroc_ci": [
+    0.585064888702267,
+    0.6663725727333862
+   ],
+   "likelihood_auroc": 0.65368,
+   "likelihood_auroc_ci": [
+    0.6138466644807419,
+    0.6948616104113055
+   ],
+   "likelihood_minus_verdict": 0.02790400000000004,
+   "likelihood_minus_verdict_ci": [
+    -0.022855312926806107,
+    0.07889374248349558
+   ],
+   "rank_correlation": 0.1571639566558266
+  },
+  "Qwen2.5-7B": {
+   "verdict_auroc": 0.698944,
+   "verdict_auroc_ci": [
+    0.6591703001426531,
+    0.7375802088216493
+   ],
+   "likelihood_auroc": 0.651472,
+   "likelihood_auroc_ci": [
+    0.6156680766616045,
+    0.6888268495533082
+   ],
+   "likelihood_minus_verdict": -0.04747199999999996,
+   "likelihood_minus_verdict_ci": [
+    -0.09387672282082224,
+    0.0012625186447900833
+   ],
+   "rank_correlation": 0.2921111204444818
+  },
+  "Llama-3.1-8B": {
+   "verdict_auroc": 0.627376,
+   "verdict_auroc_ci": [
+    0.5856466414785664,
+    0.6702083649145553
+   ],
+   "likelihood_auroc": 0.62512,
+   "likelihood_auroc_ci": [
+    0.591212180030113,
+    0.6603462274039569
+   ],
+   "likelihood_minus_verdict": -0.0022560000000000358,
+   "likelihood_minus_verdict_ci": [
+    -0.05233094994349065,
+    0.04737097695879048
+   ],
+   "rank_correlation": 0.1411504206016824
+  },
+  "Gemma-2-9B": {
+   "verdict_auroc": 0.676992,
+   "verdict_auroc_ci": [
+    0.6344982202730338,
+    0.7191826272336641
+   ],
+   "likelihood_auroc": 0.586848,
+   "likelihood_auroc_ci": [
+    0.5560055485993507,
+    0.6185253708540491
+   ],
+   "likelihood_minus_verdict": -0.090144,
+   "likelihood_minus_verdict_ci": [
+    -0.1368019983335873,
+    -0.04382250660467618
+   ],
+   "rank_correlation": 0.027349837399349597
+  },
+  "Mistral-7B": {
+   "verdict_auroc": 0.56288,
+   "verdict_auroc_ci": [
+    0.5263564902657416,
+    0.6008065862153329
+   ],
+   "likelihood_auroc": 0.601984,
+   "likelihood_auroc_ci": [
+    0.5652286451617684,
+    0.6394918183195593
+   ],
+   "likelihood_minus_verdict": 0.03910399999999992,
+   "likelihood_minus_verdict_ci": [
+    -0.009994644165039061,
+    0.08730960801003101
+   ],
+   "rank_correlation": 0.030826971307885226
+  }
+ }
+}

@@ -107,7 +107,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 | Pilot, midterm report | Done |
 | Rules settled | Written; confirmed when this is merged |
 | Go/no-go: pilot label audit, test 4, final model record | **Go** ([final model record](decisions/2026-11-22-final-model-record.md), `configs/final_models.json`) |
-| Reconstruction score | Run on the pilot (notebook 12): passes gate A, misses the repeat check (0.949 vs 0.95); repair not needed |
+| Reconstruction score | Run on the pilot (notebook 12): passes gate A, misses the repeat check (0.949 vs 0.95); repair not needed. Side experiment run, exploratory, validation half only: AUROC 0.654, not clearly above LLaDA's verdict score ([results](results/reconstruction/README.md)) |
 | Math bank, code bank | Built: 2,100 math answers and 350 HumanEval+ code answers, split. Full-bank math label check passed (0 errors, 105 of 200 read). Error tags under way; then the bank freeze |
 | Scoring the full bank | Done: 8 verifiers, T1 and T2, both banks, A100 (`results/full/`) |
 | Validation, preregistration, final test | Validation done (`results/final/validation.md`); preregistration under review; final test after it is merged |

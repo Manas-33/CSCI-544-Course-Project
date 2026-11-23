@@ -106,7 +106,7 @@ def main(argv=None) -> int:
     ap.add_argument("--subset", default=None, help="score only the candidates drawn by analysis.reconstruction draw")
     ap.add_argument("--bank-hash", default=None, help="refuse the bank file if its sha256 differs")
     ap.add_argument("--limit", type=int, default=None)
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="cuda:0")  # an index: torch.cuda.set_device refuses a bare "cuda"
     args = ap.parse_args(argv)
 
     config = parse_json(Path(args.config).read_text(encoding="utf-8"))
