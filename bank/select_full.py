@@ -3,7 +3,7 @@
 Math: every unused GSM8K-Platinum and MATH-500 problem (MATH-500: numeric answers only, as in the
 pilot), and a uniform seeded draw of 500 numeric-answer problems from the rest of the MATH test
 set (PRM800K's math_splits/train.jsonl, rows whose unique_id starts with "test/"). Code: every
-unused HumanEval+ and MBPP+ problem.
+unused HumanEval+ and MBPP+ problem; the MBPP+ ones are left out later, by bank.draw_full.
 
 Left out, by id and by text: pilot and development problems, and, for the new MATH problems, all
 500 MATH-500 problems. "By text" covers near-duplicates: two problems whose sets of words,

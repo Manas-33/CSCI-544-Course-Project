@@ -74,21 +74,36 @@ Three folders:
 - `PRIVATE`: **your own Drive, never shared.** Labeled answers, execution logs, test labels and the error-tag sheet.
 - `COMMIT`: what goes into the repository: the bank, the validation labels and the manifests.
 
+The code bank uses HumanEval+ only; MBPP+ answers are generated and labeled but left out by the draw ([record](https://github.com/Manas-33/CSCI-544-Course-Project/blob/main/decisions/2026-11-22-label-check-by-domain.md)).
+
+**Rebuilding the code bank from labels you already have** (version `v1` was drawn with MBPP+):
+1. Wait until `v1` has finished for both domains.
+2. Delete `cs544_full_bank_to_commit/v1/bank/full/code` in Drive, and never share or commit it. Its validation labels can be test labels of the new bank. Keep `v1/bank/full/math`: math is committed from `v1`.
+3. Open this notebook again **from `main`** (an older copy has no `REUSE_LABELS_FROM` line in the settings cell and would label everything again).
+4. In the settings cell set `I_AM_THE_LABEL_KEEPER = True`, `DOMAINS = ["code"]`, `VERSION = "v2"` and `REUSE_LABELS_FROM = "v1"`. With the default `DOMAINS` math would be rebuilt too, with a second, blank tag sheet; the notebook stops before that (then correct `DOMAINS` and delete nothing of math).
+5. Run all cells. No program is run and no label is made: the answers are collected again, the `v1` labels are copied, and pairs, length filter, draw and split are redone. Commit the code files from `v2`. `v1`'s code bank and test labels are not used for anything.
+
+If step 5 says `v1` holds no finished labels, follow its message: run `v1` again for code only, with `REUSE_LABELS_FROM = ""`, then come back to step 2. If that run finishes without stopping, its code bank is already the HumanEval+ one: commit that and skip `v2`.
+
 A step that fails stops the notebook. Only counts and hashes are printed, never a test label or a result for one answer. Do not open the private files with anyone who scores, selects or sets thresholds.'''),
  ("code", '''
 I_AM_THE_LABEL_KEEPER = False   # set to True only if the text above describes you
 DOMAINS = ["math", "code"]      # or just one of them
 VERSION = "v1"                  # a corrected bank, for example after a failed label audit, is a new version: raise this
+REUSE_LABELS_FROM = ""          # an earlier version of yours whose finished labels to reuse, for example "v1"; "" labels from scratch
 SHARED = "/content/drive/MyDrive/cs544_full_bank"
 PRIVATE = f"/content/drive/MyDrive/cs544_full_bank_private/{VERSION}"
 COMMIT = f"/content/drive/MyDrive/cs544_full_bank_to_commit/{VERSION}"
+OLD = f"/content/drive/MyDrive/cs544_full_bank_private/{REUSE_LABELS_FROM}"
+OLD_COMMIT = f"/content/drive/MyDrive/cs544_full_bank_to_commit/{REUSE_LABELS_FROM}"
 WORK = f"/content/work_{VERSION}"
 BOX = f"/content/sandbox_{VERSION}"
 DISCONNECT = True
 BRANCH = "main"
 assert I_AM_THE_LABEL_KEEPER, "only the label keeper runs this notebook (PLAN.md §2)"
 FOLDERS = (SHARED, PRIVATE, COMMIT)
-assert sum((a + "/").startswith(b + "/") for a in FOLDERS for b in FOLDERS) == 3, "the three folders must be separate"'''),
+assert sum((a + "/").startswith(b + "/") for a in FOLDERS for b in FOLDERS) == 3, "the three folders must be separate"
+assert REUSE_LABELS_FROM != VERSION, "reuse labels from another version"'''),
  ("code", '''
 from google.colab import drive, userdata
 drive.mount("/content/drive")
@@ -105,21 +120,27 @@ assert (version("math-verify"), version("evalplus")) == ("0.9.0", "0.3.1")  # th
 commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
 now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
 with open(f"{PRIVATE}/runs.txt", "a") as f:
-    f.write(f"{now} notebook 11, commit {commit}, version {VERSION}, domains {DOMAINS}\\n")
+    f.write(f"{now} notebook 11, commit {commit}, version {VERSION}, domains {DOMAINS}, labels reused from {REUSE_LABELS_FROM or None}\\n")
 STOPPED = "stopped: see the message above"'''),
  ("markdown", "## 1. Collect the answers\nStops if any generator is incomplete, or used another model commit, setting or question file."),
  ("code", '''
 for d in DOMAINS:
     !python -m bank.generate_full merge --domain {d} --gen {SHARED}/gen --out {WORK}/{d}/generations.jsonl
     assert _exit_code == 0, STOPPED'''),
+ ("markdown", "## Reused labels\nOnly with `REUSE_LABELS_FROM`. Copies the earlier version's labels after checking that they are for the same answers and questions and come from the current checker. Stops if the earlier version's bank for the domain is still in its `to_commit` folder or in the repository."),
+ ("code", '''
+if REUSE_LABELS_FROM:
+    for d in DOMAINS:
+        !python -m bank.reuse_labels reuse --old {OLD}/{d}/work --work {WORK}/{d} --questions bank/full/questions_{d}.jsonl --old-public {OLD_COMMIT}/bank/full/{d} bank/full/{d}
+        assert _exit_code == 0, STOPPED'''),
  ("markdown", "## 2. Math labels\nThe boxed answer and Math-Verify must agree."),
  ("code", '''
-if "math" in DOMAINS:
+if "math" in DOMAINS and not REUSE_LABELS_FROM:
     !python -m bank.label --questions bank/full/questions_math.jsonl --generations {WORK}/math/generations.jsonl --out {WORK}/math/labeled.jsonl
     assert _exit_code == 0, STOPPED'''),
  ("markdown", "## 3. Code labels\nEvalPlus's base and plus tests, each program twice. These are model-written programs, so they run as a user who cannot read Drive, the labels or a Hugging Face login, with an empty environment; if that user could, the cell stops before running anything. Expect several hours on a free runtime with 2 CPUs; finished checks are copied to the private folder every 5 minutes, so after a disconnect run the notebook again and it continues."),
  ("code", '''
-if "code" in DOMAINS:
+if "code" in DOMAINS and not REUSE_LABELS_FROM:
     import os, shutil, subprocess, threading
     CHECKS, SAVED, LOGIN = f"{BOX}/evalplus_checks.jsonl", f"{PRIVATE}/code/evalplus_checks.jsonl", "/root/.cache/huggingface"
     os.makedirs(os.path.dirname(SAVED), exist_ok=True)
@@ -166,10 +187,14 @@ if "code" in DOMAINS:
         shutil.copyfile(f"{BOX}/{name}", f"{WORK}/code/{name}")'''),
  ("markdown", "## 4. Pairs, length filter, draw and split"),
  ("code", '''
+import shutil
+from pathlib import Path
 from huggingface_hub import login
 login(token=userdata.get("HF_TOKEN"))
 for d in DOMAINS:
     !python -m bank.make_pairs --split full --questions bank/full/questions_{d}.jsonl --generations {WORK}/{d}/generations.jsonl --labeled {WORK}/{d}/labeled.jsonl --out {WORK}/{d}
+    assert _exit_code == 0, STOPPED
+    !python -m bank.reuse_labels save --work {WORK}/{d} --keep {PRIVATE}/{d}/work
     assert _exit_code == 0, STOPPED
     !python -m bank.token_lengths {WORK}/{d}/full_bank.jsonl --out {WORK}/{d}/too_long.json
     assert _exit_code == 0, STOPPED
@@ -177,9 +202,10 @@ for d in DOMAINS:
     assert _exit_code == 0, STOPPED
     !python -m bank.split_full split --domain {d} --work {WORK}/{d} --out {COMMIT}/bank/full/{d} --private {PRIVATE}/{d}
     assert _exit_code == 0, STOPPED
-    !mkdir -p {PRIVATE}/{d}/work && cp -r {WORK}/{d}/. {PRIVATE}/{d}/work/
-    assert _exit_code == 0, STOPPED'''),
- ("markdown", "## 5. Math error tags\nWrites a sheet of 200 wrong math test answers to the private folder (PLAN.md §2). When `error_type` is filled in, set `APPLY_TAGS` to True and run the first two code cells, the second cell of this section and section 6. Do this before the bank freeze. If the sheet already exists, it is left alone."),
+    for path in Path(f"{WORK}/{d}").iterdir():  # the rest; the labels and pairs are already kept
+        if path.name in ("too_long.json", "labeled_manifest.json") or path.name.startswith("draw"):
+            shutil.copyfile(path, f"{PRIVATE}/{d}/work/{path.name}")'''),
+ ("markdown", "## 5. Math error tags\nWrites a sheet of 200 wrong math test answers to the private folder (PLAN.md §2). When `error_type` is filled in, set `APPLY_TAGS` to True and `DOMAINS` to `[\"math\"]`, and run the first two code cells, the second cell of this section and section 6. Do this before the bank freeze. If the sheet already exists, it is left alone."),
  ("code", '''
 if "math" in DOMAINS:
     !python -m bank.split_full error-sheet --out {COMMIT}/bank/full/math --private {PRIVATE}/math'''),
@@ -188,9 +214,9 @@ APPLY_TAGS = False
 if APPLY_TAGS:
     !python -m bank.split_full apply-tags --out {COMMIT}/bank/full/math --private {PRIVATE}/math
     assert _exit_code == 0, STOPPED'''),
- ("markdown", "## 6. What to commit\nThe bank freeze commits the files listed here, after the label audit has passed. The test labels stay in the private folder until they are joined, once, after the preregistration commit."),
+ ("markdown", "## 6. What to commit\nThe bank freeze commits the files listed here, after the label audit has passed. If the code bank was rebuilt as `v2`, commit **only `math` from `v1`** and only `code` from `v2`; `v1`'s `code` folder has been deleted and is never shared. The cell stops at a code bank that is unfinished or drawn with MBPP+, and if another version of a domain in `DOMAINS` still has a public folder. The test labels stay in the private folder until they are joined, once, after the preregistration commit."),
  ("code", '''
-import hashlib, shutil
+import hashlib, json, shutil
 from pathlib import Path
 public = Path(COMMIT) / "bank/full"
 for path in [p for d in DOMAINS for p in sorted(Path(SHARED).glob(f"gen/*_{d}/generations_manifest.json"))] + [Path(SHARED) / "api_spend.json"]:
@@ -200,6 +226,13 @@ for path in [p for d in DOMAINS for p in sorted(Path(SHARED).glob(f"gen/*_{d}/ge
 files = sorted(p for p in Path(COMMIT).rglob("*") if p.is_file())
 private_files = [p.name for p in files if p.name not in ("bank.jsonl", "labels_validation.jsonl", "manifest.json", "generations_manifest.json", "api_spend.json")]
 assert not private_files, f"must not be committed: {private_files}"
+code = public / "code"
+if code.exists():
+    assert (code / "manifest.json").is_file() and (code / "bank.jsonl").is_file(), f"{code} is not a finished code bank: it must not be committed or shared"
+    sources = {json.loads(line)["source"] for line in (code / "bank.jsonl").read_text(encoding="utf-8").splitlines()}
+    assert sources == {"evalplus/humaneval+"}, f"{code} was drawn with MBPP+: delete it, it must not be committed or shared"
+others = [p for d in DOMAINS for p in Path(COMMIT).parent.glob(f"*/bank/full/{d}") if p != public / d]
+assert not others, f"another version of the same bank is at {[str(p) for p in others]}. Its validation labels can be test labels of this one: keep only one public version of a domain. If you did not mean to rebuild this domain, delete nothing and ask the team"
 for p in files:
     print(hashlib.sha256(p.read_bytes()).hexdigest(), p.relative_to(COMMIT))
 for d in DOMAINS:

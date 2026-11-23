@@ -35,6 +35,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from bank.common import read_jsonl, sha256_bytes
+from bank.draw_full import LEFT_OUT
 from bank.select_full import near_duplicate_groups
 
 SPLITS = ("validation", "test")
@@ -109,6 +110,9 @@ def split(domain: str, work: Path, out: Path, private: Path, seed: int = 544) ->
     if drawn["domain"] != domain:
         raise SystemExit(f"{work} holds the {drawn['domain']} draw, not {domain}")
     rows = read_jsonl(work / "drawn_bank.jsonl")
+    left_out = sorted({r["source"] for r in rows} & set(LEFT_OUT[domain]))
+    if left_out:
+        raise SystemExit(f"{work} was drawn before {left_out} was left out of the bank; rerun bank.draw_full")
     labels = {r["candidate_id"]: r for r in read_jsonl(work / "drawn_labels.jsonl")}
     if set(labels) != {r["candidate_id"] for r in rows} or len(labels) != len(rows):
         raise SystemExit("drawn_bank.jsonl and drawn_labels.jsonl do not hold the same answers")

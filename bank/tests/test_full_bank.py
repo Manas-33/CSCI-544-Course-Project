@@ -6,6 +6,7 @@ import csv
 import json
 import random
 import re
+import shutil
 import subprocess
 import sys
 import types
@@ -14,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from bank import draw_full, generate_api, generate_full, label, label_evalplus, make_pairs, select_full, split_full
-from bank import token_lengths
+from bank import draw_full, generate_api, generate_full, label, label_evalplus, make_pairs, reuse_labels, select_full
+from bank import split_full, token_lengths
 from bank.common import read_jsonl, sha256_bytes, sha256_text, write_jsonl
 from bank.generate import _row
 from bank.select_pilot import evalplus, gsm8k_platinum, math500
@@ -584,6 +585,7 @@ def test_length_filter_needs_every_verifier_tokenizer_and_qwen3(tmp_path, monkey
 # ---------------------------------------------------------------- the draw rule
 
 GENS = ["A", "B", "C", "D"]
+HUMANEVAL, MBPP = "evalplus/humaneval+", "evalplus/mbpp+"
 
 
 def make(pairs):
@@ -615,7 +617,7 @@ def test_the_problem_cap_comes_before_the_target():
     assert max(Counter(pairs[i]["problem_id"] for i in ids).values()) == 2
     assert all(len({pairs[i]["generator"] for i in ids if pairs[i]["problem_id"] == p}) == n
                for p, n in Counter(pairs[i]["problem_id"] for i in ids).items())
-    code = make(many(draw_full.CODE_SOURCES[0], 10, per_problem=4) + many(draw_full.CODE_SOURCES[1], 5))
+    code = make(many(HUMANEVAL, 10, per_problem=4) + many(HUMANEVAL, 5, prefix="other"))
     _, s = draw_full.draw(code, "code")
     assert (s["pairs_after_problem_cap"], s["target"]) == (35, 35)
 
@@ -656,7 +658,53 @@ def test_the_draw_is_seeded_and_does_not_depend_on_input_order():
         draw_full.draw(make(many("gsm8k/train", 3)), "math")
 
 
+def remove(pairs, extra_questions=0):
+    """without_left_out on `make` pairs, with one bank row standing for each pair."""
+    questions = [{"problem_id": p, "source": s} for p, s in sorted({(i["problem_id"], i["source"]) for i in pairs.values()})]
+    questions += [{"problem_id": f"no-pair-{i}", "source": MBPP} for i in range(extra_questions)]
+    answers = [{"problem_id": q["problem_id"], "generator": g} for q in questions for g in GENS]
+    rows, left, answers_left, removed = draw_full.without_left_out("code", {p: [i] for p, i in pairs.items()}, questions, answers)
+    assert {q["source"] for q in left} <= {HUMANEVAL} and len(answers_left) == len(GENS) * len(left)
+    return {p: m[0] for p, m in rows.items()}, removed
+
+
+def test_code_is_humaneval_only_and_mbpp_leaves_before_anything_is_counted():
+    # D has 12 of 100 pairs overall but 3 of 40 in HumanEval+; A has 60 in all and 13 there
+    human = [(HUMANEVAL, f"h{i}", "D" if i < 3 else GENS[i % 3]) for i in range(40)]
+    mbpp = [(MBPP, f"m{i}", "D" if i < 9 else ("A" if i < 56 else "B")) for i in range(60)]
+    alone = draw_full.draw(make(human), "code")
+    kept, removed = remove(make(human + mbpp), extra_questions=7)
+    assert removed == {MBPP: {"problems": 67, "answers": 67 * 4, "qualifying_pairs": 60, "answers_in_pairs": 120}}
+    assert kept == make(human) and draw_full.draw(kept, "code") == alone
+    s = alone[1]
+    assert (s["qualifying_pairs"], s["target"], s["generator_cap"]["available"]) == (40, 40, ["A", "B", "C"])
+    assert (s["generator_cap"]["pairs"], s["generator_cap"]["percent"]) == (16, 40) and set(s["by_source"]) == {HUMANEVAL}
+    for source in (MBPP, "evalplus/humaneval", "math-500/test"):  # MBPP+ is removed before the draw, never drawn
+        with pytest.raises(SystemExit, match="unexpected sources"):
+            draw_full.draw(make(human + [(source, "x", "A")]), "code")
+    assert draw_full.LEFT_OUT["math"] == () and not set(draw_full.CODE_SOURCES) & set(draw_full.LEFT_OUT["code"])
+
+
+def test_the_pilots_humaneval_pairs_give_three_generators_and_a_40_percent_cap():
+    """The counts in the decision record (point 6). The full bank's own counts decide there."""
+    pairs = {r["pair_id"]: {k: r[k] for k in ("source", "problem_id", "generator")}
+             for r in rows_of(REPO / "bank/pilot/code/pilot_bank.jsonl")}
+    kept, removed = remove(pairs)
+    s = draw_full.draw(kept, "code")[1]
+    assert removed[MBPP]["qualifying_pairs"] == 99 and s["qualifying_by_generator"]["openai/gpt-4.1-mini"] == 6
+    assert s["target"] == 67 and s["generator_cap"]["percent"] == 40 and len(s["generator_cap"]["available"]) == 3
+
+
 # ---------------------------------------------------------------- the split
+
+def test_the_split_and_the_near_duplicate_rule_on_the_real_humaneval_problems():
+    problems = {q["problem_id"]: (q["source"], q["question"]) for q in rows_of(REPO / "bank/full/questions_code.jsonl")
+                if q["source"] == HUMANEVAL}
+    assignment, together = split_full.split_problems(problems, 544)
+    assert together == [["humaneval-plus-056", "humaneval-plus-061"]]  # the two bracket problems
+    assert assignment["humaneval-plus-056"] == assignment["humaneval-plus-061"]
+    assert Counter(assignment.values()) == {"validation": 38, "test": 76}
+
 
 def test_split_is_a_third_per_source_by_problem_with_near_duplicates_together():
     problems = {f"s{n}-{i:02d}": (f"s{n}", words(f"{n}-{i}")) for n, size in (("1", 9), ("2", 10), ("3", 11)) for i in range(size)}
@@ -747,7 +795,15 @@ def test_end_to_end_files_are_what_the_scorers_and_analysis_read(built):
             assert b"\r" not in (folder / name).read_bytes()
         assert manifest["counts"]["test"]["candidates"] == len(test) and manifest["counts"]["total"]["pairs"] == len(members)
         cells = manifest["share_of_cells_that_qualified"]["all"]
-        n_questions = len(rows_of(built.out / f"questions_{domain}.jsonl"))
+        questions = rows_of(built.out / f"questions_{domain}.jsonl")
+        n_questions = sum(q["source"] != MBPP for q in questions)
+        if domain == "math":
+            assert "left_out" not in manifest["draw"] and n_questions == len(questions)
+        else:
+            left = manifest["draw"]["left_out"]
+            assert list(left) == [MBPP] and (left[MBPP]["problems"], left[MBPP]["answers"]) == (4, 4 * 8 * 4)
+            assert left[MBPP]["qualifying_pairs"] > 0 and left[MBPP]["answers_in_pairs"] == 2 * left[MBPP]["qualifying_pairs"]
+            assert {r["source"] for r in bank} == {HUMANEVAL} and MBPP not in manifest["share_of_cells_that_qualified"]
         assert cells["cells"] == 4 * n_questions and cells["qualified"] == manifest["draw"]["qualifying_pairs"]
         assert manifest["seed"] == 544 and set(manifest["shortfall"]) == ({"gsm8k", "math"} if domain == "math" else {"code"})
         text = (public / "manifest.json").read_text()
@@ -797,17 +853,20 @@ def test_rebuilding_gives_the_same_bytes_and_a_different_bank_is_refused(built):
 def test_a_pair_is_dropped_when_one_answer_is_too_long_and_stale_lists_are_refused(built):
     work = built.tmp / "work/code"
     pairs, _ = draw_full.load_pairs(work, "code")
-    victim = sorted(pairs)[0]
+    human = {p for p, m in pairs.items() if m[0]["source"] == HUMANEVAL}
+    victim = sorted(human)[0]
     data = json.loads((work / "too_long.json").read_text())
     good = copy.deepcopy(data)
     args = ["--domain", "code", "--work", str(work), "--questions", str(built.out / "questions_code.jsonl"),
             "--generations", str(work / "generations.jsonl")]
-    data["too_long"] = [pairs[victim][1]["candidate_id"]]
+    gone = next(m[0]["candidate_id"] for p, m in sorted(pairs.items()) if p not in human)
+    data["too_long"] = [pairs[victim][1]["candidate_id"], gone]  # an MBPP+ one is already out, so it is not counted
     (work / "too_long.json").write_text(json.dumps(data))
     draw_full.main(args)
     summary = json.loads((work / "draw_summary.json").read_text())
     assert summary["pairs_dropped_too_long"] == 1 and victim not in {r["pair_id"] for r in rows_of(work / "drawn_bank.jsonl")}
-    assert summary["qualifying_pairs"] == len(pairs) - 1
+    assert summary["qualifying_pairs"] == len(human) - 1 and summary["too_long_candidates"] == [data["too_long"][0]]
+    assert summary["left_out"][MBPP]["qualifying_pairs"] == len(pairs) - len(human)
     for change, message in (({"tokenizers_loaded": data["tokenizers_loaded"][:-1]}, "every verifier"),
                             ({"tokenizers_failed": {"x": "y"}}, "every verifier"), ({"banks_sha256": ["0" * 64]}, "other answers")):
         (work / "too_long.json").write_text(json.dumps({**good, **change}))
@@ -824,6 +883,217 @@ def test_a_pair_is_dropped_when_one_answer_is_too_long_and_stale_lists_are_refus
             draw_full.main(args)
         with pytest.raises(SystemExit, match="one checker version|one correct and one wrong"):
             draw_full.load_pairs(work, "code")
+
+
+def test_the_code_bank_is_rebuilt_from_finished_labels_without_running_anything(full, monkeypatch, request):
+    """An earlier version drawn with MBPP+, then a new one from its labels: nothing is relabeled, the old one stays."""
+    with monkeypatch.context() as before:  # the draw as it was when the labels were made
+        before.setattr(draw_full, "CODE_SOURCES", (HUMANEVAL, MBPP))
+        before.setitem(draw_full.LEFT_OUT, "code", ())
+        built = request.getfixturevalue("built")
+    v1 = built.tmp / "work/code"
+    assert {r["source"] for r in rows_of(built.public / "code/bank.jsonl")} == {HUMANEVAL, MBPP}
+    old = {p: p.read_bytes() for root in (v1, built.public, built.private) for p in root.rglob("*") if p.is_file()}
+    with pytest.raises(SystemExit, match="rerun bank.draw_full"):  # the old draw cannot be split any more
+        split_full.split("code", v1, built.tmp / "other/bank/full/code", built.tmp / "other_private/code")
+
+    monkeypatch.setattr(label_evalplus, "check_job", lambda job: pytest.fail("a program was run"))
+    v2 = built.tmp / "work_v2/code"
+    generate_full.main(["merge", "--domain", "code", "--gen", str(built.drive / "gen"), "--questions-dir", str(built.out),
+                        "--out", str(v2 / "generations.jsonl")])
+    questions = built.out / "questions_code.jsonl"
+    in_repo = built.tmp / "clone/bank/full/code"
+    args = ["reuse", "--old", str(v1), "--work", str(v2), "--questions", str(questions),
+            "--old-public", str(built.public / "code"), str(in_repo)]
+    with pytest.raises(SystemExit, match="validation labels can be test labels"):  # the old public code bank is still there
+        reuse_labels.main(args)
+    assert not (v2 / "labeled.jsonl").exists()
+    (built.public / "code").rename(built.tmp / "deleted")
+    in_repo.mkdir(parents=True)
+    with pytest.raises(SystemExit, match="validation labels can be test labels"):  # or it was committed
+        reuse_labels.main(args)
+    in_repo.rmdir()
+    old = {p: data for p, data in old.items() if p.exists()}
+    reuse_labels.main(args)
+    assert (v2 / "labeled.jsonl").read_bytes() == (v1 / "labeled.jsonl").read_bytes()
+    make_pairs.main(["--split", "full", "--questions", str(questions), "--generations", str(v2 / "generations.jsonl"),
+                     "--labeled", str(v2 / "labeled.jsonl"), "--out", str(v2)])
+    for name in ("full_bank.jsonl", "full_labels.jsonl"):
+        assert (v2 / name).read_bytes() == (v1 / name).read_bytes()
+    token_lengths.main([str(v2 / "full_bank.jsonl"), "--out", str(v2 / "too_long.json")])
+    draw_full.main(["--domain", "code", "--work", str(v2), "--questions", str(questions), "--generations", str(v2 / "generations.jsonl")])
+    public, private = built.tmp / "commit_v2/bank/full/code", built.tmp / "private_v2/code"
+    split_full.main(["split", "--domain", "code", "--work", str(v2), "--out", str(public), "--private", str(private)])
+    bank = rows_of(public / "bank.jsonl")
+    assert {r["source"] for r in bank} == {HUMANEVAL}
+    labels = {r["candidate_id"]: r for r in rows_of(v1 / "full_labels.jsonl")}
+    assert all(labels[r["candidate_id"]] == r for r in rows_of(public / "labels_validation.jsonl") + rows_of(private / "labels_test.jsonl"))
+    assert old == {p: p.read_bytes() for p in old}
+
+    # anything that is not exactly the earlier version's input is refused, and nothing is copied
+    def refused(match):
+        (v2 / "labeled.jsonl").unlink(missing_ok=True)
+        with pytest.raises(SystemExit, match=match):
+            reuse_labels.main(args)
+        assert not (v2 / "labeled.jsonl").exists()
+
+    for path in (v2 / "generations.jsonl", questions):
+        good = path.read_bytes()
+        path.write_bytes(good + b"\n")
+        refused("not the file the earlier version")
+        path.write_bytes(good)
+    for name in ("full_bank_summary.json", "labeled.jsonl"):  # the earlier version never got that far
+        good = (v1 / name).read_bytes()
+        (v1 / name).unlink()
+        refused("no finished labels")
+        for part in (b"", good[: len(good) // 2], good + b"\n" if name == "labeled.jsonl" else b"[]"):  # or a copy was cut off
+            (v1 / name).write_bytes(part)
+            refused("no finished labels")
+        (v1 / name).write_bytes(good)
+    summary, labeled = (v1 / "full_bank_summary.json").read_bytes(), rows_of(v1 / "labeled.jsonl")
+
+    def relabel(rows):  # an earlier version whose summary fits other labels
+        write_jsonl(v1 / "labeled.jsonl", rows)
+        data = json.loads(summary)
+        data["inputs"]["labeled.jsonl"] = sha256_bytes((v1 / "labeled.jsonl").read_bytes())
+        (v1 / "full_bank_summary.json").write_text(json.dumps(data))
+
+    for rows in (labeled[:-1], labeled[1:] + labeled[:1], [{**labeled[0], "candidate_id": "x"}] + labeled[1:]):
+        relabel(rows)
+        refused("does not cover exactly the answers")
+    for version in ("bank.label_evalplus/1+evalplus==0.3.0+colab-guard", "bank.label_evalplus/0+evalplus==0.3.1+colab-guard", None):
+        relabel(labeled[:-1] + [{**labeled[-1], "checker_version": version}])  # one row from another checker is enough
+        refused("not labeled by the current checker")
+    relabel(labeled)
+    reuse_labels.main(args)
+
+
+def test_reused_math_labels_must_come_from_the_current_math_checker(built, monkeypatch):
+    v1, v2, questions = built.tmp / "work/math", built.tmp / "v2/math", built.out / "questions_math.jsonl"
+    v2.mkdir(parents=True)
+    (v2 / "generations.jsonl").write_bytes((v1 / "generations.jsonl").read_bytes())
+    assert {r["checker_version"] for r in rows_of(v1 / "labeled.jsonl")} == {reuse_labels.CHECKERS["math"]}
+    assert reuse_labels.reuse(v1, v2, questions, [built.tmp / "gone"]) == len(rows_of(v1 / "labeled.jsonl"))
+    (v2 / "labeled.jsonl").unlink()
+    for checker in ("bank.label/3+math_verify==0.9.0", "bank.label/2+math_verify==0.9.1"):  # the checker was fixed since
+        monkeypatch.setitem(reuse_labels.CHECKERS, "math", checker)
+        with pytest.raises(SystemExit, match="not labeled by the current checker"):
+            reuse_labels.reuse(v1, v2, questions, [])
+    assert not (v2 / "labeled.jsonl").exists()
+
+
+def test_the_current_checkers_are_the_pilots_and_the_notebooks():
+    for domain in SAMPLES:
+        rows = rows_of(REPO / f"bank/pilot/{domain}/pilot_bank.jsonl")
+        assert {r["checker_version"] for r in rows} == {reuse_labels.CHECKERS[domain]}
+    text = "\n".join(notebook_lines("11_full_label_split"))
+    for pin in ("math-verify==0.9.0", "evalplus==0.3.1"):
+        assert pin in text and pin.split("==")[1] in "".join(reuse_labels.CHECKERS.values())
+
+
+def test_labels_are_kept_before_the_split_and_never_replaced(built):
+    work, keep = built.tmp / "work/math", built.tmp / "private/math/work"
+    questions = built.out / "questions_math.jsonl"
+    reuse_labels.main(["save", "--work", str(work), "--keep", str(keep)])
+    held = lambda: {p.name: p.read_bytes() for p in keep.iterdir() if p.suffix != ".tmp"}  # noqa: E731
+    kept = held()
+    assert sorted(kept) == sorted(reuse_labels.KEPT) and reuse_labels.save(work, keep) == 0
+
+    # a copy that was cut off is replaced, whichever file it stopped in, and is never taken for finished labels
+    for name in reuse_labels.KEPT:
+        for part in (b"", kept[name][: len(kept[name]) // 2], None):
+            (keep / name).unlink()
+            if part is not None:
+                (keep / name).write_bytes(part)
+            (keep / f"{name}.tmp").write_text("half")
+            if name in ("labeled.jsonl", "full_bank_summary.json"):
+                with pytest.raises(SystemExit, match="no finished labels"):
+                    reuse_labels.reuse(keep, work, questions, [])
+            assert reuse_labels.save(work, keep) >= 1 and held() == kept
+    (keep / "full_bank_summary.json").write_text("[]")  # not a summary at all
+    assert reuse_labels.save(work, keep) == 1 and held() == kept
+
+    # finished labels are never replaced by different ones
+    summary = json.loads((work / "full_bank_summary.json").read_text())
+    (work / "full_bank_summary.json").write_text(json.dumps({**summary, "python": "3.99"}))  # another runtime
+    assert reuse_labels.save(work, keep) == 0 and held() == kept
+    for name, kind in (("labeled.jsonl", "inputs"), ("full_labels.jsonl", "outputs")):
+        good = (work / name).read_bytes()
+        write_jsonl(work / name, rows_of(work / name)[1:])
+        with pytest.raises(SystemExit, match="make the pairs first"):  # a file the pairs were not made from
+            reuse_labels.save(work, keep)
+        digest = sha256_bytes((work / name).read_bytes())
+        (work / "full_bank_summary.json").write_text(json.dumps({**summary, kind: {**summary[kind], name: digest}}))
+        with pytest.raises(SystemExit, match="never replaced"):
+            reuse_labels.save(work, keep)
+        (work / name).write_bytes(good)
+        (work / "full_bank_summary.json").write_text(json.dumps(summary))
+    assert held() == kept
+    (work / "full_bank.jsonl").unlink()
+    with pytest.raises(SystemExit, match="make the pairs first"):
+        reuse_labels.save(work, keep)
+
+
+def test_an_interrupted_save_never_leaves_a_finished_looking_folder(built, monkeypatch):
+    """The summary is written last: wherever the copying stops, the folder is not finished, and saving again completes it."""
+    work, copy = built.tmp / "work/math", reuse_labels.copy_file
+    for stop_after in range(len(reuse_labels.KEPT)):
+        keep, done = built.tmp / f"kept{stop_after}", []
+
+        def copy_then_stop(src, dst):
+            if len(done) == stop_after:
+                raise KeyboardInterrupt
+            copy(src, dst)
+            done.append(src.name)
+
+        monkeypatch.setattr(reuse_labels, "copy_file", copy_then_stop)
+        with pytest.raises(KeyboardInterrupt):
+            reuse_labels.save(work, keep)
+        assert reuse_labels.finished(keep) is None and "full_bank_summary.json" not in done
+        monkeypatch.setattr(reuse_labels, "copy_file", copy)
+        assert reuse_labels.save(work, keep) == len(reuse_labels.KEPT) - stop_after
+        assert reuse_labels.finished(keep) is not None
+
+
+def test_the_commit_cell_stops_at_a_bank_that_must_not_be_committed(built, capsys):
+    cells = json.loads((REPO / "notebooks/11_full_label_split.ipynb").read_text(encoding="utf-8"))["cells"]
+    cell = next("".join(c["source"]) for c in cells if c["cell_type"] == "code" and "private_files" in "".join(c["source"]))
+    commit, public = built.tmp / "to_commit/v2", built.tmp / "to_commit/v2/bank/full"
+    shutil.copytree(built.tmp / "commit", commit)
+
+    def run(*domains):
+        exec(cell, {"DOMAINS": list(domains), "SHARED": str(built.drive), "PRIVATE": str(built.private), "COMMIT": str(commit)})
+        return capsys.readouterr().out
+
+    assert "math/labels_validation.jsonl" in run("math", "code")
+    bank, manifest = public / "code/bank.jsonl", public / "code/manifest.json"
+    good, described = bank.read_bytes(), manifest.read_bytes()
+    with bank.open("a") as f:
+        f.write(json.dumps({**json.loads(good.splitlines()[0]), "source": MBPP}) + "\n")
+    for domains in (("code",), ("math",)):  # the folder is checked whatever was rebuilt
+        with pytest.raises(AssertionError, match="drawn with MBPP"):
+            run(*domains)
+    bank.write_bytes(good)
+    for path, data in ((manifest, described), (bank, good)):  # a split that stopped partway
+        path.unlink()
+        with pytest.raises(AssertionError, match="not a finished code bank"):
+            run("math")
+        path.write_bytes(data)
+    # without reused labels too: an older public version of a rebuilt domain stops the cell, manifest or not
+    old = built.tmp / "to_commit/v1/bank/full/code"
+    old.mkdir(parents=True)
+    (old / "labels_validation.jsonl").write_text("{}")
+    with pytest.raises(AssertionError, match="another version of the same bank"):
+        run("code")
+    assert "labels_validation" not in capsys.readouterr().out
+    (old.parent / "math").mkdir()
+    shutil.rmtree(old)
+    assert "code/labels_validation.jsonl" in run("code")  # math may stay in v1 when only code was rebuilt
+
+
+@pytest.mark.skipif(not (REPO / "bank/full/code/bank.jsonl").is_file(), reason="code bank not committed yet")
+def test_the_committed_code_bank_has_no_mbpp():
+    assert {r["source"] for r in rows_of(REPO / "bank/full/code/bank.jsonl")} == {HUMANEVAL}
 
 
 def test_error_tags_are_drawn_from_wrong_test_answers_and_added_to_the_label_file(built):
@@ -920,12 +1190,23 @@ def test_the_label_notebook_keeps_test_labels_in_the_private_folder_and_prints_n
     lines = list(notebook_lines("11_full_label_split"))
     assert "I_AM_THE_LABEL_KEEPER = False" in "\n".join(lines)
     assert all("{COMMIT}" not in line for line in lines if re.search(r"labeled|labels_test|checks|{WORK}/{d}/\.", line))
-    # the private copy of the labeled answers is made only after the split accepted them
-    copies = [i for i, line in enumerate(lines) if "{PRIVATE}/{d}/work" in line]
-    assert len(copies) == 1 and "_exit_code == 0" in lines[copies[0] - 1] and "split_full split" in lines[copies[0] - 2]
+    # labels and pairs go to the private work folder through `save` only; the rest is copied after the split
+    written = [line for line in lines if "{PRIVATE}/{d}/work" in line]
+    assert len(written) == 2 and "bank.reuse_labels save" in written[0] and "path.name" in written[1]
+    assert "\n".join(lines).index("split_full split") < "\n".join(lines).index(written[1])
+    copied = next(line for line in lines if "labeled_manifest.json" in line and "too_long.json" in line)
+    assert not any(f'"{name}"' in copied for name in reuse_labels.KEPT)
+    assert not any("cp -r" in line for line in lines)
     assert not any(re.match(r"\s*!(cat|head|tail|less)\b", line) for line in lines)
     cpu = json.loads((REPO / "notebooks/11_full_label_split.ipynb").read_text())["metadata"]
     assert "accelerator" not in cpu
+    # reused labels: both labeling cells are skipped, and the reuse cell runs before them
+    text = "\n".join(lines)
+    assert 'if "math" in DOMAINS and not REUSE_LABELS_FROM:' in text and 'if "code" in DOMAINS and not REUSE_LABELS_FROM:' in text
+    reuse = next(line for line in lines if "bank.reuse_labels reuse" in line)
+    assert "--old-public {OLD_COMMIT}/bank/full/{d} bank/full/{d}" in reuse
+    assert text.index("bank.make_pairs") < text.index("bank.reuse_labels save") < text.index("bank.token_lengths")
+    assert text.index("bank.reuse_labels reuse") < text.index("bank.label ") and 'REUSE_LABELS_FROM = ""' in text
     # model-written programs run as another user, before the login; every bank step but the tag sheet is checked
     text = "\n".join(lines)
     assert text.index("!runuser -u nobody") < text.index("login(token=")

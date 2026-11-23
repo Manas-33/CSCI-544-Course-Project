@@ -88,12 +88,14 @@ About 2,100 math and 300 code answers (HumanEval+ only) for the final comparison
 
 Step 3 runs `bank.generate_full merge`, `bank.label` or `bank.label_evalplus`, `bank.make_pairs --split full`, `bank.token_lengths`, `bank.draw_full` and `bank.split_full`, per domain. The rules are in their docstrings: the draw rule and the order of its caps in `draw_full`, the split in `split_full`, what counts as a near-duplicate problem in `select_full`.
 
+**Rebuilding the code bank from labels already made.** Notebook 11 can take over an earlier version's labels (`REUSE_LABELS_FROM`); its first cell lists the steps. `bank.reuse_labels` copies them only if they are the current checker's labels of exactly the same answers, and nothing is run; pairs, length filter, draw and split are redone. The new bank is split again, so validation labels of the old code bank can be test labels of the new one. So if `v1` was drawn with MBPP+ and `v2` is the rebuilt code bank: only `math` is committed from `v1` and only `code` from `v2`, and `v1`'s public `code` folder is deleted and never shared. The notebook stops if it still exists.
+
 **Files per domain** (`full/math/`, `full/code/`):
 - `bank.jsonl`: the pilot bank's fields, `split` is `validation` or `test`, no label. The bank is identified by its SHA-256.
 - `labels_validation.jsonl`, and `labels_test.jsonl` in the label keeper's private folder: the pilot label file's fields, plus `error_type` for the tagged math answers. Code answers have one of EvalPlus's two error types: `wrong_output` (a crash counts here too) or `timeout`.
 - `manifest.json`: SHA-256 of every file (`files`), counts per split, shortfalls, seeds, and the share of (problem, generator) cells that qualified.
 
-Selected so far (`full/questions_manifest.json`): 1,059 GSM8K-Platinum, 239 MATH-500, 500 new MATH and 390 code problems (114 HumanEval+ and 276 MBPP+). Two of the 392 unused code problems are near-duplicates of development problems and were left out. MBPP+ is left out of the bank ([record](../decisions/2026-11-22-label-check-by-domain.md)).
+Selected so far (`full/questions_manifest.json`): 1,059 GSM8K-Platinum, 239 MATH-500, 500 new MATH and 390 code problems (114 HumanEval+ and 276 MBPP+). Two of the 392 unused code problems are near-duplicates of development problems and were left out. MBPP+ is left out of the bank ([record](../decisions/2026-11-22-label-check-by-domain.md)): its answers were generated and labeled, and `bank.draw_full` removes them before the caps are counted and records how many (`left_out` in the manifest). The 114 HumanEval+ problems split into 38 for validation and 76 for test if every one gives a pair.
 
 **Sources and licences**, as found on November 21, 2026 (read on the linked pages; `licenses` in `full/questions_manifest.json` keeps PRM800K's text, the start of EvalPlus's, and notes on the two dataset cards):
 
