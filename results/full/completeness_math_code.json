@@ -1,0 +1,413 @@
+{
+ "banks": {
+  "code": {
+   "answers": 350,
+   "sha256": "7eb9e302948d9b2dec0d3cdbf1b160a2dd83621135cd810a6aba948bcb4550e7"
+  },
+  "math": {
+   "answers": 2100,
+   "sha256": "47c94b58bfa518ef47116704b97d8ecbbdf30e44b90276d8d28c233f643fb7e3"
+  }
+ },
+ "commits": {
+  "code": "89e009e16f24980c51457623d3c12c0068d60617",
+  "math": "89e009e16f24980c51457623d3c12c0068d60617"
+ },
+ "complete": true,
+ "domains": [
+  "math",
+  "code"
+ ],
+ "gpu_types": [
+  "A100"
+ ],
+ "mode": "go",
+ "notes": [],
+ "problems": [],
+ "scores": [
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05297007133444577,
+   "median_mass": 0.9999975864604258,
+   "peak_memory_gb": 15.754048,
+   "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Qwen2.5-7B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.0541223726807995,
+   "median_mass": 0.9999940180493396,
+   "peak_memory_gb": 15.75882496,
+   "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Qwen2.5-7B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05698911241686627,
+   "median_mass": 0.9999464883598349,
+   "peak_memory_gb": 16.504162816,
+   "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Llama-3.1-8B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05842256170795719,
+   "median_mass": 0.9997627658396352,
+   "peak_memory_gb": 16.508381696,
+   "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Llama-3.1-8B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.09470584249071201,
+   "median_mass": 0.997056791492382,
+   "peak_memory_gb": 20.327940096,
+   "revision": "11c9b309abf73637e4b6f9a3fa1e92e615547819",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Gemma-2-9B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.09617889357646854,
+   "median_mass": 0.9995930167429621,
+   "peak_memory_gb": 20.327825408,
+   "revision": "11c9b309abf73637e4b6f9a3fa1e92e615547819",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Gemma-2-9B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05917072368127925,
+   "median_mass": 0.9994181574605147,
+   "peak_memory_gb": 14.70939648,
+   "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Mistral-7B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.06088790723582492,
+   "median_mass": 0.9998975009332207,
+   "peak_memory_gb": 14.711827968,
+   "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Mistral-7B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.0338982509971426,
+   "median_mass": 0.9999414803540427,
+   "peak_memory_gb": 7.21420288,
+   "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Llama-3.2-3B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.03434393979514031,
+   "median_mass": 0.9998714821085173,
+   "peak_memory_gb": 7.21420288,
+   "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Llama-3.2-3B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.03180764093520051,
+   "median_mass": 0.9845394657508795,
+   "peak_memory_gb": 3.6024832,
+   "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Qwen2.5-1.5B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.032340778802285725,
+   "median_mass": 0.9850871339362046,
+   "peak_memory_gb": 3.607387648,
+   "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Qwen2.5-1.5B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.062050273408758634,
+   "median_mass": 0.8708120658993721,
+   "peak_memory_gb": 16.485239808,
+   "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "LLaDA-8B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.06368925552644093,
+   "median_mass": 0.5466122273355722,
+   "peak_memory_gb": 16.488814592,
+   "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "LLaDA-8B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05335958859409361,
+   "median_mass": 0.9046014621853828,
+   "peak_memory_gb": 15.795732992,
+   "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+   "scored": 2100,
+   "template": "T1",
+   "verifier": "Dream-7B"
+  },
+  {
+   "domain": "math",
+   "expected": 2100,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05466037356979999,
+   "median_mass": 0.9911942854523659,
+   "peak_memory_gb": 15.800064512,
+   "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+   "scored": 2100,
+   "template": "T2",
+   "verifier": "Dream-7B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04147704048423593,
+   "median_mass": 0.9999998088744346,
+   "peak_memory_gb": 15.513412096,
+   "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Qwen2.5-7B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04242504226074764,
+   "median_mass": 0.9999995007428767,
+   "peak_memory_gb": 15.517869568,
+   "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Qwen2.5-7B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04519449954727861,
+   "median_mass": 0.9997209148991697,
+   "peak_memory_gb": 16.287626752,
+   "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Llama-3.1-8B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04638256889397533,
+   "median_mass": 0.9994339785637477,
+   "peak_memory_gb": 16.291961344,
+   "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Llama-3.1-8B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.08286022228367008,
+   "median_mass": 0.9989689739654888,
+   "peak_memory_gb": 20.327825408,
+   "revision": "11c9b309abf73637e4b6f9a3fa1e92e615547819",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Gemma-2-9B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.08273947290544217,
+   "median_mass": 0.9998433147776962,
+   "peak_memory_gb": 20.327825408,
+   "revision": "11c9b309abf73637e4b6f9a3fa1e92e615547819",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Gemma-2-9B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.047251319836682196,
+   "median_mass": 0.9996514377408072,
+   "peak_memory_gb": 14.617086976,
+   "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Mistral-7B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04860120565043243,
+   "median_mass": 0.9999284041698224,
+   "peak_memory_gb": 14.619713024,
+   "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Mistral-7B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.032082805908301607,
+   "median_mass": 0.9999315623405889,
+   "peak_memory_gb": 7.21420288,
+   "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Llama-3.2-3B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.032023735051572196,
+   "median_mass": 0.9999665237219363,
+   "peak_memory_gb": 7.21420288,
+   "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Llama-3.2-3B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.032179469971341884,
+   "median_mass": 0.9973264663666189,
+   "peak_memory_gb": 3.56269568,
+   "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Qwen2.5-1.5B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.031900177661889934,
+   "median_mass": 0.9978034753588955,
+   "peak_memory_gb": 3.56269568,
+   "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Qwen2.5-1.5B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.050163766220630665,
+   "median_mass": 0.10752801410853863,
+   "peak_memory_gb": 16.285031424,
+   "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "LLaDA-8B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.05064237961033231,
+   "median_mass": 0.0932418555021286,
+   "peak_memory_gb": 16.288561152,
+   "revision": "08b83a6feb34df1a6011b80c3c00c7563e963b07",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "LLaDA-8B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04268816977937969,
+   "median_mass": 0.9188428521156311,
+   "peak_memory_gb": 15.553823232,
+   "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+   "scored": 350,
+   "template": "T1",
+   "verifier": "Dream-7B"
+  },
+  {
+   "domain": "code",
+   "expected": 350,
+   "gpu": "NVIDIA A100-SXM4-80GB",
+   "mean_seconds": 0.04337113399713333,
+   "median_mass": 0.8671492636203766,
+   "peak_memory_gb": 15.559613952,
+   "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+   "scored": 350,
+   "template": "T2",
+   "verifier": "Dream-7B"
+  }
+ ]
+}
