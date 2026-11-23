@@ -68,7 +68,7 @@ After step 0, nothing changes the models, the domain or the score. If step 0 say
 
 ### D. Diffusion scoring and reconstruction
 1. Test 4 for LLaDA and Dream runs in notebook 09 (C); check their environments and score files.
-2. Implement the **reconstruction score** (PLAN §4): LLaDA's `get_log_likelihood` Monte Carlo estimate, ported to Dream with its shift. Choose the sample count on the development bank. Run it on the pilot and report gate A (per token, 128 samples, seed 544) and the repeat check with seed 545 (PLAN §7).
+2. Implement the **reconstruction score** (PLAN §4): LLaDA's `get_log_likelihood` Monte Carlo estimate, ported to Dream with its shift. The side experiment uses 128 samples ([record](decisions/2026-11-22-reconstruction-128-samples.md), post hoc). Run it on the pilot and report gate A (per token, 128 samples, seed 544) and the repeat check with seed 545 (PLAN §7).
 3. Score both splits of both banks with T1 and T2 for LLaDA and Dream: unbatched, in notebook 13, on the **same GPU type** as the AR models ([record](decisions/2026-11-22-scoring-one-gpu-type.md); the pilot's Dream run used an L4, so its time is not comparable).
 4. Run the reconstruction score on 500 validation and 500 test answers of the math bank (on the whole math bank only if it is needed as the repair).
 

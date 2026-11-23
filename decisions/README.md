@@ -24,5 +24,7 @@ Team decisions and every deviation from [PLAN.md](../PLAN.md), one file per deci
 | 2026-11-22 | [The label check is judged per domain, and MBPP+ leaves the bank](2026-11-22-label-check-by-domain.md) (post hoc) |
 | 2026-11-22 | [Final model record: go](2026-11-22-final-model-record.md) |
 | 2026-11-22 | [The label keeper changed to A, who also runs the full-bank label check](2026-11-22-label-keeper-handover.md) |
+| 2026-11-22 | [The old label keeper confirmed deleting their copies](2026-11-22-old-label-keeper-confirmed.md) |
+| 2026-11-22 | [The reconstruction side experiment uses 128 samples](2026-11-22-reconstruction-128-samples.md) (post hoc) |
 
 Still to record: the second-person read of the sanity set; dev-bank numbers as labeled pipeline checks; the code dev bank's MBPP-only tests.
