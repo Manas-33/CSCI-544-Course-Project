@@ -5,6 +5,10 @@ too_long.json from bank.token_lengths. Output, in the same folder: drawn_bank.js
 drawn_labels.jsonl and draw_summary.json. The folder holds labels, so keep it out of git.
 
 The rule, in order:
+0. Code uses HumanEval+ only (decisions/2026-11-22-label-check-by-domain.md): MBPP+ pairs are removed before
+   anything below is counted, and the number removed is in the summary ("left_out"). The counts and shares
+   below are then about HumanEval+ alone; only longest_prompt_tokens still covers every pair measured.
+   Any other source is refused.
 1. A pair with an answer on the too-long list is dropped.
 2. Per-problem cap: at most 2 pairs per math problem and 3 per code problem, the first ones in a
    seeded random order of all pairs. Each comes from a different generator, because make_pairs gives one
@@ -13,7 +17,7 @@ The rule, in order:
    half from each. Code: every pair left after the cap.
 4. Generator cap: no generator supplies more than 30% of the target, or 40% if fewer than four
    generators are available. A generator is available if it has at least 10% of the target in
-   qualifying pairs, counted after step 1 and before step 2, as bank.sample_pilot counts them.
+   qualifying pairs, counted after steps 0 and 1 and before step 2, as bank.sample_pilot counts them.
    The cap is one number per domain, not one per half.
 5. Draw. GSM8K pairs in seeded random order; MATH pairs with MATH-500 first, then the new problems, each in
    seeded random order; code pairs in seeded random order. A pair whose generator is at its
@@ -40,7 +44,9 @@ PER_PROBLEM = {"math": 2, "code": 3}
 GSM8K, MATH500, MATH_REST = "gsm8k-platinum/test", "math-500/test", "math-rest/test"
 # Each half of the math target, and the order its sources are taken in.
 MATH_HALVES = {"gsm8k": (GSM8K,), "math": (MATH500, MATH_REST)}
-CODE_SOURCES = ("evalplus/humaneval+", "evalplus/mbpp+")
+CODE_SOURCES = ("evalplus/humaneval+",)
+# Generated and labeled, but not part of the bank.
+LEFT_OUT = {"math": (), "code": ("evalplus/mbpp+",)}
 SECOND_CHECKER = {"math": "+math_verify==", "code": "+evalplus=="}
 
 
@@ -132,6 +138,22 @@ def draw(pairs: dict[str, dict], domain: str, seed: int = 544) -> tuple[list[str
     }
 
 
+def without_left_out(domain: str, rows: dict[str, list[dict]], questions: list[dict],
+                     generations: list[dict]) -> tuple[dict[str, list[dict]], list[dict], list[dict], dict]:
+    """(pairs, questions, answers) without the sources the domain leaves out, and how much each of them held."""
+    sources = LEFT_OUT[domain]
+    source = {q["problem_id"]: q["source"] for q in questions}
+    removed = {}
+    for s in sources:
+        pairs = sum(members[0]["source"] == s for members in rows.values())
+        removed[s] = {"problems": sum(q["source"] == s for q in questions),
+                      "answers": sum(source[g["problem_id"]] == s for g in generations),
+                      "qualifying_pairs": pairs, "answers_in_pairs": 2 * pairs}
+    return ({pid: members for pid, members in rows.items() if members[0]["source"] not in sources},
+            [q for q in questions if q["source"] not in sources],
+            [g for g in generations if source[g["problem_id"]] not in sources], removed)
+
+
 def cell_shares(questions: list[dict], cells: set[tuple[str, str]], pairs: dict[str, dict]) -> dict:
     """How many (problem, generator) cells gave a matched pair, overall and by source and generator (PLAN.md §2)."""
     source = {q["problem_id"]: q["source"] for q in questions}
@@ -198,12 +220,15 @@ def main(argv: list[str] | None = None) -> None:
         if sha256_bytes((work / name).read_bytes()) != digest:
             raise SystemExit(f"{work / name} is not the file bank.make_pairs wrote; rerun it")
     rows, labels = load_pairs(work, args.domain)
+    rows, questions, generations, removed = without_left_out(args.domain, rows, read_jsonl(args.questions),
+                                                             read_jsonl(args.generations))
     too_long = load_too_long(work)
+    if removed:
+        too_long &= {m["candidate_id"] for members in rows.values() for m in members}
     dropped = {pid for pid, members in rows.items() if any(m["candidate_id"] in too_long for m in members)}
     info = {pid: {k: members[0][k] for k in ("source", "problem_id", "generator")} for pid, members in rows.items()}
     chosen, summary = draw({p: i for p, i in info.items() if p not in dropped}, args.domain, args.seed)
 
-    generations = read_jsonl(args.generations)
     cells = {(g["problem_id"], g["generator"]) for g in generations}
     bank_rows = [r for pid in chosen for r in rows[pid]]
     write_jsonl(work / "drawn_bank.jsonl", bank_rows)
@@ -212,19 +237,20 @@ def main(argv: list[str] | None = None) -> None:
         "step": "draw_full",
         "domain": args.domain,
         "seed": args.seed,
+        **({"left_out": removed} if removed else {}),
         "pairs_dropped_too_long": len(dropped),
         "too_long_candidates": sorted(too_long),
         "longest_prompt_tokens": json.loads((work / "too_long.json").read_text(encoding="utf-8"))["longest_overall"],
         **summary,
-        "cells": cell_shares(read_jsonl(args.questions), cells, info),
+        "cells": cell_shares(questions, cells, info),
         "inputs": {**made["inputs"], **made["outputs"],
                    "too_long.json": sha256_bytes((work / "too_long.json").read_bytes())},
         "outputs": {n: sha256_bytes((work / n).read_bytes()) for n in ("drawn_bank.jsonl", "drawn_labels.jsonl")},
     }
     (work / "draw_summary.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")
-    print(json.dumps({k: result[k] for k in ("domain", "qualifying_pairs", "pairs_dropped_too_long",
+    print(json.dumps({k: result[k] for k in ("domain", "left_out", "qualifying_pairs", "pairs_dropped_too_long",
                                              "pairs_after_problem_cap", "target", "chosen", "shortfall",
-                                             "generator_cap", "by_source", "by_generator")}, indent=2))
+                                             "generator_cap", "by_source", "by_generator") if k in result}, indent=2))
 
 
 if __name__ == "__main__":
