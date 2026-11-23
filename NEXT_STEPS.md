@@ -109,7 +109,7 @@ Write and test everything on the pilot and synthetic data **now**, so it runs th
 | Go/no-go: pilot label audit, test 4, final model record | **Go** ([final model record](decisions/2026-11-22-final-model-record.md), `configs/final_models.json`) |
 | Reconstruction score | Run on the pilot (notebook 12): passes gate A, misses the repeat check (0.949 vs 0.95); repair not needed |
 | Math bank, code bank | Built: 2,100 math answers and 350 HumanEval+ code answers, split. Full-bank math label check passed (0 errors, 105 of 200 read). Error tags under way; then the bank freeze |
-| Scoring the full bank | Notebook 13 ready; not run (needs the final model record and the bank freeze) |
-| Validation, preregistration, final test | Not started, metric code partly exists |
+| Scoring the full bank | Done: 8 verifiers, T1 and T2, both banks, A100 (`results/full/`) |
+| Validation, preregistration, final test | Validation done (`results/final/validation.md`); preregistration under review; final test after it is merged |
 | Presentation | Slot not confirmed |
 | Final report | Not started |
