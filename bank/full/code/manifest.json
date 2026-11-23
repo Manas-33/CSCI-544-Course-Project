@@ -1,0 +1,155 @@
+{
+  "bank": "full",
+  "domain": "code",
+  "seed": 544,
+  "files": {
+    "bank.jsonl": "7eb9e302948d9b2dec0d3cdbf1b160a2dd83621135cd810a6aba948bcb4550e7",
+    "labels_validation.jsonl": "09150c7bbc7015f06802ac35647eafa7db7ad619463318852532d8213a268b14",
+    "labels_test.jsonl": "04471d91835ec2b226d95a6a14fe8029daabd96e0cd89b205726e469b020f808"
+  },
+  "labels_test": "held by the label keeper, not in the repository before the test join (PLAN.md \u00a72)",
+  "counts": {
+    "total": {
+      "problems": 93,
+      "pairs": 175,
+      "candidates": 350,
+      "pairs_by_source": {
+        "evalplus/humaneval+": 175
+      },
+      "pairs_by_generator": {
+        "allenai/OLMo-2-1124-7B-Instruct": 50,
+        "ibm-granite/granite-3.3-8b-instruct": 54,
+        "microsoft/Phi-4-mini-instruct": 61,
+        "openai/gpt-4.1-mini": 10
+      }
+    },
+    "validation": {
+      "problems": 31,
+      "pairs": 55,
+      "candidates": 110,
+      "pairs_by_source": {
+        "evalplus/humaneval+": 55
+      },
+      "pairs_by_generator": {
+        "allenai/OLMo-2-1124-7B-Instruct": 20,
+        "ibm-granite/granite-3.3-8b-instruct": 15,
+        "microsoft/Phi-4-mini-instruct": 18,
+        "openai/gpt-4.1-mini": 2
+      }
+    },
+    "test": {
+      "problems": 62,
+      "pairs": 120,
+      "candidates": 240,
+      "pairs_by_source": {
+        "evalplus/humaneval+": 120
+      },
+      "pairs_by_generator": {
+        "allenai/OLMo-2-1124-7B-Instruct": 30,
+        "ibm-granite/granite-3.3-8b-instruct": 39,
+        "microsoft/Phi-4-mini-instruct": 43,
+        "openai/gpt-4.1-mini": 8
+      }
+    }
+  },
+  "split_rule": "by problem, stratified by source, one third validation, near-duplicate problems together",
+  "near_duplicate_problems_kept_together": [],
+  "share_of_cells_that_qualified": {
+    "all": {
+      "cells": 456,
+      "qualified": 175,
+      "share": 0.3838
+    },
+    "allenai/OLMo-2-1124-7B-Instruct": {
+      "cells": 114,
+      "qualified": 50,
+      "share": 0.4386
+    },
+    "evalplus/humaneval+": {
+      "cells": 456,
+      "qualified": 175,
+      "share": 0.3838
+    },
+    "ibm-granite/granite-3.3-8b-instruct": {
+      "cells": 114,
+      "qualified": 54,
+      "share": 0.4737
+    },
+    "microsoft/Phi-4-mini-instruct": {
+      "cells": 114,
+      "qualified": 61,
+      "share": 0.5351
+    },
+    "openai/gpt-4.1-mini": {
+      "cells": 114,
+      "qualified": 10,
+      "share": 0.0877
+    }
+  },
+  "shortfall": {
+    "code": 0
+  },
+  "draw": {
+    "seed": 544,
+    "left_out": {
+      "evalplus/mbpp+": {
+        "problems": 276,
+        "answers": 8832,
+        "qualifying_pairs": 291,
+        "answers_in_pairs": 582
+      }
+    },
+    "pairs_dropped_too_long": 0,
+    "too_long_candidates": [],
+    "longest_prompt_tokens": 965,
+    "qualifying_pairs": 175,
+    "qualifying_by_generator": {
+      "allenai/OLMo-2-1124-7B-Instruct": 50,
+      "ibm-granite/granite-3.3-8b-instruct": 54,
+      "microsoft/Phi-4-mini-instruct": 61,
+      "openai/gpt-4.1-mini": 10
+    },
+    "pairs_after_problem_cap": 175,
+    "after_problem_cap_by_source": {
+      "evalplus/humaneval+": 175
+    },
+    "target": 175,
+    "quota": {
+      "code": 175
+    },
+    "generator_cap": {
+      "pairs": 70,
+      "percent": 40,
+      "available": [
+        "allenai/OLMo-2-1124-7B-Instruct",
+        "ibm-granite/granite-3.3-8b-instruct",
+        "microsoft/Phi-4-mini-instruct"
+      ],
+      "fewer_than_three_available": false
+    },
+    "chosen": 175,
+    "skipped_at_generator_cap": {
+      "code": 0
+    },
+    "by_source": {
+      "evalplus/humaneval+": 175
+    },
+    "by_generator": {
+      "allenai/OLMo-2-1124-7B-Instruct": 50,
+      "ibm-granite/granite-3.3-8b-instruct": 54,
+      "microsoft/Phi-4-mini-instruct": 61,
+      "openai/gpt-4.1-mini": 10
+    }
+  },
+  "inputs": {
+    "questions_code.jsonl": "048de9de2b5635b8fc25333d8d9a47cdae001f6ec6ba6ce2b7ff01f8e42b847f",
+    "generations.jsonl": "071926dd3f8ee81fda9b93eb67a3bd994fe7f34f426e86917391250e0fa1ac07",
+    "labeled.jsonl": "ea61450986ddbb17a669e24eda02d040d5c586437989cf2da7b608a980ba5c01",
+    "full_bank.jsonl": "45ceb1bd70540096a1e513e15a72fea849334aab763e3f33c42f76596c0c5570",
+    "full_labels.jsonl": "94ef4a92cbba5bf07997a645fef49dc0027050bbabb1d1309b4a7d8a62dd3afc",
+    "too_long.json": "293aa46f68f79b73d7c0e9f747834e49938bdb501d456bf6d7b2b336e7d74cb1",
+    "drawn_bank.jsonl": "bc4b9f5ba789ed1087ae9f40edfb6ee14a647351737b369a2d72da856faa9120",
+    "drawn_labels.jsonl": "e64f705b53d289a54ac5023f18df8a2590a80e0fc49bf2d6a42e094c827a1c8c"
+  },
+  "code_revision": "a5588442043b2d3a981bf45bafee636d20945f92"
+}
