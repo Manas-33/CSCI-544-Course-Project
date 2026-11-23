@@ -50,9 +50,10 @@ python -m analysis.final_validation --check results/final/analysis_manifest.json
 ```
 
 In repair mode, add the file with LLaDA's reconstruction scores of the whole math bank (seed 544, 128 samples) to
-`--scores` if it is kept elsewhere. The reconstruction side experiment (PLAN §4, math bank only) is frozen with the same manifest: add
+`--scores` if it is kept elsewhere. The reconstruction side experiment (PLAN §4, math bank only) can be frozen with the same manifest: add
 `--side <thresholds from analysis.reconstruction validation> --side-scores <its score files>`. The test step then applies
-it after the join.
+it after the join. This project did not freeze it ([record](../decisions/2026-11-22-side-experiment-after-test.md)): it is
+exploratory, reported on its validation half in `results/reconstruction/README.md` (`analysis.side_compare`).
 
 **3. Preregistration.** Commit the manifest, `configs/final_models.json` and `analysis/` together; C reviews. From here
 the analysis code in the manifest is frozen (`final_report.py` is not in it, so a label on a figure can still be fixed).
