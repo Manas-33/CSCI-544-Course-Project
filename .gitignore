@@ -76,6 +76,8 @@ __pycache__/
 !/docs/references/midterm_report.pdf
 !/docs/references/ProjectProposal_revised.pdf
 !/docs/references/CSCI_544_PAPER_REPORT.pdf
+# Final presentation slides
+!/docs/presentation/
 
 # Step 0 of the go/no-go: answer-swap and repeat-run scores (notebook 09)
 !/results/step0/
